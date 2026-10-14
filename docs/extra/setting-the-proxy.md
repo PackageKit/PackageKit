@@ -15,10 +15,16 @@ would make each transaction slower to startup, and also require each client to
 read and track the session proxy configuration.
 
 To avoid this overhead, each session can register the proxy with the daemon
-once, and then the daemon can remember the user identifier and the session that
-it came from, and store this data in a database. When each transaction method
-is executed, the uid and session that executed the call are used to lookup the
-proxy settings and this is passed to the backend. This also allows the daemon to
-have to correct proxy settings if the daemon times out (as it is designed to do)
-and is restarted by a client application using D-Bus system activation.
+once, and the daemon remembers it for the login session that it came from.
+When each transaction method is executed, the session that executed the call
+is used to look up the proxy settings and this is passed to the backend. This
+also allows the daemon to have the correct proxy settings if the daemon times
+out (as it is designed to do) and is restarted by a client application using
+D-Bus system activation.
+
+The settings are stored in `/run/packagekit/proxy-<session>`, so they never
+survive a reboot, and a new login session starts without a proxy until its
+session process calls SetProxy again. Calling SetProxy with all values empty
+removes the stored settings. Callers without a login session, such as system
+services, are keyed by their uid instead.
 

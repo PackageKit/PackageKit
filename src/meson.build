@@ -28,6 +28,8 @@ shared_sources = files(
   'pk-scheduler.h',
   'pk-transaction-db.c',
   'pk-transaction-db.h',
+  'pk-proxy-store.c',
+  'pk-proxy-store.h',
 )
 
 packagekit_direct_exec = executable(

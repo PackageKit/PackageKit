@@ -50,6 +50,7 @@
 
 #include "pk-backend.h"
 #include "pk-dbus.h"
+#include "pk-proxy-store.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -1713,48 +1714,29 @@ pk_transaction_update_details_cb (
 static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 {
-	gboolean ret;
-	g_autofree gchar *session = NULL;
-	g_autofree gchar *proxy_http = NULL;
-	g_autofree gchar *proxy_https = NULL;
-	g_autofree gchar *proxy_ftp = NULL;
-	g_autofree gchar *proxy_socks = NULL;
-	g_autofree gchar *no_proxy = NULL;
-	g_autofree gchar *pac = NULL;
 	g_autofree gchar *cmdline = NULL;
+	g_autofree gchar *session = NULL;
+	g_autoptr(PkProxySettings) proxy = NULL;
 
-	/* get session */
+	/* the proxy registered for the caller's session, if any */
 	if (!pk_dbus_connect (transaction->dbus, error))
 		return FALSE;
 	session = pk_dbus_get_session (transaction->dbus, transaction->sender);
-	if (session == NULL) {
-		g_set_error_literal (error, 1, 0, "failed to get the session");
+	if (!pk_proxy_store_load (transaction->conf,
+				  transaction->client_uid,
+				  session,
+				  &proxy,
+				  error))
 		return FALSE;
+	if (proxy != NULL) {
+		pk_backend_job_set_proxy (transaction->job,
+					  proxy->http,
+					  proxy->https,
+					  proxy->ftp,
+					  proxy->socks,
+					  proxy->no_proxy,
+					  proxy->pac);
 	}
-
-	/* get from database */
-	ret = pk_transaction_db_get_proxy (transaction->transaction_db,
-					   transaction->client_uid,
-					   session,
-					   &proxy_http,
-					   &proxy_https,
-					   &proxy_ftp,
-					   &proxy_socks,
-					   &no_proxy,
-					   &pac);
-	if (!ret) {
-		g_set_error_literal (error, 1, 0, "failed to get the proxy from the database");
-		return FALSE;
-	}
-
-	/* try to set the new proxy */
-	pk_backend_job_set_proxy (transaction->job,
-				  proxy_http,
-				  proxy_https,
-				  proxy_ftp,
-				  proxy_socks,
-				  no_proxy,
-				  pac);
 
 	/* try to set the new uid and cmdline */
 	cmdline = g_strdup_printf ("PackageKit: %s", pk_role_enum_to_string (transaction->role));

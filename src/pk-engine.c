@@ -45,6 +45,7 @@
 #include "pk-backend.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
+#include "pk-proxy-store.h"
 #include "pk-shared.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
@@ -440,9 +441,10 @@ pk_engine_set_proxy_internal (PkEngine *engine,
 			      const gchar *pac,
 			      GError **error)
 {
-	gboolean ret;
 	guint uid;
 	g_autofree gchar *session = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(PkProxySettings) settings = NULL;
 
 	if (!pk_dbus_connect (engine->dbus, error)) {
 		g_set_error_literal (error,
@@ -462,31 +464,20 @@ pk_engine_set_proxy_internal (PkEngine *engine,
 		return FALSE;
 	}
 
-	/* get session */
+	/* save for the lifetime of the caller's session */
 	session = pk_dbus_get_session (engine->dbus, sender);
-	if (session == NULL) {
-		g_set_error_literal (error,
-				     PK_ENGINE_ERROR,
-				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-				     "failed to get the session");
-		return FALSE;
-	}
-
-	/* save to database */
-	ret = pk_transaction_db_set_proxy (engine->transaction_db,
-					   uid,
-					   session,
-					   proxy_http,
-					   proxy_https,
-					   proxy_ftp,
-					   proxy_socks,
-					   no_proxy,
-					   pac);
-	if (!ret) {
-		g_set_error_literal (error,
-				     PK_ENGINE_ERROR,
-				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-				     "failed to save the proxy in the database");
+	settings = pk_proxy_settings_new (proxy_http,
+					  proxy_https,
+					  proxy_ftp,
+					  proxy_socks,
+					  no_proxy,
+					  pac);
+	if (!pk_proxy_store_save (engine->conf, uid, session, settings, &error_local)) {
+		g_set_error (error,
+			     PK_ENGINE_ERROR,
+			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+			     "failed to save the proxy: %s",
+			     error_local->message);
 		return FALSE;
 	}
 	return TRUE;
@@ -592,14 +583,10 @@ pk_engine_is_proxy_unchanged (PkEngine *engine,
 			      const gchar *pac)
 {
 	guint uid;
-	gboolean ret = FALSE;
 	g_autofree gchar *session = NULL;
-	g_autofree gchar *proxy_http_tmp = NULL;
-	g_autofree gchar *proxy_https_tmp = NULL;
-	g_autofree gchar *proxy_ftp_tmp = NULL;
-	g_autofree gchar *proxy_socks_tmp = NULL;
-	g_autofree gchar *no_proxy_tmp = NULL;
-	g_autofree gchar *pac_tmp = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(PkProxySettings) stored = NULL;
+	g_autoptr(PkProxySettings) requested = NULL;
 
 	if (!pk_dbus_connect (engine->dbus, NULL)) {
 		g_warning ("failed to get the D-Bus proxy");
@@ -613,34 +600,19 @@ pk_engine_is_proxy_unchanged (PkEngine *engine,
 		return FALSE;
 	}
 
-	/* get session */
+	/* find out if they are the same as what we tried to set before */
 	session = pk_dbus_get_session (engine->dbus, sender);
-	if (session == NULL) {
-		g_warning ("failed to get the session for %s", sender);
+	if (!pk_proxy_store_load (engine->conf, uid, session, &stored, &error_local)) {
+		g_warning ("failed to load the proxy for uid %u: %s", uid, error_local->message);
 		return FALSE;
 	}
-
-	/* find out if they are the same as what we tried to set before */
-	ret = pk_transaction_db_get_proxy (engine->transaction_db,
-					   uid,
-					   session,
-					   &proxy_http_tmp,
-					   &proxy_https_tmp,
-					   &proxy_ftp_tmp,
-					   &proxy_socks_tmp,
-					   &no_proxy_tmp,
-					   &pac_tmp);
-	if (!ret)
-		return FALSE;
-
-	/* are different? */
-	if (g_strcmp0 (proxy_http_tmp, proxy_http) != 0 ||
-	    g_strcmp0 (proxy_https_tmp, proxy_https) != 0 ||
-	    g_strcmp0 (proxy_ftp_tmp, proxy_ftp) != 0 ||
-	    g_strcmp0 (proxy_socks_tmp, proxy_socks) != 0 ||
-	    g_strcmp0 (no_proxy_tmp, no_proxy) != 0 || g_strcmp0 (pac_tmp, pac) != 0)
-		return FALSE;
-	return TRUE;
+	requested = pk_proxy_settings_new (proxy_http,
+					   proxy_https,
+					   proxy_ftp,
+					   proxy_socks,
+					   no_proxy,
+					   pac);
+	return pk_proxy_settings_equal (stored, requested);
 }
 
 static PolkitCheckAuthorizationFlags

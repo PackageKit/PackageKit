@@ -30,6 +30,7 @@
 #include "pk-backend-protocol.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
+#include "pk-proxy-store.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -1049,6 +1050,75 @@ pk_test_transaction_func (void)
 }
 
 static void
+pk_test_proxy_store_func (void)
+{
+	gboolean ret;
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(GError) error = NULL;
+	const gchar *session = "/org/freedesktop/logind/session-7";
+	g_autofree gchar *dir = pk_util_get_runtime_dir (conf, NULL);
+	g_autofree gchar *session_file = g_build_filename (dir, "proxy-session-7", NULL);
+	g_autofree gchar *uid_file = g_build_filename (dir, "proxy-uid-501", NULL);
+	g_autoptr(PkProxySettings) settings = NULL;
+	g_autoptr(PkProxySettings) loaded = NULL;
+
+	g_unlink (session_file);
+	g_unlink (uid_file);
+
+	/* nothing stored yet */
+	ret = pk_proxy_store_load (conf, 500, session, &loaded, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_null (loaded);
+
+	/* save, then read back for the same session only */
+	settings = pk_proxy_settings_new ("127.0.0.1:80", "", "127.0.0.1:21", NULL, NULL, NULL);
+	ret = pk_proxy_store_save (conf, 500, session, settings, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_true (g_file_test (session_file, G_FILE_TEST_IS_REGULAR));
+
+	ret = pk_proxy_store_load (conf, 500, session, &loaded, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_nonnull (loaded);
+	g_assert_cmpstr (loaded->http, ==, "127.0.0.1:80");
+	g_assert_cmpstr (loaded->https, ==, NULL);
+	g_assert_cmpstr (loaded->ftp, ==, "127.0.0.1:21");
+	g_assert_true (pk_proxy_settings_equal (settings, loaded));
+	g_clear_pointer (&loaded, pk_proxy_settings_free);
+
+	ret = pk_proxy_store_load (conf, 500, "/org/freedesktop/logind/session-8", &loaded, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_null (loaded);
+
+	/* empty settings remove the file again */
+	g_clear_pointer (&settings, pk_proxy_settings_free);
+	settings = pk_proxy_settings_new ("", "", "", "", "", "");
+	g_assert_true (pk_proxy_settings_is_empty (settings));
+	g_assert_true (pk_proxy_settings_equal (settings, NULL));
+	ret = pk_proxy_store_save (conf, 500, session, settings, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_false (g_file_test (session_file, G_FILE_TEST_EXISTS));
+
+	/* a caller without a session is keyed by uid */
+	g_clear_pointer (&settings, pk_proxy_settings_free);
+	settings = pk_proxy_settings_new (NULL, NULL, NULL, "localhost:1080", NULL, NULL);
+	ret = pk_proxy_store_save (conf, 501, NULL, settings, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_true (g_file_test (uid_file, G_FILE_TEST_IS_REGULAR));
+	ret = pk_proxy_store_load (conf, 501, NULL, &loaded, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_nonnull (loaded);
+	g_assert_cmpstr (loaded->socks, ==, "localhost:1080");
+	g_unlink (uid_file);
+}
+
+static void
 pk_test_transaction_db_func (void)
 {
 	guint value;
@@ -1058,8 +1128,6 @@ pk_test_transaction_db_func (void)
 	GError *error = NULL;
 	g_autoptr(PkTransactionDb) db = NULL;
 	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
-	g_autofree gchar *proxy_http = NULL;
-	g_autofree gchar *proxy_ftp = NULL;
 
 	/* remove the self check file */
 	pk_test_remove_transaction_db ();
@@ -1113,72 +1181,6 @@ pk_test_transaction_db_func (void)
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
 	g_assert_cmpint (value, >, 1);
 	g_assert_cmpint (value, <=, 4);
-
-	/* can we set the proxies */
-	ret = pk_transaction_db_set_proxy (db,
-					   500,
-					   "session1",
-					   "127.0.0.1:80",
-					   NULL,
-					   "127.0.0.1:21",
-					   NULL,
-					   NULL,
-					   NULL);
-	g_assert_true (ret);
-
-	/* can we set the proxies (overwrite) */
-	ret = pk_transaction_db_set_proxy (db,
-					   500,
-					   "session1",
-					   "127.0.0.1:80",
-					   NULL,
-					   "127.0.0.1:21",
-					   NULL,
-					   NULL,
-					   NULL);
-	g_assert_true (ret);
-
-	/* can we get the proxies (non-existant user) */
-	ret = pk_transaction_db_get_proxy (db,
-					   501,
-					   "session1",
-					   &proxy_http,
-					   NULL,
-					   &proxy_ftp,
-					   NULL,
-					   NULL,
-					   NULL);
-	g_assert_true (ret);
-	g_assert_cmpstr (proxy_http, ==, NULL);
-	g_assert_cmpstr (proxy_ftp, ==, NULL);
-
-	/* can we get the proxies (non-existant session) */
-	ret = pk_transaction_db_get_proxy (db,
-					   500,
-					   "session2",
-					   &proxy_http,
-					   NULL,
-					   &proxy_ftp,
-					   NULL,
-					   NULL,
-					   NULL);
-	g_assert_true (ret);
-	g_assert_cmpstr (proxy_http, ==, NULL);
-	g_assert_cmpstr (proxy_ftp, ==, NULL);
-
-	/* can we get the proxies (match) */
-	ret = pk_transaction_db_get_proxy (db,
-					   500,
-					   "session1",
-					   &proxy_http,
-					   NULL,
-					   &proxy_ftp,
-					   NULL,
-					   NULL,
-					   NULL);
-	g_assert_true (ret);
-	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:80");
-	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");
 
 	/* does the stored package list come back as package objects */
 	{
@@ -2125,6 +2127,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);
+	g_test_add_func ("/packagekit/proxy-store", pk_test_proxy_store_func);
 
 	/* backend stuff */
 	g_test_add_func ("/packagekit/backend", pk_test_backend_func);

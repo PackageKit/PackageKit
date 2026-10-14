@@ -27,6 +27,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <unistd.h>
@@ -414,6 +415,36 @@ pk_util_get_root_dir (GKeyFile *conf)
 	g_free (dir);
 
 	return g_strdup ("/");
+}
+
+/**
+ * pk_util_get_runtime_dir:
+ * @conf: the daemon configuration
+ * @error: a #GError, or %NULL
+ *
+ * Returns the daemon's runtime state directory, /run/packagekit below the
+ * root directory, creating it if needed.
+ * It is only accessible to the daemon's own user.
+ *
+ * Returns: (transfer full): the directory path, or %NULL on error
+ */
+gchar *
+pk_util_get_runtime_dir (GKeyFile *conf, GError **error)
+{
+	g_autofree gchar *root_dir = pk_util_get_root_dir (conf);
+	g_autofree gchar *dir = g_build_filename (root_dir, "run", "packagekit", NULL);
+
+	if (g_mkdir_with_parents (dir, 0700) < 0) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     g_io_error_from_errno (errno),
+			     "failed to create %s: %s",
+			     dir,
+			     g_strerror (errno));
+		return NULL;
+	}
+
+	return g_steal_pointer (&dir);
 }
 
 static gint
