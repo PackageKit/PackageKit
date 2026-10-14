@@ -47,11 +47,12 @@ static void pk_transaction_past_finalize (GObject *object);
 struct _PkTransactionPastPrivate
 {
 	gchar *tid;
-	gchar *timespec;
+	gchar *time_started;
+	GDateTime *time_started_dt;
 	gboolean succeeded;
 	PkRoleEnum role;
-	guint duration; /* ms */
-	gchar *data;
+	guint duration;	     /* ms */
+	GPtrArray *packages; /* (element-type PkPackage) */
 	guint uid;
 	gchar *cmdline;
 };
@@ -59,11 +60,11 @@ struct _PkTransactionPastPrivate
 enum {
 	PROP_0,
 	PROP_TID,
-	PROP_TIMESPEC,
+	PROP_TIME_STARTED,
 	PROP_SUCCEEDED,
 	PROP_ROLE,
 	PROP_DURATION,
-	PROP_DATA,
+	PROP_PACKAGES,
 	PROP_UID,
 	PROP_CMDLINE,
 	PROP_LAST
@@ -93,72 +94,25 @@ pk_transaction_past_get_id (PkTransactionPast *past)
 }
 
 /**
- * pk_transaction_past_get_timespec:
+ * pk_transaction_past_get_time_started:
  * @past: a valid #PkTransactionPast instance
  *
- * Gets the past transaction timespec value;
+ * Gets the time the past transaction was started.
  *
- * Return value: The transaction data
+ * Return value: (transfer none) (nullable): the start time, or %NULL if unknown
  *
- * Since: 0.8.11
- **/
-const gchar *
-pk_transaction_past_get_timespec (PkTransactionPast *past)
-{
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
-
-	return priv->timespec;
-}
-
-/**
- * pk_transaction_past_get_datetime:
- * @past: a valid #PkTransactionPast instance
- *
- * Gets the past transaction date & time value;
- *
- * Return value: The transaction data, or %NULL if it's not available
- *
- * Since: 0.8.11
+ * Since: 2.0.0
  **/
 GDateTime *
-pk_transaction_past_get_datetime (PkTransactionPast *past)
+pk_transaction_past_get_time_started (PkTransactionPast *past)
 {
 	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
 
-	if (priv->timespec == NULL)
-		return NULL;
-
-	return pk_iso8601_to_datetime (priv->timespec);
-}
-
-/**
- * pk_transaction_past_get_timestamp:
- * @past: a valid #PkTransactionPast instance
- *
- * Gets the past transaction timestamp
- *
- * Return value: The transaction data, or 0 if it's not available
- *
- * Since: 0.8.11
- **/
-gint64
-pk_transaction_past_get_timestamp (PkTransactionPast *past)
-{
-	GDateTime *datetime;
-	gint64 timestamp;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
-
-	datetime = pk_transaction_past_get_datetime (past);
-	if (datetime == NULL)
-		return 0;
-	timestamp = g_date_time_to_unix (datetime);
-	g_date_time_unref (datetime);
-	return timestamp;
+	if (priv->time_started_dt == NULL && priv->time_started != NULL)
+		priv->time_started_dt = pk_iso8601_to_datetime (priv->time_started);
+	return priv->time_started_dt;
 }
 
 /**
@@ -222,22 +176,22 @@ pk_transaction_past_get_duration (PkTransactionPast *past)
 }
 
 /**
- * pk_transaction_past_get_data:
+ * pk_transaction_past_get_packages:
  * @past: a valid #PkTransactionPast instance
  *
- * Gets the past transaction data;
+ * Gets the packages that the past transaction acted on.
  *
- * Return value: The transaction data
+ * Return value: (element-type PkPackage) (transfer none): the packages, or %NULL
  *
- * Since: 0.8.11
+ * Since: 2.0.0
  **/
-const gchar *
-pk_transaction_past_get_data (PkTransactionPast *past)
+GPtrArray *
+pk_transaction_past_get_packages (PkTransactionPast *past)
 {
 	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
-	return priv->data;
+	return priv->packages;
 }
 
 /**
@@ -287,8 +241,8 @@ pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value,
 	case PROP_TID:
 		g_value_set_string (value, priv->tid);
 		break;
-	case PROP_TIMESPEC:
-		g_value_set_string (value, priv->timespec);
+	case PROP_TIME_STARTED:
+		g_value_set_string (value, priv->time_started);
 		break;
 	case PROP_SUCCEEDED:
 		g_value_set_boolean (value, priv->succeeded);
@@ -299,8 +253,8 @@ pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value,
 	case PROP_DURATION:
 		g_value_set_uint (value, priv->duration);
 		break;
-	case PROP_DATA:
-		g_value_set_string (value, priv->data);
+	case PROP_PACKAGES:
+		g_value_set_boxed (value, priv->packages);
 		break;
 	case PROP_UID:
 		g_value_set_uint (value, priv->uid);
@@ -331,9 +285,10 @@ pk_transaction_past_set_property (GObject *object,
 		g_free (priv->tid);
 		priv->tid = g_value_dup_string (value);
 		break;
-	case PROP_TIMESPEC:
-		g_free (priv->timespec);
-		priv->timespec = g_value_dup_string (value);
+	case PROP_TIME_STARTED:
+		g_free (priv->time_started);
+		priv->time_started = g_value_dup_string (value);
+		g_clear_pointer (&priv->time_started_dt, g_date_time_unref);
 		break;
 	case PROP_SUCCEEDED:
 		priv->succeeded = g_value_get_boolean (value);
@@ -344,9 +299,9 @@ pk_transaction_past_set_property (GObject *object,
 	case PROP_DURATION:
 		priv->duration = g_value_get_uint (value);
 		break;
-	case PROP_DATA:
-		g_free (priv->data);
-		priv->data = g_value_dup_string (value);
+	case PROP_PACKAGES:
+		g_clear_pointer (&priv->packages, g_ptr_array_unref);
+		priv->packages = g_value_dup_boxed (value);
 		break;
 	case PROP_UID:
 		priv->uid = g_value_get_uint (value);
@@ -386,16 +341,16 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_TID, pspec);
 
 	/**
-	 * PkTransactionPast:timespec:
+	 * PkTransactionPast:time-started:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("timespec",
+	pspec = g_param_spec_string ("time-started",
 				     NULL,
 				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_TIMESPEC, pspec);
+	g_object_class_install_property (object_class, PROP_TIME_STARTED, pspec);
 
 	/**
 	 * PkTransactionPast:succeeded:
@@ -437,16 +392,18 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_DURATION, pspec);
 
 	/**
-	 * PkTransactionPast:data:
+	 * PkTransactionPast:packages:
 	 *
-	 * Since: 0.5.4
+	 * The packages the transaction acted on, as a #GPtrArray of #PkPackage.
+	 *
+	 * Since: 2.0.0
 	 */
-	pspec = g_param_spec_string ("data",
-				     NULL,
-				     NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_DATA, pspec);
+	pspec = g_param_spec_boxed ("packages",
+				    NULL,
+				    NULL,
+				    G_TYPE_PTR_ARRAY,
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	g_object_class_install_property (object_class, PROP_PACKAGES, pspec);
 
 	/**
 	 * PkTransactionPast:uid:
@@ -494,8 +451,9 @@ pk_transaction_past_finalize (GObject *object)
 	PkTransactionPastPrivate *priv = GET_PRIVATE(transaction_past);
 
 	g_clear_pointer (&priv->tid, g_free);
-	g_clear_pointer (&priv->timespec, g_free);
-	g_clear_pointer (&priv->data, g_free);
+	g_clear_pointer (&priv->time_started, g_free);
+	g_clear_pointer (&priv->time_started_dt, g_date_time_unref);
+	g_clear_pointer (&priv->packages, g_ptr_array_unref);
 	g_clear_pointer (&priv->cmdline, g_free);
 
 	G_OBJECT_CLASS (pk_transaction_past_parent_class)->finalize (object);

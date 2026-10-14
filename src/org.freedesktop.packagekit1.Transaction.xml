@@ -1078,28 +1078,39 @@
 
     <!--*********************************************************************-->
     <!--
-      Transaction:
-      @object_path: The transaction ID of the old transaction.
-      @timespec: The timespec of the old transaction in ISO8601 format.
-      @succeeded: If the transaction succeeded.
-      @role: The role enumerated type.
-      @duration: The duration of the transaction in milliseconds.
-      @data: Any data associated with the transaction.
-      @uid: The user ID of the user that scheduled the action.
-      @cmdline: The command line of the tool that scheduled the action, e.g. `/usr/bin/gpk-application`.
+      Transactions:
+      @transactions: An array of past transactions, each array element is one transaction.
 
       This signal is sent when more details are required about a specific
       transaction.
+
+      The daemon may split the transactions into multiple emissions of this
+      signal to stay within the D-Bus message size limits. The content of one
+      signal will never duplicate the content of another, and a single
+      emission may contain only one transaction.
+
+      Each array element describes one past transaction as a struct: the
+      transaction ID followed by a vardict with the remaining fields.
+      A key whose value is unset, unknown or empty is omitted.
+      Clients must ignore keys they do not know and treat enum values
+      they do not recognize as that enum's unknown value.
+
+      - `time-started`: The ISO 8601 encoded time the transaction was started. [`s`]
+      - `succeeded`: If the transaction succeeded. Always present. [`b`]
+      - `role`: The role enumerated type. [`u`]
+      - `duration`: The duration of the transaction in milliseconds. Always
+        present. [`u`]
+      - `packages`: The packages the transaction acted on, as an array of
+        `(info, package_id, summary)` with the same meaning as in the
+        `Packages` signal. Only recorded for install, update and remove
+        transactions. [`a(uss)`]
+      - `uid`: The user ID of the user that scheduled the action. [`u`]
+      - `cmdline`: The command line of the tool that scheduled the action, e.g.
+        `/usr/bin/gpk-application`. [`s`]
     -->
-    <signal name="Transaction">
-      <arg type="o" name="object_path" direction="out"/>
-      <arg type="s" name="timespec" direction="out"/>
-      <arg type="b" name="succeeded" direction="out"/>
-      <arg type="u" name="role" direction="out"/>
-      <arg type="u" name="duration" direction="out"/>
-      <arg type="s" name="data" direction="out"/>
-      <arg type="u" name="uid" direction="out"/>
-      <arg type="s" name="cmdline" direction="out"/>
+    <signal name="Transactions">
+      <arg type="a(oa{sv})" name="transactions" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 
 

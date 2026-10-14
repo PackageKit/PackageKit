@@ -71,6 +71,33 @@ typedef struct
 	gboolean set;
 } PkTransactionDbProxyItem;
 
+/*
+ * pk_transaction_db_parse_packages:
+ * @data: the stored package list, one `info\tpackage_id\tsummary` line per package
+ *
+ * Returns: (element-type PkPackage) (transfer full): the parsed packages
+ */
+static GPtrArray *
+pk_transaction_db_parse_packages (const gchar *data)
+{
+	GPtrArray *packages = g_ptr_array_new_with_free_func (g_object_unref);
+	g_auto(GStrv) lines = g_strsplit (data, "\n", -1);
+
+	for (guint i = 0; lines[i] != NULL; i++) {
+		g_autoptr(GError) error = NULL;
+		g_autoptr(PkPackage) package = pk_package_new ();
+
+		if (lines[i][0] == '\0')
+			continue;
+		if (!pk_package_parse (package, lines[i], &error)) {
+			g_warning ("Failed to parse package '%s': %s", lines[i], error->message);
+			continue;
+		}
+		g_ptr_array_add (packages, g_steal_pointer (&package));
+	}
+	return packages;
+}
+
 static gint
 pk_transaction_db_add_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
@@ -102,13 +129,16 @@ pk_transaction_db_add_transaction_cb (void *data, gint argc, gchar **argv, gchar
 				g_object_set (item, "tid", value, NULL);
 		} else if (g_strcmp0 (col, "timespec") == 0) {
 			if (value != NULL)
-				g_object_set (item, "timespec", value, NULL);
+				g_object_set (item, "time-started", value, NULL);
 		} else if (g_strcmp0 (col, "cmdline") == 0) {
 			if (value != NULL)
 				g_object_set (item, "cmdline", value, NULL);
 		} else if (g_strcmp0 (col, "data") == 0) {
-			if (value != NULL)
-				g_object_set (item, "data", value, NULL);
+			if (value != NULL) {
+				g_autoptr(GPtrArray) packages = NULL;
+				packages = pk_transaction_db_parse_packages (value);
+				g_object_set (item, "packages", packages, NULL);
+			}
 		} else if (g_strcmp0 (col, "uid") == 0) {
 			if (pk_strtouint (value, &temp))
 				g_object_set (item, "uid", temp, NULL);
@@ -1032,8 +1062,8 @@ pk_transaction_db_finalize (GObject *object)
 
 	/* if we shutdown with a deferred database write, then enforce it here */
 	if (tdb->database_save_id != 0) {
-		pk_transaction_db_defer_write_job_count_cb (tdb);
 		g_source_remove (tdb->database_save_id);
+		pk_transaction_db_defer_write_job_count_cb (tdb);
 	}
 
 	/* close the database */

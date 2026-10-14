@@ -1161,7 +1161,8 @@ pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 	g_variant_builder_add (&builder,
 			       "{sv}",
 			       "timestamp",
-			       g_variant_new_uint64 (pk_transaction_past_get_timestamp (item)));
+			       g_variant_new_uint64 (g_date_time_to_unix (
+				   pk_transaction_past_get_time_started (item))));
 	g_variant_builder_add (&builder,
 			       "{sv}",
 			       "user-id",
@@ -1193,22 +1194,19 @@ pk_engine_get_package_history (PkEngine *engine,
 			       guint max_size,
 			       GError **error)
 {
-	const gchar *data;
 	const gchar *pkgname;
-	gboolean ret;
 	gchar *key;
 	gint64 timestamp;
 	GList *l;
 	GList *list;
 	GPtrArray *array = NULL;
-	guint i;
 	GVariantBuilder builder;
 	GVariant *value = NULL;
 	PkTransactionPast *item;
+	PkPackage *package_tmp;
 	g_autoptr(GHashTable) deduplicate_hash = NULL;
 	g_autoptr(GHashTable) pkgname_hash = NULL;
 	g_autoptr(GList) keys = NULL;
-	g_autoptr(PkPackage) package_tmp = NULL;
 
 	list = pk_transaction_db_get_list (engine->transaction_db, max_size);
 
@@ -1221,29 +1219,19 @@ pk_engine_get_package_history (PkEngine *engine,
 					      g_free,
 					      (GDestroyNotify) g_ptr_array_unref);
 	deduplicate_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	package_tmp = pk_package_new ();
 	for (l = list; l != NULL; l = l->next) {
-		g_auto(GStrv) package_lines = NULL;
+		GPtrArray *packages;
 		item = PK_TRANSACTION_PAST (l->data);
 
 		/* ignore anything that failed */
 		if (!pk_transaction_past_get_succeeded (item))
 			continue;
 
-		/* split up data */
-		data = pk_transaction_past_get_data (item);
-		if (data == NULL)
+		packages = pk_transaction_past_get_packages (item);
+		if (packages == NULL)
 			continue;
-		package_lines = g_strsplit (data, "\n", -1);
-		for (i = 0; package_lines[i] != NULL; i++) {
-			g_autoptr(GError) error_local = NULL;
-			ret = pk_package_parse (package_tmp, package_lines[i], &error_local);
-			if (!ret) {
-				g_warning ("Failed to parse package: '%s': %s",
-					   package_lines[i],
-					   error_local->message);
-				continue;
-			}
+		for (guint i = 0; i < packages->len; i++) {
+			package_tmp = g_ptr_array_index (packages, i);
 
 			/* not the package we care about */
 			if (!pk_engine_package_name_in_strv (package_names, package_tmp))
@@ -1254,7 +1242,10 @@ pk_engine_get_package_history (PkEngine *engine,
 				continue;
 
 			/* transactions without a timestamp are not interesting */
-			timestamp = pk_transaction_past_get_timestamp (item);
+			if (pk_transaction_past_get_time_started (item) == NULL)
+				continue;
+			timestamp = g_date_time_to_unix (
+			    pk_transaction_past_get_time_started (item));
 			if (timestamp == 0)
 				continue;
 
@@ -1266,7 +1257,7 @@ pk_engine_get_package_history (PkEngine *engine,
 				g_free (key);
 				continue;
 			}
-			g_hash_table_insert (deduplicate_hash, key, package_lines[i]);
+			g_hash_table_insert (deduplicate_hash, key, package_tmp);
 
 			/* get the blob for this data item */
 			value = pk_engine_get_package_history_pkg (item, package_tmp);

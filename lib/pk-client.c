@@ -1206,6 +1206,35 @@ pk_client_issues_from_variant (GVariant *variant)
 	return issues;
 }
 
+/*
+ * pk_client_packages_from_variant:
+ * @variant: the `packages` value of a past transaction, as `a(uss)`
+ *
+ * Returns: (element-type PkPackage) (transfer full): the packages
+ */
+static GPtrArray *
+pk_client_packages_from_variant (GVariant *variant)
+{
+	GPtrArray *packages = g_ptr_array_new_with_free_func (g_object_unref);
+	g_autoptr(GVariantIter) iter = NULL;
+	guint info;
+	const gchar *package_id;
+	const gchar *summary;
+
+	if (!g_variant_is_of_type (variant, G_VARIANT_TYPE ("a(uss)")))
+		return packages;
+	g_variant_get (variant, "a(uss)", &iter);
+	while (g_variant_iter_loop (iter, "(u&s&s)", &info, &package_id, &summary)) {
+		g_autoptr(PkPackage) package = pk_package_new ();
+		if (!pk_package_set_id (package, package_id, NULL))
+			continue;
+		pk_package_set_info (package, info);
+		pk_package_set_summary (package, summary);
+		g_ptr_array_add (packages, g_steal_pointer (&package));
+	}
+	return packages;
+}
+
 /**
  * results_add_update_detail_from_variant:
  *
@@ -1277,7 +1306,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	gboolean tmp_bool;
 	guint tmp_uint;
 	guint tmp_uint2;
-	guint tmp_uint3;
 
 	if (!state)
 		return;
@@ -1328,11 +1356,17 @@ pk_client_signal_cb (GDBusProxy *proxy,
 						      "download-size",
 						      g_variant_get_uint64 (value),
 						      NULL);
-				else
+				else if (g_strcmp0 (key, "package-id") == 0 ||
+					 g_strcmp0 (key, "summary") == 0 ||
+					 g_strcmp0 (key, "description") == 0 ||
+					 g_strcmp0 (key, "url") == 0 ||
+					 g_strcmp0 (key, "license") == 0)
 					g_object_set (item,
 						      key,
 						      g_variant_get_string (value, NULL),
 						      NULL);
+				else
+					g_debug ("ignoring unknown Details key '%s'", key);
 			}
 			g_variant_iter_free (dictionary);
 		} else {
@@ -1383,42 +1417,52 @@ pk_client_signal_cb (GDBusProxy *proxy,
 
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Transaction") == 0) {
-		g_autoptr(PkTransactionPast) item = NULL;
-		g_variant_get (parameters,
-			       "(&o&sbuu&su&s)",
-			       &tmp_str[0],
-			       &tmp_str[1],
-			       &tmp_bool,
-			       &tmp_uint3,
-			       &tmp_uint,
-			       &tmp_str[3],
-			       &tmp_uint2,
-			       &tmp_str[4]);
-		item = pk_transaction_past_new ();
-		g_object_set (item,
-			      "tid",
-			      tmp_str[0],
-			      "timespec",
-			      tmp_str[1],
-			      "succeeded",
-			      tmp_bool,
-			      "role",
-			      tmp_uint3,
-			      "duration",
-			      tmp_uint,
-			      "data",
-			      tmp_str[3],
-			      "uid",
-			      tmp_uint2,
-			      "cmdline",
-			      tmp_str[4],
-			      "PkSource::role",
-			      state->role,
-			      "transaction-id",
-			      state->transaction_id,
-			      NULL);
-		pk_results_add_transaction (state->results, item);
+	if (g_strcmp0 (signal_name, "Transactions") == 0) {
+		GVariantIter *iter;
+		GVariantIter *dict;
+		const gchar *tid;
+		const gchar *key;
+		GVariant *value;
+
+		g_variant_get (parameters, "(a(oa{sv}))", &iter);
+		while (g_variant_iter_loop (iter, "(&oa{sv})", &tid, &dict)) {
+			g_autoptr(PkTransactionPast) item = pk_transaction_past_new ();
+			g_object_set (item,
+				      "tid",
+				      tid,
+				      "PkSource::role",
+				      state->role,
+				      "transaction-id",
+				      state->transaction_id,
+				      NULL);
+			while (g_variant_iter_loop (dict, "{&sv}", &key, &value)) {
+				if (g_strcmp0 (key, "time-started") == 0 ||
+				    g_strcmp0 (key, "cmdline") == 0) {
+					g_object_set (item,
+						      key,
+						      g_variant_get_string (value, NULL),
+						      NULL);
+				} else if (g_strcmp0 (key, "succeeded") == 0) {
+					g_object_set (item,
+						      key,
+						      g_variant_get_boolean (value),
+						      NULL);
+				} else if (g_strcmp0 (key, "role") == 0 ||
+					   g_strcmp0 (key, "duration") == 0 ||
+					   g_strcmp0 (key, "uid") == 0) {
+					g_object_set (item,
+						      key,
+						      g_variant_get_uint32 (value),
+						      NULL);
+				} else if (g_strcmp0 (key, "packages") == 0) {
+					g_autoptr(GPtrArray) packages = NULL;
+					packages = pk_client_packages_from_variant (value);
+					g_object_set (item, "packages", packages, NULL);
+				}
+			}
+			pk_results_add_transaction (state->results, item);
+		}
+		g_variant_iter_free (iter);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {

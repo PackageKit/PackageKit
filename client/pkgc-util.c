@@ -1008,13 +1008,11 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 	gboolean succeeded;
 	guint duration;
 	guint uid;
-	guint lines_len;
 	struct passwd *pw;
+	GPtrArray *packages;
 	g_autofree gchar *cmdline = NULL;
-	g_autofree gchar *data = NULL;
 	g_autofree gchar *tid = NULL;
-	g_autofree gchar *timespec = NULL;
-	g_auto(GStrv) lines = NULL;
+	g_autofree gchar *time_started = NULL;
 
 	if (!transaction)
 		return;
@@ -1025,8 +1023,8 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		      &role,
 		      "tid",
 		      &tid,
-		      "timespec",
-		      &timespec,
+		      "time-started",
+		      &time_started,
 		      "succeeded",
 		      &succeeded,
 		      "duration",
@@ -1035,9 +1033,8 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		      &cmdline,
 		      "uid",
 		      &uid,
-		      "data",
-		      &data,
 		      NULL);
+	packages = pk_transaction_past_get_packages (transaction);
 
 	role_text = pk_role_enum_to_string (role);
 
@@ -1048,7 +1045,9 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		json_object_set_new (root, "succeeded", json_boolean (succeeded));
 		json_object_set_new (root, "duration", json_integer (duration));
 		json_object_set_new (root, "uid", json_integer (uid));
-		json_object_set_new (root, "timespec", json_string (timespec ? timespec : ""));
+		json_object_set_new (root,
+				     "time_started",
+				     json_string (time_started ? time_started : ""));
 
 		if (cmdline && cmdline[0] != '\0')
 			json_object_set_new (root, "cmdline", json_string (cmdline));
@@ -1064,7 +1063,7 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 	g_print (" %s%s%s %s\n",
 		 get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for system time of the transaction */
-		 _("System time:"), get_reset_color (ctx), timespec ? timespec : "");
+		 _("System time:"), get_reset_color (ctx), time_started ? time_started : "");
 	g_print (" %s%s%s %s%s%s\n",
 		 get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for transaction success status */
@@ -1116,35 +1115,18 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		}
 	}
 
-	if (data && data[0] != '\0') {
-		lines = g_strsplit (data, "\n", -1);
-		lines_len = g_strv_length (lines);
-		if (lines_len > 0) {
-			g_print (" %s%s%s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for affected packages in transaction */
-				 _("Affected packages:"), get_reset_color (ctx));
-			for (guint i = 0; i < lines_len; i++) {
-				g_autofree gchar *package = NULL;
-				g_auto(GStrv) parts = NULL;
-
-				if (lines[i] == NULL || lines[i][0] == '\0')
-					continue;
-
-				parts = g_strsplit (lines[i], "\t", 3);
-				if (parts[1] != NULL) {
-					package = pk_package_id_to_printable (parts[1]);
-					g_print ("   - %s %s\n", parts[0], package);
-				}
-			}
-		} else {
-			g_print ("  %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for affected packages in transaction */
-				 _("Affected packages:"),
-				   get_reset_color (ctx),
-				   /* TRANSLATORS: No packages were affected by the transaction */
-				   _("None"));
+	if (packages != NULL && packages->len > 0) {
+		g_print (" %s%s%s\n",
+			 get_color (ctx, COLOR_BOLD),
+			 /* TRANSLATORS: Label for affected packages in transaction */
+			 _("Affected packages:"), get_reset_color (ctx));
+		for (guint i = 0; i < packages->len; i++) {
+			PkPackage *pkg = g_ptr_array_index (packages, i);
+			g_autofree gchar *package = pk_package_id_to_printable (
+			    pk_package_get_id (pkg));
+			g_print ("   - %s %s\n",
+				 pk_info_enum_to_string (pk_package_get_info (pkg)),
+				 package);
 		}
 	}
 }

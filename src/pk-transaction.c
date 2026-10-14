@@ -1198,6 +1198,10 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
  * than for packages. */
 #define PK_TRANSACTION_UPDATE_DETAILS_BATCH_SIZE 100
 
+/* Maximum number of past transactions to put into a single Transaction signal
+ * emission; each may carry a long package list. */
+#define PK_TRANSACTION_TRANSACTIONS_BATCH_SIZE 20
+
 static void
 pk_transaction_emit_packages_batch (PkTransaction *transaction, GVariantBuilder *builder)
 {
@@ -3498,22 +3502,57 @@ out:
 }
 
 static void
+pk_transaction_emit_transactions_batch (PkTransaction *transaction, GVariantBuilder *builder)
+{
+	g_autoptr(GError) error = NULL;
+
+	/* this consumes @builder, which has to be re-initialized to be used again */
+	if (!g_dbus_connection_emit_signal (transaction->connection,
+					    NULL,
+					    transaction->tid,
+					    PK_DBUS_INTERFACE_TRANSACTION,
+					    "Transactions",
+					    g_variant_new ("(a(oa{sv}))", builder),
+					    &error))
+		g_warning ("Failed to emit Transactions signal: %s", error->message);
+}
+
+/*
+ * pk_transaction_past_packages_to_variant:
+ * @packages: (element-type PkPackage): a #GPtrArray of #PkPackage
+ *
+ * Build the `packages` value of a past transaction as `a(uss)`
+ */
+static GVariant *
+pk_transaction_past_packages_to_variant (GPtrArray *packages)
+{
+	GVariantBuilder builder;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uss)"));
+	for (guint i = 0; i < packages->len; i++) {
+		PkPackage *pkg = g_ptr_array_index (packages, i);
+		const gchar *summary = pk_package_get_summary (pkg);
+		g_variant_builder_add (&builder,
+				       "(uss)",
+				       pk_package_get_info (pkg),
+				       pk_package_get_id (pkg),
+				       summary != NULL ? summary : "");
+	}
+	return g_variant_builder_end (&builder);
+}
+
+static void
 pk_transaction_get_old_transactions (PkTransaction *transaction,
 				     GVariant *params,
 				     GDBusMethodInvocation *context)
 {
-	const gchar *cmdline;
-	const gchar *data;
-	const gchar *modified;
-	const gchar *tid;
-	gboolean succeeded;
+	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(oa{sv})"));
 	GList *l;
 	GList *transactions = NULL;
-	guint duration;
+	GPtrArray *packages;
 	guint idle_id;
+	guint n_in_batch = 0;
 	guint number;
-	guint uid;
-	PkRoleEnum role;
 	PkTransactionPast *item;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3526,47 +3565,66 @@ pk_transaction_get_old_transactions (PkTransaction *transaction,
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	transactions = pk_transaction_db_get_list (transaction->transaction_db, number);
 	for (l = transactions; l != NULL; l = l->next) {
+		GVariantBuilder dict;
 		item = PK_TRANSACTION_PAST (l->data);
 
 		/* add to results */
 		pk_results_add_transaction (transaction->results, item);
 
-		/* get data */
-		role = pk_transaction_past_get_role (item);
-		tid = pk_transaction_past_get_id (item);
-		modified = pk_transaction_past_get_timespec (item);
-		succeeded = pk_transaction_past_get_succeeded (item);
-		duration = pk_transaction_past_get_duration (item);
-		data = pk_transaction_past_get_data (item);
-		uid = pk_transaction_past_get_uid (item);
-		cmdline = pk_transaction_past_get_cmdline (item);
-
 		/* emit */
-		g_debug ("adding transaction %s, %s, %i, %s, %i, %s, %i, %s",
-			 tid,
-			 modified,
-			 succeeded,
-			 pk_role_enum_to_string (role),
-			 duration,
-			 data,
-			 uid,
-			 cmdline);
-		g_dbus_connection_emit_signal (transaction->connection,
-					       NULL,
-					       transaction->tid,
-					       PK_DBUS_INTERFACE_TRANSACTION,
-					       "Transaction",
-					       g_variant_new ("(osbuusus)",
-							      tid,
-							      modified,
-							      succeeded,
-							      role,
-							      duration,
-							      data != NULL ? data : "",
-							      uid,
-							      cmdline != NULL ? cmdline : ""),
-					       NULL);
+		g_debug ("adding transaction %s", pk_transaction_past_get_id (item));
+		g_variant_builder_init (&dict, G_VARIANT_TYPE ("a{sv}"));
+		if (pk_transaction_past_get_time_started (item) != NULL) {
+			g_autofree gchar *time_started = g_date_time_format_iso8601 (
+			    pk_transaction_past_get_time_started (item));
+			pk_transaction_dict_add_string (&dict, "time-started", time_started);
+		}
+		g_variant_builder_add (
+		    &dict,
+		    "{sv}",
+		    "succeeded",
+		    g_variant_new_boolean (pk_transaction_past_get_succeeded (item)));
+		if (pk_transaction_past_get_role (item) != PK_ROLE_ENUM_UNKNOWN)
+			g_variant_builder_add (
+			    &dict,
+			    "{sv}",
+			    "role",
+			    g_variant_new_uint32 (pk_transaction_past_get_role (item)));
+		g_variant_builder_add (
+		    &dict,
+		    "{sv}",
+		    "duration",
+		    g_variant_new_uint32 (pk_transaction_past_get_duration (item)));
+		packages = pk_transaction_past_get_packages (item);
+		if (packages != NULL && packages->len > 0)
+			g_variant_builder_add (&dict,
+					       "{sv}",
+					       "packages",
+					       pk_transaction_past_packages_to_variant (packages));
+		if (pk_transaction_past_get_uid (item) != G_MAXUINT)
+			g_variant_builder_add (
+			    &dict,
+			    "{sv}",
+			    "uid",
+			    g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
+		pk_transaction_dict_add_string (&dict,
+						"cmdline",
+						pk_transaction_past_get_cmdline (item));
+		g_variant_builder_add (&builder,
+				       "(oa{sv})",
+				       pk_transaction_past_get_id (item),
+				       &dict);
+		n_in_batch++;
+
+		/* emit a full batch and start a new one */
+		if (n_in_batch >= PK_TRANSACTION_TRANSACTIONS_BATCH_SIZE) {
+			pk_transaction_emit_transactions_batch (transaction, &builder);
+			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(oa{sv})"));
+			n_in_batch = 0;
+		}
 	}
+	if (n_in_batch > 0)
+		pk_transaction_emit_transactions_batch (transaction, &builder);
 	g_list_free_full (transactions, (GDestroyNotify) g_object_unref);
 
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
