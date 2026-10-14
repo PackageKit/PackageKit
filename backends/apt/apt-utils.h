@@ -41,18 +41,13 @@ std::string fetchChangelogData(
     pkgCache::VerIterator Ver,
     pkgCache::VerIterator currver,
     std::string *update_text,
-    std::string *updated,
-    std::string *issued);
+    std::string *time_issued);
 
 /**
- * Returns a list of links pairs url;description for CVEs
+ * Returns the CVEs and the Debian and Ubuntu bugs referenced in a changelog
+ * as PkIssue items
  */
-GPtrArray *getCVEUrls(const std::string &changelog);
-
-/**
- * Returns a list of links pairs url;description for Debian and Ubuntu bugs
- */
-GPtrArray *getBugzillaUrls(const std::string &changelog);
+GPtrArray *getIssues(const std::string &changelog);
 
 /**
  * Return if the given string ends with the other

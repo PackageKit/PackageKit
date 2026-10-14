@@ -113,8 +113,7 @@ std::string fetchChangelogData(
     pkgCache::VerIterator Ver,
     pkgCache::VerIterator currver,
     std::string *update_text,
-    std::string *updated,
-    std::string *issued)
+    std::string *time_issued)
 {
     std::string changelog;
 
@@ -197,17 +196,13 @@ std::string fetchChangelogData(
             }
             g_match_info_free(match_info);
         } else if (starts_with(str, " --")) {
-            // Parse the text to know when the update was issued,
-            // and when it got updated
+            // The newest entry tells when the offered version was issued
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
                 const std::string date = g_match_info_fetch_named(match_info, "date");
                 const std::string date_iso = changelogDateToIso8601(date);
-                if (!date_iso.empty()) {
-                    *issued = date_iso;
-                    if (updated->empty()) {
-                        *updated = date_iso;
-                    }
+                if (!date_iso.empty() && time_issued->empty()) {
+                    *time_issued = date_iso;
                 }
             }
             g_match_info_free(match_info);
@@ -227,29 +222,22 @@ std::string fetchChangelogData(
     return changelog;
 }
 
-GPtrArray *getCVEUrls(const std::string &changelog)
+GPtrArray *getIssues(const std::string &changelog)
 {
-    GPtrArray *cve_urls = g_ptr_array_new();
+    GPtrArray *issues = g_ptr_array_new_with_free_func((GDestroyNotify)pk_issue_free);
 
-    // Regular expression to find cve references
-    g_autoptr(GRegex) regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
-    g_autoptr(GMatchInfo) match_info = nullptr;
-    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
-    while (g_match_info_matches(match_info)) {
-        g_autofree gchar *cve = g_match_info_fetch(match_info, 0);
-        g_ptr_array_add(cve_urls, g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve));
-        g_match_info_next(match_info, nullptr);
+    // CVE references
+    {
+        g_autoptr(GRegex) regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+        g_autoptr(GMatchInfo) match_info = nullptr;
+        g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+        while (g_match_info_matches(match_info)) {
+            g_autofree gchar *cve = g_match_info_fetch(match_info, 0);
+            g_autofree gchar *url = g_strdup_printf("https://www.cve.org/CVERecord?id=%s", cve);
+            g_ptr_array_add(issues, pk_issue_new(PK_ISSUE_KIND_ENUM_CVE, url, cve, nullptr));
+            g_match_info_next(match_info, nullptr);
+        }
     }
-
-    // NULL terminate
-    g_ptr_array_add(cve_urls, nullptr);
-
-    return cve_urls;
-}
-
-GPtrArray *getBugzillaUrls(const std::string &changelog)
-{
-    GPtrArray *bugzilla_urls = g_ptr_array_new();
 
     // Matches Ubuntu bugs
     {
@@ -259,7 +247,8 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
         g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
         while (g_match_info_matches(match_info)) {
             g_autofree gchar *bug = g_match_info_fetch_named(match_info, "bug");
-            g_ptr_array_add(bugzilla_urls, g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug));
+            g_autofree gchar *url = g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug);
+            g_ptr_array_add(issues, pk_issue_new(PK_ISSUE_KIND_ENUM_GENERIC, url, bug, nullptr));
             g_match_info_next(match_info, nullptr);
         }
     }
@@ -278,26 +267,18 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
         g_autoptr(GMatchInfo) match_info = nullptr;
         g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
         while (g_match_info_matches(match_info)) {
-            g_autofree gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
-            g_ptr_array_add(
-                bugzilla_urls,
-                g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1));
-
-            g_autofree gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
-            if (bug2 != nullptr && bug2[0] != '\0') {
-                g_ptr_array_add(
-                    bugzilla_urls,
-                    g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2));
+            for (const char *name : {"bug1", "bug2"}) {
+                g_autofree gchar *bug = g_match_info_fetch_named(match_info, name);
+                if (bug == nullptr || bug[0] == '\0')
+                    continue;
+                g_autofree gchar *url = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug);
+                g_ptr_array_add(issues, pk_issue_new(PK_ISSUE_KIND_ENUM_GENERIC, url, bug, nullptr));
             }
-
             g_match_info_next(match_info, nullptr);
         }
     }
 
-    // NULL terminate
-    g_ptr_array_add(bugzilla_urls, nullptr);
-
-    return bugzilla_urls;
+    return issues;
 }
 
 bool ends_with(const std::string &str, const char *end)

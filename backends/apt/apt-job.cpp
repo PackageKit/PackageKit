@@ -810,8 +810,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
 
     string changelog;
     string update_text;
-    string updated;
-    string issued;
+    string time_issued;
     string srcpkg;
     if (rec.SourcePkg().empty()) {
         srcpkg = pkg.Name();
@@ -830,12 +829,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
 
         // fetch the changelog
         pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
-        changelog = fetchChangelogData(*m_cache, fetcher, candver, currver, &update_text, &updated, &issued);
-    }
-
-    // Check if the update was updates since it was issued
-    if (issued == updated) {
-        updated = "";
+        changelog = fetchChangelogData(*m_cache, fetcher, candver, currver, &update_text, &time_issued);
     }
 
     // Build a package_id from the update version
@@ -860,8 +854,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     updates[0] = current_package_id;
     updates[1] = nullptr;
 
-    g_autoptr(GPtrArray) bugzilla_urls = getBugzillaUrls(changelog);
-    g_autoptr(GPtrArray) cve_urls = getCVEUrls(changelog);
+    g_autoptr(GPtrArray) issues = getIssues(changelog);
     g_autoptr(GPtrArray) obsoletes = g_ptr_array_new();
 
     for (auto deps = candver.DependsList(); not deps.end(); ++deps) {
@@ -878,15 +871,12 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
         package_id,
         updates,
         (gchar **)obsoletes->pdata,
-        nullptr, // vendor urls
-        (gchar **)bugzilla_urls->pdata,
-        (gchar **)cve_urls->pdata,
+        issues,
         restart,
         update_text.c_str(),
         changelog.c_str(),
         updateState,
-        issued.c_str(),
-        updated.c_str());
+        time_issued.c_str());
     g_ptr_array_add(updateArray, item);
 }
 
