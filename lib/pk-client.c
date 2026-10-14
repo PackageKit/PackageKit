@@ -64,7 +64,6 @@ struct _PkClientPrivate
 	gchar *locale;
 	gboolean background;
 	gboolean interactive;
-	gboolean details_with_deps_size;
 	guint cache_age;
 };
 
@@ -75,7 +74,6 @@ enum {
 	PROP_INTERACTIVE,
 	PROP_IDLE,
 	PROP_CACHE_AGE,
-	PROP_DETAILS_WITH_DEPS_SIZE,
 	PROP_LAST
 };
 
@@ -489,9 +487,6 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	case PROP_CACHE_AGE:
 		g_value_set_uint (value, priv->cache_age);
 		break;
-	case PROP_DETAILS_WITH_DEPS_SIZE:
-		g_value_set_boolean (value, priv->details_with_deps_size);
-		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -520,9 +515,6 @@ pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 		break;
 	case PROP_CACHE_AGE:
 		priv->cache_age = g_value_get_uint (value);
-		break;
-	case PROP_DETAILS_WITH_DEPS_SIZE:
-		priv->details_with_deps_size = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2325,11 +2317,6 @@ pk_client_get_proxy_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 			       "{sv}",
 			       "interactive",
 			       g_variant_new_boolean (priv->interactive));
-	if (priv->details_with_deps_size && state->role == PK_ROLE_ENUM_GET_DETAILS)
-		g_variant_builder_add (&hints,
-				       "{sv}",
-				       "details-with-deps-size",
-				       g_variant_new_boolean (TRUE));
 	if (priv->cache_age > 0)
 		g_variant_builder_add (&hints,
 				       "{sv}",
@@ -4829,51 +4816,6 @@ pk_client_get_cache_age (PkClient *client)
 	return priv->cache_age;
 }
 
-/**
- * pk_client_set_details_with_deps_size:
- * @client: a valid #PkClient instance
- * @details_with_deps_size: the value to set
- *
- * Sets whether the pk_client_get_details_async() should include dependencies
- * download sizes for packages, which are not installed.
- *
- * Since: 1.2.7
- **/
-void
-pk_client_set_details_with_deps_size (PkClient *client, gboolean details_with_deps_size)
-{
-	PkClientPrivate *priv = GET_PRIVATE(client);
-
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	if (priv->details_with_deps_size == details_with_deps_size)
-		return;
-
-	priv->details_with_deps_size = details_with_deps_size;
-	g_object_notify_by_pspec (G_OBJECT (client), obj_properties[PROP_DETAILS_WITH_DEPS_SIZE]);
-}
-
-/**
- * pk_client_get_details_with_deps_size:
- * @client: a valid #PkClient instance
- *
- * Gets the client details-with-deps-size value.
- *
- * Returns: whether the pk_client_get_details_async() should include dependencies
- *    download sizes for packages, which are not installed.
- *
- * Since: 1.2.7
- **/
-gboolean
-pk_client_get_details_with_deps_size (PkClient *client)
-{
-	PkClientPrivate *priv = GET_PRIVATE(client);
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-
-	return priv->details_with_deps_size;
-}
-
 /*
  * pk_client_class_init:
  **/
@@ -4953,18 +4895,6 @@ pk_client_class_init (PkClientClass *klass)
 							    G_PARAM_READWRITE |
 								G_PARAM_STATIC_STRINGS);
 
-	/**
-	 * PkClient:details-with-deps-size:
-	 *
-	 * Since: 1.2.7
-	 */
-	obj_properties[PROP_DETAILS_WITH_DEPS_SIZE] = g_param_spec_boolean (
-	    "details-with-deps-size",
-	    NULL,
-	    NULL,
-	    FALSE,
-	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 }
 
@@ -4981,7 +4911,6 @@ pk_client_init (PkClient *client)
 	priv->background = FALSE;
 	priv->interactive = TRUE;
 	priv->cache_age = G_MAXUINT;
-	priv->details_with_deps_size = FALSE;
 
 	/* use a control object */
 	priv->control = pk_control_new ();

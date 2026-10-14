@@ -139,8 +139,6 @@
       - `frontend-socket`: The absolute path of a Unix socket the backend may
         use to talk to a frontend helper, e.g. for debconf. It has to exist and
         be a socket. [`s`]
-      - `details-with-deps-size`: If `GetDetails` should also report the
-        download size of the dependencies. [`b`]
     -->
     <method name="SetHints">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -882,12 +880,19 @@
 
       Notes on `data`:
 
-      - `package_id`: The package ID [`s`]
+      - `package-id`: The package ID [`s`]
       - `license`: The license string, e.g. `GPLv2+` [`s`]
       - `group`: The enumerated package group description [`u`]
-      - `detail`: The multi-line package description in markdown syntax.[`s`]
+      - `description`: The multi-line package description in markdown
+        syntax. [`s`]
       - `url`: The upstream project homepage [`s`]
       - `size`: The size of the package in bytes [`t`]
+      - `download-size`: The number of bytes that have to be downloaded to
+        install the package on this system, including dependencies that are
+        not yet installed, as far as the backend can determine this cheaply.
+        Backends that cannot account for dependencies report the download
+        size of the package itself. Clients that need an exact figure should
+        simulate an `InstallPackages` transaction instead. [`t`]
       - `summary`: The one line package summary, e.g. Clipart for LibreOffice
         [`s`]
     -->

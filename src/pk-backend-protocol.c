@@ -114,9 +114,6 @@ pk_backend_protocol_build_ctx (PkBackendJob *job)
 			     "cache_age",
 			     cache_age == G_MAXUINT ? json_null () : json_integer (cache_age));
 	json_object_set_new (ctx,
-			     "details_with_deps_size",
-			     json_boolean (pk_backend_job_get_details_with_deps_size (job)));
-	json_object_set_new (ctx,
 			     "frontend_socket",
 			     frontend_socket != NULL && frontend_socket[0] != '\0'
 				 ? json_string (frontend_socket)

@@ -101,7 +101,6 @@ struct _PkBackendJob
 	gboolean allow_cancel;
 	gboolean background;
 	gboolean interactive;
-	gboolean details_with_deps_size;
 	gboolean locked;
 	GHashTable *emitted;
 	PkErrorEnum last_error_code;
@@ -512,22 +511,6 @@ pk_backend_job_set_interactive (PkBackendJob *job, gboolean interactive)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	job->interactive = interactive;
-}
-
-gboolean
-pk_backend_job_get_details_with_deps_size (PkBackendJob *job)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-
-	return job->details_with_deps_size;
-}
-
-void
-pk_backend_job_set_details_with_deps_size (PkBackendJob *job, gboolean details_with_deps_size)
-{
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-
-	job->details_with_deps_size = details_with_deps_size;
 }
 
 PkRoleEnum

@@ -4725,14 +4725,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		return TRUE;
 	}
 
-	if (g_strcmp0 (key, "details-with-deps-size") == 0) {
-		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_BOOLEAN, error))
-			return FALSE;
-		pk_backend_job_set_details_with_deps_size (transaction->job,
-							   g_variant_get_boolean (value));
-		return TRUE;
-	}
-
 	/* to preserve forwards and backwards compatibility, we ignore
 	 * extra options here */
 	g_warning ("unknown hint: %s", key);
