@@ -1244,6 +1244,21 @@ pk_test_spawn_module_details_cb (PkBackendJob *job, PkDetails *item, gpointer us
 static void
 pk_test_spawn_module_update_details_cb (PkBackendJob *job, GPtrArray *items, gpointer user_data)
 {
+	for (guint i = 0; i < items->len; i++) {
+		PkUpdateDetail *item = g_ptr_array_index (items, i);
+		GPtrArray *issues = pk_update_detail_get_issues (item);
+		PkIssue *issue;
+
+		g_assert_cmpstr (pk_update_detail_get_time_issued (item),
+				 ==,
+				 "2026-01-01T00:00:00Z");
+		g_assert_nonnull (issues);
+		g_assert_cmpuint (issues->len, ==, 1);
+		issue = g_ptr_array_index (issues, 0);
+		g_assert_cmpint (pk_issue_get_kind (issue), ==, PK_ISSUE_KIND_ENUM_CVE);
+		g_assert_cmpstr (pk_issue_get_id (issue), ==, "CVE-2026-0001");
+		g_assert_null (pk_issue_get_title (issue));
+	}
 	sm_update_details += items->len;
 }
 

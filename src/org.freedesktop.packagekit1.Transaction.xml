@@ -1116,31 +1116,39 @@
       The content of one signal will never duplicate the content of another,
       and a single emission may contain only one update.
 
-      Each array element describes one update and consists of the following
-      fields:
+      Each array element describes one update as a struct: the package ID
+      followed by a dictionary with the remaining fields.
+      A key whose value is unset, unknown or empty is omitted, so an absent
+      key means that the backend did not report the field.
+      Clients must ignore keys they do not know and treat enum values
+      they do not recognise as that enum's unknown value.
 
-      - `package_id`: The package ID [`s`]
       - `updates`: A list of package_id's that are to be updated. [`as`]
       - `obsoletes`: A list of package_id's that are to be obsoleted. [`as`]
-      - `vendor_urls`: A list of URLs with more details on the update, e.g. a
-        page with more information on the update. [`as`]
-      - `bugzilla_urls`: A list of bugzilla URL with more details on the
-        update. If no URLs are available then this field should be left empty.
-        [`as`]
-      - `cve_urls`: A list of CVE URLs with more details on the security
-        advisory. [`as`]
+      - `issues`: The issue references of the update, see below. [`aa{sv}`]
       - `restart`: A valid restart type, e.g. `system`. [`u`]
-      - `update_text`: The update text describing the update. If formatting is
+      - `update-text`: The update text describing the update. If formatting is
         required, then markdown syntax should be used, e.g. `This is
         **critically** important` [`s`]
       - `changelog`: The ChangeLog text describing the changes since the last
         version. [`s`]
       - `state`: The state of the update, e.g. `stable` or `testing`. [`u`]
-      - `issued`: The ISO8601 encoded date that the update was issued. [`s`]
-      - `updated`: The ISO8601 encoded date that the update was updated. [`s`]
+      - `time-issued`: The ISO 8601 encoded time that the update was issued. [`s`]
+
+      Each element of `issues` describes an issue that this update resolves,
+      as a dictionary with these keys:
+
+      - `kind`: What is referenced, as a `PkIssueKindEnum` value: `generic`
+        (1) for an issue tracker entry from any tracker, `cve` (2) for a CVE
+        record or CVE tracker page, `advisory` (3) for the distributor's own
+        advisory page about the update. Always present. [`u`]
+      - `url`: Where a user can read about the issue. Always present. [`s`]
+      - `id`: A short identifier for display, e.g. the bug number or the CVE
+        name. [`s`]
+      - `title`: A one-line summary of the issue, not of the update. [`s`]
     -->
     <signal name="UpdateDetails">
-      <arg type="a(sasasasasasussuss)" name="details" direction="out"/>
+      <arg type="a(sa{sv})" name="details" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 

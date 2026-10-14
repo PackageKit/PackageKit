@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -951,7 +952,6 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	g_autoptr(GTask) task = G_TASK (user_data);
 	PkClient *client = PK_CLIENT (source_object);
 	PkUpdateDetail *item;
-	guint i;
 	PkPackage *package;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
@@ -979,19 +979,16 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	}
 
 	/* set data on each item */
-	for (i = 0; i < update_details->len; i++) {
+	for (guint i = 0; i < update_details->len; i++) {
 		PkRestartEnum restart;
 		PkUpdateStateEnum state_enum;
 		g_autofree gchar *changelog = NULL;
-		g_autofree gchar *issued = NULL;
+		g_autofree gchar *time_issued = NULL;
 		g_autofree gchar *obsoletes = NULL;
 		g_autofree gchar *package_id = NULL;
-		g_autofree gchar *updated = NULL;
 		g_autofree gchar *updates = NULL;
 		g_autofree gchar *update_text = NULL;
-		g_auto(GStrv) bugzilla_urls = NULL;
-		g_auto(GStrv) cve_urls = NULL;
-		g_auto(GStrv) vendor_urls = NULL;
+		g_autoptr(GPtrArray) issues = NULL;
 
 		item = g_ptr_array_index (update_details, i);
 		g_object_get (item,
@@ -1001,12 +998,8 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      &updates,
 			      "obsoletes",
 			      &obsoletes,
-			      "vendor-urls",
-			      &vendor_urls,
-			      "bugzilla-urls",
-			      &bugzilla_urls,
-			      "cve-urls",
-			      &cve_urls,
+			      "issues",
+			      &issues,
 			      "restart",
 			      &restart,
 			      "update-text",
@@ -1015,10 +1008,8 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      &changelog,
 			      "state",
 			      &state_enum,
-			      "issued",
-			      &issued,
-			      "updated",
-			      &updated,
+			      "time-issued",
+			      &time_issued,
 			      NULL);
 
 		/* get package, and set data */
@@ -1034,12 +1025,8 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      updates,
 			      "update-obsoletes",
 			      obsoletes,
-			      "update-vendor-urls",
-			      vendor_urls,
-			      "update-bugzilla-urls",
-			      bugzilla_urls,
-			      "update-cve-urls",
-			      cve_urls,
+			      "update-issues",
+			      issues,
 			      "update-restart",
 			      restart,
 			      "update-text",
@@ -1048,10 +1035,8 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      changelog,
 			      "update-state",
 			      state_enum,
-			      "update-issued",
-			      issued,
-			      "update-updated",
-			      updated,
+			      "update-time-issued",
+			      time_issued,
 			      NULL);
 		g_object_unref (package);
 	}

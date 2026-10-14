@@ -12,6 +12,15 @@ Guide to porting backends from 1.x to 2.0
    looks up or calls the per-role pk_backend_foo() entry points; both
    pk_backend_run_job() and pk_backend_get_roles() are mandatory.
 
+ * pk_update_detail_new_full() takes one GPtrArray of PkIssue in place of the
+   vendor_urls, bugzilla_urls and cve_urls arrays. Each PkIssue has a kind
+   (generic tracker entry, CVE or advisory), a URL and an optional ID and
+   title; see the UpdateDetails signal documentation. Spawned backends send
+   an `issues` array instead of the three URL arrays.
+
+ * The `updated` timestamp of update details is gone and `issued` is now
+   `time_issued` (property `time-issued`, pk_update_detail_get_time_issued()).
+
 Guide to porting backends from 0.8.x to 0.9.x
 
  * Do not use pk_backend_job_message() -- either use an error if the transaction

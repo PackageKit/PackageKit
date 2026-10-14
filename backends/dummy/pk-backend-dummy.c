@@ -397,29 +397,23 @@ pk_backend_stage_update_detail (GPtrArray *update_details,
 				const gchar *package_id,
 				gchar **updates,
 				gchar **obsoletes,
-				gchar **vendor_urls,
-				gchar **bugzilla_urls,
-				gchar **cve_urls,
+				GPtrArray *issues,
 				PkRestartEnum restart,
 				const gchar *update_text,
 				const gchar *changelog,
 				PkUpdateStateEnum state,
-				const gchar *issued,
-				const gchar *updated)
+				const gchar *time_issued)
 {
 	g_ptr_array_add (update_details,
 			 pk_update_detail_new_full (package_id,
 						    updates,
 						    obsoletes,
-						    vendor_urls,
-						    bugzilla_urls,
-						    cve_urls,
+						    issues,
 						    restart,
 						    update_text,
 						    changelog,
 						    state,
-						    issued,
-						    updated));
+						    time_issued));
 }
 
 static gboolean
@@ -458,44 +452,62 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	len = g_strv_length (priv->package_ids);
 	for (i = 0; i < len; i++) {
 		const gchar *to_array1[] = { NULL, NULL, NULL };
-		const gchar *to_array2[] = { NULL, NULL, NULL };
-		const gchar *to_array3[] = { NULL, NULL, NULL };
-		const gchar *to_array4[] = { NULL, NULL, NULL };
+		g_autoptr(GPtrArray) issues = g_ptr_array_new_with_free_func (
+		    (GDestroyNotify) pk_issue_free);
 		package_id = priv->package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora;") == 0) {
 			to_array1[0] = "powertop;1.7-1.fc8;i386;;installed";
-			to_array2[0] = "http://www.distro-update.org/page?moo";
-			to_array3[0] = "http://bgzilla.fd.org/result.php?#12344";
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_ADVISORY,
+						       "http://www.distro-update.org/page?moo",
+						       NULL,
+						       NULL));
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_GENERIC,
+						       "http://bgzilla.fd.org/result.php?#12344",
+						       "12344",
+						       "crash on startup"));
 			pk_backend_stage_update_detail (update_details,
 							package_id,
 							(gchar **) to_array1,
 							NULL,
-							(gchar **) to_array2,
-							(gchar **) to_array3,
-							NULL,
+							issues,
 							PK_RESTART_ENUM_NONE,
 							"Update to newest upstream source",
 							changelog,
 							PK_UPDATE_STATE_ENUM_STABLE,
-							"2009-11-17T09:19:00",
-							"2009-11-19T09:19:00");
+							"2009-11-17T09:19:00");
 		} else if (g_strcmp0 (package_id,
 				      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed") == 0) {
 			to_array1[0] = "kernel;2.6.22-0.104.rc3.git6.fc8;i386;;installed";
 			to_array1[1] = "kernel;2.6.22-0.105.rc3.git7.fc8;i386;;installed";
-			to_array2[0] = "http://www.distro-update.org/page?moo";
-			to_array3[0] = "http://bgzilla.fd.org/result.php?#12344";
-			to_array3[1] = "http://bgzilla.gnome.org/result.php?#9876";
-			to_array4[0] =
-			    "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381";
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_ADVISORY,
+						       "http://www.distro-update.org/page?moo",
+						       NULL,
+						       NULL));
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_GENERIC,
+						       "http://bgzilla.fd.org/result.php?#12344",
+						       "12344",
+						       "crash on startup"));
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_GENERIC,
+						       "http://bgzilla.gnome.org/result.php?#9876",
+						       "9876",
+						       NULL));
+			g_ptr_array_add (
+			    issues,
+			    pk_issue_new (PK_ISSUE_KIND_ENUM_CVE,
+					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381",
+					  "CVE-2007-3381",
+					  NULL));
 			pk_backend_stage_update_detail (
 			    update_details,
 			    package_id,
 			    (gchar **) to_array1,
 			    NULL,
-			    (gchar **) to_array2,
-			    (gchar **) to_array3,
-			    (gchar **) to_array4,
+			    issues,
 			    PK_RESTART_ENUM_SYSTEM,
 			    "Update to newest upstream version.\n"
 			    "* This should fix many driver bugs when using nouveau\n"
@@ -503,20 +515,25 @@ pk_backend_get_update_detail_timeout (gpointer data)
 			    "rabbit hardware.",
 			    changelog,
 			    PK_UPDATE_STATE_ENUM_UNSTABLE,
-			    "2008-06-28T09:19:00",
-			    NULL);
+			    "2008-06-28T09:19:00");
 		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0) {
 			to_array1[0] = "gtkhtml2;2.18.1-22.fc8;i386;;installed";
-			to_array2[0] = "http://www.distro-update.org/page?moo";
-			to_array3[0] = "http://bgzilla.gnome.org/result.php?#9876";
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_ADVISORY,
+						       "http://www.distro-update.org/page?moo",
+						       NULL,
+						       NULL));
+			g_ptr_array_add (issues,
+					 pk_issue_new (PK_ISSUE_KIND_ENUM_GENERIC,
+						       "http://bgzilla.gnome.org/result.php?#9876",
+						       "9876",
+						       NULL));
 			pk_backend_stage_update_detail (
 			    update_details,
 			    package_id,
 			    (gchar **) to_array1,
 			    NULL,
-			    (gchar **) to_array2,
-			    (gchar **) to_array3,
-			    NULL,
+			    issues,
 			    PK_RESTART_ENUM_SESSION,
 			    "Update to latest *whizz* **bang** version\n"
 			    "* support this new thing\n"
@@ -524,8 +541,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 			    "- and that new thing",
 			    changelog,
 			    PK_UPDATE_STATE_ENUM_UNKNOWN,
-			    "2008-07-25T09:19:00",
-			    NULL);
+			    "2008-07-25T09:19:00");
 
 		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora;") == 0) {
 			to_array1[0] = "vino;2.24.1.fc9;i386;fedora;";
@@ -534,15 +550,12 @@ pk_backend_get_update_detail_timeout (gpointer data)
 			    package_id,
 			    (gchar **) to_array1,
 			    NULL,
-			    NULL,
-			    NULL,
-			    NULL,
+			    issues,
 			    PK_RESTART_ENUM_NONE,
 			    "Cannot get update as update conflics with vncviewer",
 			    changelog,
 			    PK_UPDATE_STATE_ENUM_UNKNOWN,
-			    "2008-07-25",
-			    NULL);
+			    "2008-07-25");
 		} else {
 			/* signal to UI */
 			pk_backend_job_error_code (job,

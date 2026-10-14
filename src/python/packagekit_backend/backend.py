@@ -8,9 +8,14 @@ import os
 import signal
 import sys
 import traceback
+from collections import namedtuple
 from types import SimpleNamespace
 
 from . import enums
+
+#: One issue reference of an update, see :meth:`Backend.update_detail`.
+#: ``kind`` is an ``ISSUE_KIND_*`` constant, ``id`` and ``title`` are optional.
+Issue = namedtuple('Issue', ('kind', 'url', 'id', 'title'), defaults=(None, None))
 from .protocol import Connection, ProtocolError
 
 PROTOCOL_VERSION = 1
@@ -325,32 +330,30 @@ class Backend:
         package_id,
         updates=(),
         obsoletes=(),
-        vendor_urls=(),
-        bugzilla_urls=(),
-        cve_urls=(),
+        issues=(),
         restart=enums.RESTART_NONE,
         update_text=None,
         changelog=None,
         state=enums.UPDATE_STATE_UNKNOWN,
-        issued=None,
-        updated=None,
+        time_issued=None,
     ):
-        """Queue update details; issued and updated are ISO 8601 timestamps."""
+        """Queue update details.
+
+        issues is a sequence of :class:`Issue`; time_issued is an ISO 8601
+        timestamp.
+        """
         self._queue(
             'update-details',
             {
                 'package_id': package_id,
                 'updates': list(updates),
                 'obsoletes': list(obsoletes),
-                'vendor_urls': list(vendor_urls),
-                'bugzilla_urls': list(bugzilla_urls),
-                'cve_urls': list(cve_urls),
+                'issues': [issue._asdict() for issue in issues],
                 'restart': restart,
                 'update_text': update_text,
                 'changelog': changelog,
                 'state': state,
-                'issued': issued,
-                'updated': updated,
+                'time_issued': time_issued,
             },
         )
 

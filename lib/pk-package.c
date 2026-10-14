@@ -60,15 +60,12 @@ struct _PkPackagePrivate
 	guint64 size;
 	gchar *update_updates;
 	gchar *update_obsoletes;
-	gchar **update_vendor_urls;
-	gchar **update_bugzilla_urls;
-	gchar **update_cve_urls;
+	GPtrArray *update_issues; /* (element-type PkIssue) */
 	PkRestartEnum update_restart;
 	gchar *update_text;
 	gchar *update_changelog;
 	PkUpdateStateEnum update_state;
-	gchar *update_issued;
-	gchar *update_updated;
+	gchar *update_time_issued;
 	PkSeverityEnum update_severity;
 };
 
@@ -89,15 +86,12 @@ enum {
 	PROP_SIZE,
 	PROP_UPDATE_UPDATES,
 	PROP_UPDATE_OBSOLETES,
-	PROP_UPDATE_VENDOR_URLS,
-	PROP_UPDATE_BUGZILLA_URLS,
-	PROP_UPDATE_CVE_URLS,
+	PROP_UPDATE_ISSUES,
 	PROP_UPDATE_RESTART,
 	PROP_UPDATE_UPDATE_TEXT,
 	PROP_UPDATE_CHANGELOG,
 	PROP_UPDATE_STATE,
-	PROP_UPDATE_ISSUED,
-	PROP_UPDATE_UPDATED,
+	PROP_UPDATE_TIME_ISSUED,
 	PROP_UPDATE_SEVERITY,
 	PROP_LAST
 };
@@ -543,14 +537,8 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_UPDATE_OBSOLETES:
 		g_value_set_string (value, priv->update_obsoletes);
 		break;
-	case PROP_UPDATE_VENDOR_URLS:
-		g_value_set_boxed (value, priv->update_vendor_urls);
-		break;
-	case PROP_UPDATE_BUGZILLA_URLS:
-		g_value_set_boxed (value, priv->update_bugzilla_urls);
-		break;
-	case PROP_UPDATE_CVE_URLS:
-		g_value_set_boxed (value, priv->update_cve_urls);
+	case PROP_UPDATE_ISSUES:
+		g_value_set_boxed (value, priv->update_issues);
 		break;
 	case PROP_UPDATE_RESTART:
 		g_value_set_enum (value, priv->update_restart);
@@ -564,11 +552,8 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_UPDATE_STATE:
 		g_value_set_enum (value, priv->update_state);
 		break;
-	case PROP_UPDATE_ISSUED:
-		g_value_set_string (value, priv->update_issued);
-		break;
-	case PROP_UPDATE_UPDATED:
-		g_value_set_string (value, priv->update_updated);
+	case PROP_UPDATE_TIME_ISSUED:
+		g_value_set_string (value, priv->update_time_issued);
 		break;
 	case PROP_UPDATE_SEVERITY:
 		g_value_set_enum (value, priv->update_severity);
@@ -622,17 +607,9 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		g_free (priv->update_obsoletes);
 		priv->update_obsoletes = g_value_dup_string (value);
 		break;
-	case PROP_UPDATE_VENDOR_URLS:
-		g_strfreev (priv->update_vendor_urls);
-		priv->update_vendor_urls = g_strdupv (g_value_get_boxed (value));
-		break;
-	case PROP_UPDATE_BUGZILLA_URLS:
-		g_strfreev (priv->update_bugzilla_urls);
-		priv->update_bugzilla_urls = g_strdupv (g_value_get_boxed (value));
-		break;
-	case PROP_UPDATE_CVE_URLS:
-		g_strfreev (priv->update_cve_urls);
-		priv->update_cve_urls = g_strdupv (g_value_get_boxed (value));
+	case PROP_UPDATE_ISSUES:
+		g_clear_pointer (&priv->update_issues, g_ptr_array_unref);
+		priv->update_issues = g_value_dup_boxed (value);
 		break;
 	case PROP_UPDATE_RESTART:
 		priv->update_restart = g_value_get_enum (value);
@@ -648,13 +625,9 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_UPDATE_STATE:
 		priv->update_state = g_value_get_enum (value);
 		break;
-	case PROP_UPDATE_ISSUED:
-		g_free (priv->update_issued);
-		priv->update_issued = g_value_dup_string (value);
-		break;
-	case PROP_UPDATE_UPDATED:
-		g_free (priv->update_updated);
-		priv->update_updated = g_value_dup_string (value);
+	case PROP_UPDATE_TIME_ISSUED:
+		g_free (priv->update_time_issued);
+		priv->update_time_issued = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_SEVERITY:
 		pk_package_set_update_severity (package, g_value_get_enum (value));
@@ -799,40 +772,16 @@ pk_package_class_init (PkPackageClass *klass)
 	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PkPackage:update-vendor-urls:
+	 * PkPackage:update-issues: (element-type PkIssue)
 	 *
-	 * Since: 0.8.1
+	 * Since: 2.0.0
 	 */
-	obj_properties[PROP_UPDATE_VENDOR_URLS] = g_param_spec_boxed ("update-vendor-urls",
-								      NULL,
-								      "The update vendor URLs",
-								      G_TYPE_STRV,
-								      G_PARAM_READWRITE |
-									  G_PARAM_STATIC_STRINGS);
-
-	/**
-	 * PkPackage:update-bugzilla-urls:
-	 *
-	 * Since: 0.8.1
-	 */
-	obj_properties[PROP_UPDATE_BUGZILLA_URLS] = g_param_spec_boxed ("update-bugzilla-urls",
-									NULL,
-									"The update bugzilla URLs",
-									G_TYPE_STRV,
-									G_PARAM_READWRITE |
-									    G_PARAM_STATIC_STRINGS);
-
-	/**
-	 * PkPackage:update-cve-urls:
-	 *
-	 * Since: 0.8.1
-	 */
-	obj_properties[PROP_UPDATE_CVE_URLS] = g_param_spec_boxed ("update-cve-urls",
-								   NULL,
-								   "The update CVE URLs",
-								   G_TYPE_STRV,
-								   G_PARAM_READWRITE |
-								       G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_ISSUES] = g_param_spec_boxed (
+	    "update-issues",
+	    NULL,
+	    "The issue references of the update",
+	    G_TYPE_PTR_ARRAY,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-restart:
@@ -885,26 +834,14 @@ pk_package_class_init (PkPackageClass *klass)
 								   G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PkPackage:update-issued:
+	 * PkPackage:update-time-issued:
 	 *
-	 * Since: 0.5.4
+	 * Since: 2.0.0
 	 */
-	obj_properties[PROP_UPDATE_ISSUED] = g_param_spec_string ("update-issued",
-								  NULL,
-								  "When the update was issued",
-								  NULL,
-								  G_PARAM_READWRITE |
-								      G_PARAM_STATIC_STRINGS);
-
-	/**
-	 * PkPackage:update-updated:
-	 *
-	 * Since: 0.5.4
-	 */
-	obj_properties[PROP_UPDATE_UPDATED] = g_param_spec_string (
-	    "update-updated",
+	obj_properties[PROP_UPDATE_TIME_ISSUED] = g_param_spec_string (
+	    "update-time-issued",
 	    NULL,
-	    "When the update was last updated",
+	    "ISO 8601 time the update was issued",
 	    NULL,
 	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
@@ -976,13 +913,10 @@ pk_package_finalize (GObject *object)
 	g_clear_pointer (&priv->url, g_free);
 	g_clear_pointer (&priv->update_updates, g_free);
 	g_clear_pointer (&priv->update_obsoletes, g_free);
-	g_clear_pointer (&priv->update_vendor_urls, g_strfreev);
-	g_clear_pointer (&priv->update_bugzilla_urls, g_strfreev);
-	g_clear_pointer (&priv->update_cve_urls, g_strfreev);
+	g_clear_pointer (&priv->update_issues, g_ptr_array_unref);
 	g_clear_pointer (&priv->update_text, g_free);
 	g_clear_pointer (&priv->update_changelog, g_free);
-	g_clear_pointer (&priv->update_issued, g_free);
-	g_clear_pointer (&priv->update_updated, g_free);
+	g_clear_pointer (&priv->update_time_issued, g_free);
 	g_clear_pointer (&priv->package_id_data, g_free);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);

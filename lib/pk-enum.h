@@ -610,6 +610,26 @@ typedef enum {
 } PkUpdateStateEnum;
 
 /**
+ * PkIssueKindEnum:
+ * @PK_ISSUE_KIND_ENUM_UNKNOWN: The reference could not be classified
+ * @PK_ISSUE_KIND_ENUM_GENERIC: An issue tracker entry
+ * @PK_ISSUE_KIND_ENUM_CVE: A CVE record or CVE tracker page
+ * @PK_ISSUE_KIND_ENUM_ADVISORY: The distributor's own advisory page for the update
+ *
+ * What a #PkIssue references.
+ *
+ * Since: 2.0.0
+ **/
+typedef enum {
+	PK_ISSUE_KIND_ENUM_UNKNOWN,
+	PK_ISSUE_KIND_ENUM_GENERIC,
+	PK_ISSUE_KIND_ENUM_CVE,
+	PK_ISSUE_KIND_ENUM_ADVISORY,
+	/*< private >*/
+	PK_ISSUE_KIND_ENUM_LAST
+} PkIssueKindEnum;
+
+/**
  * PkInfoEnum:
  * @PK_INFO_ENUM_UNKNOWN:	Package status is unknown
  * @PK_INFO_ENUM_AVAILABLE:	Package is available to be installed
@@ -812,6 +832,8 @@ const gchar	     *pk_severity_enum_to_string (PkSeverityEnum severity);
 
 PkUpdateStateEnum     pk_update_state_enum_from_string (const gchar *update_state);
 const gchar	     *pk_update_state_enum_to_string (PkUpdateStateEnum update_state);
+PkIssueKindEnum	      pk_issue_kind_enum_from_string (const gchar *issue_kind);
+const gchar	     *pk_issue_kind_enum_to_string (PkIssueKindEnum issue_kind);
 
 PkExitEnum	      pk_exit_enum_from_string (const gchar *exit);
 const gchar	     *pk_exit_enum_to_string (PkExitEnum exit);

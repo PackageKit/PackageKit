@@ -251,15 +251,16 @@ Items already emitted for the job are dropped.
 
 `update-details`: `pk_backend_job_update_details`. `restart` is
 `enum_restart`, `state` is `enum_update_state`; the arrays, `update_text`,
-`changelog` and the ISO 8601 timestamps `issued` and `updated` are optional.
+`changelog` and the ISO 8601 timestamp `time_issued` are optional.
+Each item of `issues` has a `kind` and a `url`, plus an optional `id` and `title`.
 
 ```json
 {"ev":"update-details","job":"42","items":[
   {"package_id":"foo;1.1;x86_64;main;","updates":["foo;1.0;x86_64;installed;"],"obsoletes":[],
-   "vendor_urls":["https://example.org/advisory/1"],"bugzilla_urls":[],
-   "cve_urls":["https://www.cve.org/CVERecord?id=CVE-2026-0001"],
+   "issues":[{"kind":"advisory","url":"https://example.org/advisory/1"},
+             {"kind":"cve","url":"https://www.cve.org/CVERecord?id=CVE-2026-0001","id":"CVE-2026-0001"}],
    "restart":"none","update_text":"Fixes a crash.","changelog":"* 1.1: fix crash",
-   "state":"stable","issued":"2026-09-01T10:00:00Z","updated":"2026-09-02T12:30:00Z"}]}
+   "state":"stable","time_issued":"2026-09-01T10:00:00Z"}]}
 ```
 
 `files`: `pk_backend_job_files`. For `download-packages`, `package_id` may

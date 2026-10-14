@@ -1215,30 +1215,39 @@ pk_backend_job_package_status (PkBackendJob *job, const gchar *package_id, PkInf
 static void
 pk_backend_job_update_detail_validate (PkUpdateDetail *item)
 {
-	g_autofree gchar *issued = NULL;
-	g_autofree gchar *updated = NULL;
-	g_autoptr(GDateTime) datetime = NULL;
+	const gchar *time_issued;
+	GPtrArray *issues;
 
-	g_object_get (item, "issued", &issued, "updated", &updated, NULL);
+	/* drop issues without an absolute URL */
+	issues = pk_update_detail_get_issues (item);
+	if (issues != NULL) {
+		g_autoptr(GPtrArray) valid = g_ptr_array_new_with_free_func (
+		    (GDestroyNotify) pk_issue_free);
 
-	/* check the dates are not empty */
-	if (issued != NULL && issued[0] == '\0')
-		g_object_set (item, "issued", NULL, NULL);
-	if (updated != NULL && updated[0] == '\0')
-		g_object_set (item, "updated", NULL, NULL);
+		for (guint i = 0; i < issues->len; i++) {
+			PkIssue *issue = g_ptr_array_index (issues, i);
+			const gchar *url = pk_issue_get_url (issue);
+			const gchar *scheme = g_uri_peek_scheme (url);
 
-	/* check the dates are valid */
-	if (issued != NULL && issued[0] != '\0') {
-		datetime = g_date_time_new_from_iso8601 (issued, NULL);
-		if (!datetime)
-			g_warning ("failed to parse issued '%s'", issued);
-		g_clear_pointer (&datetime, g_date_time_unref);
+			if (scheme == NULL || !g_str_has_prefix (scheme, "http")) {
+				g_warning ("dropping issue with invalid URL '%s'", url);
+				continue;
+			}
+
+			g_ptr_array_add (valid, pk_issue_copy (issue));
+		}
+		if (valid->len != issues->len)
+			g_object_set (item, "issues", valid->len > 0 ? valid : NULL, NULL);
 	}
-	if (updated != NULL && updated[0] != '\0') {
-		datetime = g_date_time_new_from_iso8601 (updated, NULL);
-		if (!datetime)
-			g_warning ("failed to parse updated '%s'", updated);
-		g_clear_pointer (&datetime, g_date_time_unref);
+
+	/* check the date is valid */
+	time_issued = pk_update_detail_get_time_issued (item);
+	if (time_issued != NULL && time_issued[0] == '\0') {
+		g_object_set (item, "time-issued", NULL, NULL);
+	} else if (time_issued != NULL) {
+		g_autoptr(GDateTime) datetime = g_date_time_new_from_iso8601 (time_issued, NULL);
+		if (datetime == NULL)
+			g_warning ("failed to parse time-issued '%s'", time_issued);
 	}
 }
 

@@ -472,6 +472,55 @@ pk_backend_protocol_get_enum (json_t *obj,
 #define pk_sig_type_ENUM_UNKNOWN_VALUE	     PK_SIGTYPE_ENUM_UNKNOWN
 #define pk_distro_upgrade_ENUM_UNKNOWN_VALUE PK_DISTRO_UPGRADE_ENUM_UNKNOWN
 #define pk_role_ENUM_UNKNOWN_VALUE	     PK_ROLE_ENUM_UNKNOWN
+#define pk_issue_kind_ENUM_UNKNOWN_VALUE     PK_ISSUE_KIND_ENUM_UNKNOWN
+
+/**
+ * pk_backend_protocol_get_issues:
+ *
+ * Optional array of issue objects: `kind` and `url` are required, `id` and
+ * `title` optional. Returns an empty array when the key is absent.
+ */
+static gboolean
+pk_backend_protocol_get_issues (json_t *obj, const gchar *key, GPtrArray **out, GError **error)
+{
+	json_t *array = json_object_get (obj, key);
+	g_autoptr(GPtrArray)
+		      issues = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_issue_free);
+	json_t *item;
+	gsize i;
+
+	if (array != NULL && !json_is_null (array)) {
+		if (!json_is_array (array))
+			return pk_backend_protocol_invalid (error,
+							    "field '%s' must be an array",
+							    key);
+		json_array_foreach (array, i, item)
+		{
+			PkIssueKindEnum kind = PK_ISSUE_KIND_ENUM_UNKNOWN;
+			const gchar *url = NULL;
+			const gchar *id = NULL;
+			const gchar *title = NULL;
+
+			if (!json_is_object (item))
+				return pk_backend_protocol_invalid (
+				    error,
+				    "field '%s' must contain only objects",
+				    key);
+			if (!GET_ENUM (item, "kind", pk_issue_kind, &kind) ||
+			    !pk_backend_protocol_get_string (item, "url", FALSE, &url, error) ||
+			    !pk_backend_protocol_get_string (item, "id", TRUE, &id, error) ||
+			    !pk_backend_protocol_get_string (item, "title", TRUE, &title, error))
+				return FALSE;
+			if (url[0] == '\0')
+				return pk_backend_protocol_invalid (
+				    error,
+				    "issue 'url' must not be empty");
+			g_ptr_array_add (issues, pk_issue_new (kind, url, id, title));
+		}
+	}
+	*out = g_steal_pointer (&issues);
+	return TRUE;
+}
 
 static gboolean
 pk_backend_protocol_get_package_id (json_t *obj,
@@ -729,15 +778,12 @@ pk_backend_protocol_handle_update_details (json_t *root, PkBackendJob *job, GErr
 		const gchar *package_id = NULL;
 		const gchar *update_text = NULL;
 		const gchar *changelog = NULL;
-		const gchar *issued = NULL;
-		const gchar *updated = NULL;
+		const gchar *time_issued = NULL;
 		PkRestartEnum restart = PK_RESTART_ENUM_UNKNOWN;
 		PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_UNKNOWN;
 		g_auto(GStrv) updates = NULL;
 		g_auto(GStrv) obsoletes = NULL;
-		g_auto(GStrv) vendor_urls = NULL;
-		g_auto(GStrv) bugzilla_urls = NULL;
-		g_auto(GStrv) cve_urls = NULL;
+		g_autoptr(GPtrArray) issues = NULL;
 
 		if (!json_is_object (item))
 			return pk_backend_protocol_invalid (error,
@@ -749,9 +795,7 @@ pk_backend_protocol_handle_update_details (json_t *root, PkBackendJob *job, GErr
 							 error) ||
 		    !pk_backend_protocol_get_strv (item, "updates", &updates, error) ||
 		    !pk_backend_protocol_get_strv (item, "obsoletes", &obsoletes, error) ||
-		    !pk_backend_protocol_get_strv (item, "vendor_urls", &vendor_urls, error) ||
-		    !pk_backend_protocol_get_strv (item, "bugzilla_urls", &bugzilla_urls, error) ||
-		    !pk_backend_protocol_get_strv (item, "cve_urls", &cve_urls, error) ||
+		    !pk_backend_protocol_get_issues (item, "issues", &issues, error) ||
 		    !GET_ENUM (item, "restart", pk_restart, &restart) ||
 		    !pk_backend_protocol_get_string (item,
 						     "update_text",
@@ -760,22 +804,22 @@ pk_backend_protocol_handle_update_details (json_t *root, PkBackendJob *job, GErr
 						     error) ||
 		    !pk_backend_protocol_get_string (item, "changelog", TRUE, &changelog, error) ||
 		    !GET_ENUM (item, "state", pk_update_state, &state) ||
-		    !pk_backend_protocol_get_string (item, "issued", TRUE, &issued, error) ||
-		    !pk_backend_protocol_get_string (item, "updated", TRUE, &updated, error))
+		    !pk_backend_protocol_get_string (item,
+						     "time_issued",
+						     TRUE,
+						     &time_issued,
+						     error))
 			return FALSE;
 		g_ptr_array_add (details,
 				 pk_update_detail_new_full (package_id,
 							    updates,
 							    obsoletes,
-							    vendor_urls,
-							    bugzilla_urls,
-							    cve_urls,
+							    issues,
 							    restart,
 							    update_text,
 							    changelog,
 							    state,
-							    issued,
-							    updated));
+							    time_issued));
 	}
 	pk_backend_job_update_details (job, details);
 	return TRUE;

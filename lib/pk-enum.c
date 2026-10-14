@@ -294,6 +294,14 @@ static const PkEnumMatch enum_update_state[] = {
 	{0, NULL}
 };
 
+static const PkEnumMatch enum_issue_kind[] = {
+	{PK_ISSUE_KIND_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_ISSUE_KIND_ENUM_GENERIC,		"generic"},
+	{PK_ISSUE_KIND_ENUM_CVE,		"cve"},
+	{PK_ISSUE_KIND_ENUM_ADVISORY,		"advisory"},
+	{0, NULL}
+};
+
 static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -818,6 +826,38 @@ const gchar *
 pk_update_state_enum_to_string (PkUpdateStateEnum update_state)
 {
 	return pk_enum_find_string (enum_update_state, update_state);
+}
+
+/**
+ * pk_issue_kind_enum_from_string:
+ * @issue_kind: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. %PK_ISSUE_KIND_ENUM_CVE
+ *
+ * Since: 2.0.0
+ **/
+PkIssueKindEnum
+pk_issue_kind_enum_from_string (const gchar *issue_kind)
+{
+	return pk_enum_find_value (enum_issue_kind, issue_kind);
+}
+
+/**
+ * pk_issue_kind_enum_to_string:
+ * @issue_kind: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "cve"
+ *
+ * Since: 2.0.0
+ **/
+const gchar *
+pk_issue_kind_enum_to_string (PkIssueKindEnum issue_kind)
+{
+	return pk_enum_find_string (enum_issue_kind, issue_kind);
 }
 
 /**

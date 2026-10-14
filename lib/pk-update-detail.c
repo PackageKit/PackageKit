@@ -33,6 +33,7 @@
 #include <glib-object.h>
 
 #include "pk-update-detail.h"
+#include "pk-issue.h"
 #include "pk-enum-types.h"
 
 static void pk_update_detail_finalize (GObject *object);
@@ -47,15 +48,12 @@ struct _PkUpdateDetailPrivate
 	gchar *package_id;
 	gchar **updates;
 	gchar **obsoletes;
-	gchar **vendor_urls;
-	gchar **bugzilla_urls;
-	gchar **cve_urls;
+	GPtrArray *issues; /* (element-type PkIssue) */
 	PkRestartEnum restart;
 	gchar *update_text;
 	gchar *changelog;
 	PkUpdateStateEnum state;
-	gchar *issued;
-	gchar *updated;
+	gchar *time_issued;
 };
 
 enum {
@@ -63,15 +61,12 @@ enum {
 	PROP_PACKAGE_ID,
 	PROP_UPDATES,
 	PROP_OBSOLETES,
-	PROP_VENDOR_URLS,
-	PROP_BUGZILLA_URLS,
-	PROP_CVE_URLS,
+	PROP_ISSUES,
 	PROP_RESTART,
 	PROP_UPDATE_TEXT,
 	PROP_CHANGELOG,
 	PROP_STATE,
-	PROP_ISSUED,
-	PROP_UPDATED,
+	PROP_TIME_ISSUED,
 	PROP_LAST
 };
 
@@ -139,63 +134,24 @@ pk_update_detail_get_obsoletes (PkUpdateDetail *update_detail)
 }
 
 /**
- * pk_update_detail_get_vendor_urls:
+ * pk_update_detail_get_issues:
  * @update_detail: a #PkUpdateDetail instance
  *
- * Gets the update detail vendor URLs.
+ * Gets the issue references of this update: tracker entries, CVE records
+ * and advisory pages.
  *
- * Return value: (transfer none): string values
+ * Return value: (transfer none) (element-type PkIssue) (nullable): the issues
  *
- * Since:0.8.8
+ * Since: 2.0.0
  **/
-gchar **
-pk_update_detail_get_vendor_urls (PkUpdateDetail *update_detail)
+GPtrArray *
+pk_update_detail_get_issues (PkUpdateDetail *update_detail)
 {
 	PkUpdateDetailPrivate *priv = GET_PRIVATE(update_detail);
 
 	g_return_val_if_fail (update_detail != NULL, NULL);
 
-	return priv->vendor_urls;
-}
-
-/**
- * pk_update_detail_get_bugzilla_urls:
- * @update_detail: a #PkUpdateDetail instance
- *
- * Gets the update detail bugzilla URLs.
- *
- * Return value: (transfer none): string values
- *
- * Since:0.8.8
- **/
-gchar **
-pk_update_detail_get_bugzilla_urls (PkUpdateDetail *update_detail)
-{
-	PkUpdateDetailPrivate *priv = GET_PRIVATE(update_detail);
-
-	g_return_val_if_fail (update_detail != NULL, NULL);
-
-	return priv->bugzilla_urls;
-}
-
-/**
- * pk_update_detail_get_cve_urls:
- * @update_detail: a #PkUpdateDetail instance
- *
- * Gets the update detail CVE URLs.
- *
- * Return value: (transfer none): string values
- *
- * Since:0.8.8
- **/
-gchar **
-pk_update_detail_get_cve_urls (PkUpdateDetail *update_detail)
-{
-	PkUpdateDetailPrivate *priv = GET_PRIVATE(update_detail);
-
-	g_return_val_if_fail (update_detail != NULL, NULL);
-
-	return priv->cve_urls;
+	return priv->issues;
 }
 
 /**
@@ -279,43 +235,23 @@ pk_update_detail_get_state (PkUpdateDetail *update_detail)
 }
 
 /**
- * pk_update_detail_get_issued:
+ * pk_update_detail_get_time_issued:
  * @update_detail: a #PkUpdateDetail instance
  *
- * Gets the update detail issued string.
+ * Gets the ISO 8601 time the update was issued.
  *
- * Return value: string values
+ * Return value: (nullable): the time, or %NULL if unknown
  *
- * Since:0.8.8
+ * Since: 2.0.0
  **/
 const gchar *
-pk_update_detail_get_issued (PkUpdateDetail *update_detail)
+pk_update_detail_get_time_issued (PkUpdateDetail *update_detail)
 {
 	PkUpdateDetailPrivate *priv = GET_PRIVATE(update_detail);
 
 	g_return_val_if_fail (update_detail != NULL, NULL);
 
-	return priv->issued;
-}
-
-/**
- * pk_update_detail_get_updated:
- * @update_detail: a #PkUpdateDetail instance
- *
- * Gets the update detail updated string.
- *
- * Return value: string values
- *
- * Since:0.8.8
- **/
-const gchar *
-pk_update_detail_get_updated (PkUpdateDetail *update_detail)
-{
-	PkUpdateDetailPrivate *priv = GET_PRIVATE(update_detail);
-
-	g_return_val_if_fail (update_detail != NULL, NULL);
-
-	return priv->updated;
+	return priv->time_issued;
 }
 
 /*
@@ -337,14 +273,8 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 	case PROP_OBSOLETES:
 		g_value_set_boxed (value, priv->obsoletes);
 		break;
-	case PROP_VENDOR_URLS:
-		g_value_set_boxed (value, priv->vendor_urls);
-		break;
-	case PROP_BUGZILLA_URLS:
-		g_value_set_boxed (value, priv->bugzilla_urls);
-		break;
-	case PROP_CVE_URLS:
-		g_value_set_boxed (value, priv->cve_urls);
+	case PROP_ISSUES:
+		g_value_set_boxed (value, priv->issues);
 		break;
 	case PROP_RESTART:
 		g_value_set_enum (value, priv->restart);
@@ -358,11 +288,8 @@ pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GP
 	case PROP_STATE:
 		g_value_set_enum (value, priv->state);
 		break;
-	case PROP_ISSUED:
-		g_value_set_string (value, priv->issued);
-		break;
-	case PROP_UPDATED:
-		g_value_set_string (value, priv->updated);
+	case PROP_TIME_ISSUED:
+		g_value_set_string (value, priv->time_issued);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -395,17 +322,9 @@ pk_update_detail_set_property (GObject *object,
 		g_strfreev (priv->obsoletes);
 		priv->obsoletes = g_value_dup_boxed (value);
 		break;
-	case PROP_VENDOR_URLS:
-		g_strfreev (priv->vendor_urls);
-		priv->vendor_urls = g_value_dup_boxed (value);
-		break;
-	case PROP_BUGZILLA_URLS:
-		g_strfreev (priv->bugzilla_urls);
-		priv->bugzilla_urls = g_value_dup_boxed (value);
-		break;
-	case PROP_CVE_URLS:
-		g_strfreev (priv->cve_urls);
-		priv->cve_urls = g_value_dup_boxed (value);
+	case PROP_ISSUES:
+		g_clear_pointer (&priv->issues, g_ptr_array_unref);
+		priv->issues = g_value_dup_boxed (value);
 		break;
 	case PROP_RESTART:
 		priv->restart = g_value_get_enum (value);
@@ -421,13 +340,9 @@ pk_update_detail_set_property (GObject *object,
 	case PROP_STATE:
 		priv->state = g_value_get_enum (value);
 		break;
-	case PROP_ISSUED:
-		g_free (priv->issued);
-		priv->issued = g_value_dup_string (value);
-		break;
-	case PROP_UPDATED:
-		g_free (priv->updated);
-		priv->updated = g_value_dup_string (value);
+	case PROP_TIME_ISSUED:
+		g_free (priv->time_issued);
+		priv->time_issued = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -484,40 +399,19 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	g_object_class_install_property (object_class, PROP_OBSOLETES, pspec);
 
 	/**
-	 * PkUpdateDetail:vendor-urls:
+	 * PkUpdateDetail:issues: (element-type PkIssue)
 	 *
-	 * Since: 0.8.1
-	 */
-	pspec = g_param_spec_boxed ("vendor-urls",
-				    NULL,
-				    NULL,
-				    G_TYPE_STRV,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_VENDOR_URLS, pspec);
-
-	/**
-	 * PkUpdateDetail:bugzilla-urls:
+	 * The issue references of the update. The array is shared, not
+	 * copied, so it must own its elements via pk_issue_free().
 	 *
-	 * Since: 0.8.1
+	 * Since: 2.0.0
 	 */
-	pspec = g_param_spec_boxed ("bugzilla-urls",
+	pspec = g_param_spec_boxed ("issues",
 				    NULL,
 				    NULL,
-				    G_TYPE_STRV,
+				    G_TYPE_PTR_ARRAY,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_BUGZILLA_URLS, pspec);
-
-	/**
-	 * PkUpdateDetail:cve-urls:
-	 *
-	 * Since: 0.8.1
-	 */
-	pspec = g_param_spec_boxed ("cve-urls",
-				    NULL,
-				    NULL,
-				    G_TYPE_STRV,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_CVE_URLS, pspec);
+	g_object_class_install_property (object_class, PROP_ISSUES, pspec);
 
 	/**
 	 * PkUpdateDetail:restart:
@@ -570,28 +464,18 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
-	 * PkUpdateDetail:issued:
+	 * PkUpdateDetail:time-issued:
 	 *
-	 * Since: 0.5.4
+	 * The ISO 8601 time the update was issued.
+	 *
+	 * Since: 2.0.0
 	 */
-	pspec = g_param_spec_string ("issued",
+	pspec = g_param_spec_string ("time-issued",
 				     NULL,
 				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_ISSUED, pspec);
-
-	/**
-	 * PkUpdateDetail:updated:
-	 *
-	 * Since: 0.5.4
-	 */
-	pspec = g_param_spec_string ("updated",
-				     NULL,
-				     NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATED, pspec);
+	g_object_class_install_property (object_class, PROP_TIME_ISSUED, pspec);
 }
 
 /*
@@ -615,13 +499,10 @@ pk_update_detail_finalize (GObject *object)
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->updates, g_strfreev);
 	g_clear_pointer (&priv->obsoletes, g_strfreev);
-	g_clear_pointer (&priv->vendor_urls, g_strfreev);
-	g_clear_pointer (&priv->bugzilla_urls, g_strfreev);
-	g_clear_pointer (&priv->cve_urls, g_free);
+	g_clear_pointer (&priv->issues, g_ptr_array_unref);
 	g_clear_pointer (&priv->update_text, g_free);
 	g_clear_pointer (&priv->changelog, g_free);
-	g_clear_pointer (&priv->issued, g_free);
-	g_clear_pointer (&priv->updated, g_free);
+	g_clear_pointer (&priv->time_issued, g_free);
 
 	G_OBJECT_CLASS (pk_update_detail_parent_class)->finalize (object);
 }
@@ -646,15 +527,12 @@ pk_update_detail_new (void)
  * @package_id: the package-id of the update
  * @updates: (nullable) (array zero-terminated=1): the package-ids that are updated
  * @obsoletes: (nullable) (array zero-terminated=1): the package-ids that are obsoleted
- * @vendor_urls: (nullable) (array zero-terminated=1): the vendor URLs for this update
- * @bugzilla_urls: (nullable) (array zero-terminated=1): the bug tracker URLs for this update
- * @cve_urls: (nullable) (array zero-terminated=1): the CVE URLs for this update
+ * @issues: (nullable) (element-type PkIssue): the issue references of this update
  * @restart: the #PkRestartEnum required by this update
  * @update_text: (nullable): a description of the update
  * @changelog: (nullable): the changelog of the update
  * @state: the #PkUpdateStateEnum of the update
- * @issued: (nullable): the ISO 8601 date the update was issued
- * @updated: (nullable): the ISO 8601 date the update was last updated
+ * @time_issued: (nullable): the ISO 8601 time the update was issued
  *
  * Creates a new #PkUpdateDetail with all its properties set.
  * Empty and %NULL values are treated the same.
@@ -667,15 +545,12 @@ PkUpdateDetail *
 pk_update_detail_new_full (const gchar *package_id,
 			   gchar **updates,
 			   gchar **obsoletes,
-			   gchar **vendor_urls,
-			   gchar **bugzilla_urls,
-			   gchar **cve_urls,
+			   GPtrArray *issues,
 			   PkRestartEnum restart,
 			   const gchar *update_text,
 			   const gchar *changelog,
 			   PkUpdateStateEnum state,
-			   const gchar *issued,
-			   const gchar *updated)
+			   const gchar *time_issued)
 {
 	g_return_val_if_fail (package_id != NULL, NULL);
 
@@ -686,12 +561,8 @@ pk_update_detail_new_full (const gchar *package_id,
 			     updates,
 			     "obsoletes",
 			     obsoletes,
-			     "vendor-urls",
-			     vendor_urls,
-			     "bugzilla-urls",
-			     bugzilla_urls,
-			     "cve-urls",
-			     cve_urls,
+			     "issues",
+			     issues,
 			     "restart",
 			     restart,
 			     "update-text",
@@ -700,9 +571,7 @@ pk_update_detail_new_full (const gchar *package_id,
 			     changelog,
 			     "state",
 			     state,
-			     "issued",
-			     issued,
-			     "updated",
-			     updated,
+			     "time-issued",
+			     time_issued,
 			     NULL);
 }

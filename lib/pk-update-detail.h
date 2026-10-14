@@ -29,6 +29,7 @@
 
 #include "pk-source.h"
 #include "pk-enum.h"
+#include "pk-issue.h"
 
 G_BEGIN_DECLS
 
@@ -72,28 +73,22 @@ PkUpdateDetail	 *pk_update_detail_new (void);
 PkUpdateDetail	 *pk_update_detail_new_full (const gchar      *package_id,
 					     gchar	     **updates,
 					     gchar	     **obsoletes,
-					     gchar	     **vendor_urls,
-					     gchar	     **bugzilla_urls,
-					     gchar	     **cve_urls,
+					     GPtrArray	      *issues,
 					     PkRestartEnum     restart,
 					     const gchar      *update_text,
 					     const gchar      *changelog,
 					     PkUpdateStateEnum state,
-					     const gchar      *issued,
-					     const gchar      *updated);
+					     const gchar      *time_issued);
 
 const gchar	 *pk_update_detail_get_package_id (PkUpdateDetail *update_detail);
 gchar		**pk_update_detail_get_updates (PkUpdateDetail *update_detail);
 gchar		**pk_update_detail_get_obsoletes (PkUpdateDetail *update_detail);
-gchar		**pk_update_detail_get_vendor_urls (PkUpdateDetail *update_detail);
-gchar		**pk_update_detail_get_bugzilla_urls (PkUpdateDetail *update_detail);
-gchar		**pk_update_detail_get_cve_urls (PkUpdateDetail *update_detail);
+GPtrArray	 *pk_update_detail_get_issues (PkUpdateDetail *update_detail);
 PkRestartEnum	  pk_update_detail_get_restart (PkUpdateDetail *update_detail);
 const gchar	 *pk_update_detail_get_update_text (PkUpdateDetail *update_detail);
 const gchar	 *pk_update_detail_get_changelog (PkUpdateDetail *update_detail);
 PkUpdateStateEnum pk_update_detail_get_state (PkUpdateDetail *update_detail);
-const gchar	 *pk_update_detail_get_issued (PkUpdateDetail *update_detail);
-const gchar	 *pk_update_detail_get_updated (PkUpdateDetail *update_detail);
+const gchar	 *pk_update_detail_get_time_issued (PkUpdateDetail *update_detail);
 
 G_END_DECLS
 

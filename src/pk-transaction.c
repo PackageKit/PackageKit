@@ -1562,9 +1562,67 @@ pk_transaction_emit_update_details_batch (PkTransaction *transaction, GVariantBu
 					    transaction->tid,
 					    PK_DBUS_INTERFACE_TRANSACTION,
 					    "UpdateDetails",
-					    g_variant_new ("(a(sasasasasasussuss))", builder),
+					    g_variant_new ("(a(sa{sv}))", builder),
 					    &error))
 		g_warning ("Failed to emit UpdateDetails signal: %s", error->message);
+}
+
+/**
+ * pk_transaction_issues_to_variant:
+ * @issues: (element-type PkIssue): a #GPtrArray of #PkIssue
+ *
+ * Build the `issues` value of an update detail as `aa{sv}`
+ */
+static GVariant *
+pk_transaction_issues_to_variant (GPtrArray *issues)
+{
+	GVariantBuilder builder;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
+	for (guint i = 0; i < issues->len; i++) {
+		PkIssue *issue = g_ptr_array_index (issues, i);
+		GVariantBuilder dict;
+
+		g_variant_builder_init (&dict, G_VARIANT_TYPE ("a{sv}"));
+		g_variant_builder_add (&dict,
+				       "{sv}",
+				       "kind",
+				       g_variant_new_uint32 (pk_issue_get_kind (issue)));
+		g_variant_builder_add (&dict,
+				       "{sv}",
+				       "url",
+				       g_variant_new_string (pk_issue_get_url (issue)));
+		if (pk_issue_get_id (issue) != NULL)
+			g_variant_builder_add (&dict,
+					       "{sv}",
+					       "id",
+					       g_variant_new_string (pk_issue_get_id (issue)));
+		if (pk_issue_get_title (issue) != NULL)
+			g_variant_builder_add (&dict,
+					       "{sv}",
+					       "title",
+					       g_variant_new_string (pk_issue_get_title (issue)));
+		g_variant_builder_add_value (&builder, g_variant_builder_end (&dict));
+	}
+
+	return g_variant_builder_end (&builder);
+}
+
+static void
+pk_transaction_dict_add_string (GVariantBuilder *dict, const gchar *key, const gchar *value)
+{
+	if (value != NULL && value[0] != '\0')
+		g_variant_builder_add (dict, "{sv}", key, g_variant_new_string (value));
+}
+
+static void
+pk_transaction_dict_add_strv (GVariantBuilder *dict, const gchar *key, gchar **value)
+{
+	if (value != NULL && value[0] != NULL)
+		g_variant_builder_add (dict,
+				       "{sv}",
+				       key,
+				       g_variant_new_strv ((const gchar *const *) value, -1));
 }
 
 static void
@@ -1573,8 +1631,7 @@ pk_transaction_update_details_cb (
     GPtrArray *update_details_array, /* (element-type PkUpdateDetail) */
     PkTransaction *transaction)
 {
-	g_auto(GVariantBuilder)
-		   builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(sasasasasasussuss)"));
+	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(sa{sv})"));
 	guint n_in_batch = 0;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -1588,54 +1645,58 @@ pk_transaction_update_details_cb (
 	/* Loop through the update details and build the signal emissions. */
 	for (guint i = 0; i < update_details_array->len; i++) {
 		PkUpdateDetail *item = g_ptr_array_index (update_details_array, i);
-		const gchar *changelog;
-		const gchar *issued;
-		const gchar *package_id;
-		const gchar *updated;
-		const gchar *update_text;
-		const gchar *const *bugzilla_urls;
-		const gchar *const *cve_urls;
-		const gchar *const empty[] = { NULL };
-		const gchar *const *obsoletes;
-		const gchar *const *updates;
-		const gchar *const *vendor_urls;
+		GPtrArray *issues;
+		GVariantBuilder dict;
 
 		/* add to results */
 		pk_results_add_update_detail (transaction->results, item);
 
 		/* emit */
-		package_id = pk_update_detail_get_package_id (item);
-		updates = (const gchar *const *) pk_update_detail_get_updates (item);
-		obsoletes = (const gchar *const *) pk_update_detail_get_obsoletes (item);
-		vendor_urls = (const gchar *const *) pk_update_detail_get_vendor_urls (item);
-		bugzilla_urls = (const gchar *const *) pk_update_detail_get_bugzilla_urls (item);
-		cve_urls = (const gchar *const *) pk_update_detail_get_cve_urls (item);
-		update_text = pk_update_detail_get_update_text (item);
-		changelog = pk_update_detail_get_changelog (item);
-		issued = pk_update_detail_get_issued (item);
-		updated = pk_update_detail_get_updated (item);
-		g_debug ("emitting update-detail for %s", package_id);
-
+		g_debug ("emitting update-detail for %s", pk_update_detail_get_package_id (item));
+		g_variant_builder_init (&dict, G_VARIANT_TYPE ("a{sv}"));
+		pk_transaction_dict_add_strv (&dict,
+					      "updates",
+					      pk_update_detail_get_updates (item));
+		pk_transaction_dict_add_strv (&dict,
+					      "obsoletes",
+					      pk_update_detail_get_obsoletes (item));
+		issues = pk_update_detail_get_issues (item);
+		if (issues != NULL && issues->len > 0)
+			g_variant_builder_add (&dict,
+					       "{sv}",
+					       "issues",
+					       pk_transaction_issues_to_variant (issues));
+		if (pk_update_detail_get_restart (item) != PK_RESTART_ENUM_UNKNOWN)
+			g_variant_builder_add (
+			    &dict,
+			    "{sv}",
+			    "restart",
+			    g_variant_new_uint32 (pk_update_detail_get_restart (item)));
+		pk_transaction_dict_add_string (&dict,
+						"update-text",
+						pk_update_detail_get_update_text (item));
+		pk_transaction_dict_add_string (&dict,
+						"changelog",
+						pk_update_detail_get_changelog (item));
+		if (pk_update_detail_get_state (item) != PK_UPDATE_STATE_ENUM_UNKNOWN)
+			g_variant_builder_add (
+			    &dict,
+			    "{sv}",
+			    "state",
+			    g_variant_new_uint32 (pk_update_detail_get_state (item)));
+		pk_transaction_dict_add_string (&dict,
+						"time-issued",
+						pk_update_detail_get_time_issued (item));
 		g_variant_builder_add (&builder,
-				       "(s^as^as^as^as^asussuss)",
-				       package_id,
-				       updates != NULL ? updates : empty,
-				       obsoletes != NULL ? obsoletes : empty,
-				       vendor_urls != NULL ? vendor_urls : empty,
-				       bugzilla_urls != NULL ? bugzilla_urls : empty,
-				       cve_urls != NULL ? cve_urls : empty,
-				       pk_update_detail_get_restart (item),
-				       update_text != NULL ? update_text : "",
-				       changelog != NULL ? changelog : "",
-				       pk_update_detail_get_state (item),
-				       issued != NULL ? issued : "",
-				       updated != NULL ? updated : "");
+				       "(sa{sv})",
+				       pk_update_detail_get_package_id (item),
+				       &dict);
 		n_in_batch++;
 
 		/* emit a full batch and start a new one */
 		if (n_in_batch >= PK_TRANSACTION_UPDATE_DETAILS_BATCH_SIZE) {
 			pk_transaction_emit_update_details_batch (transaction, &builder);
-			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sasasasasasussuss)"));
+			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sa{sv})"));
 			n_in_batch = 0;
 		}
 	}

@@ -1308,7 +1308,8 @@ pk_test_package_sack_func (void)
 	PkPackageSack *sack;
 	PkPackage *package;
 	gchar *text;
-	gchar **strv;
+	GPtrArray *issues;
+	PkIssue *issue;
 	guint size;
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 	guint64 bytes;
@@ -1395,11 +1396,20 @@ pk_test_package_sack_func (void)
 	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (package != NULL);
 
-	/* check new vendor url */
-	g_object_get (package, "update-vendor-urls", &strv, NULL);
-	g_assert (strv != NULL);
-	g_assert_cmpstr (strv[0], ==, "http://www.distro-update.org/page?moo");
-	g_strfreev (strv);
+	/* check the issue references survived the round trip */
+	g_object_get (package, "update-issues", &issues, NULL);
+	g_assert_nonnull (issues);
+	g_assert_cmpuint (issues->len, ==, 2);
+	issue = g_ptr_array_index (issues, 0);
+	g_assert_cmpint (pk_issue_get_kind (issue), ==, PK_ISSUE_KIND_ENUM_ADVISORY);
+	g_assert_cmpstr (pk_issue_get_url (issue), ==, "http://www.distro-update.org/page?moo");
+	g_assert_null (pk_issue_get_id (issue));
+	g_assert_null (pk_issue_get_title (issue));
+	issue = g_ptr_array_index (issues, 1);
+	g_assert_cmpint (pk_issue_get_kind (issue), ==, PK_ISSUE_KIND_ENUM_GENERIC);
+	g_assert_cmpstr (pk_issue_get_id (issue), ==, "12344");
+	g_assert_cmpstr (pk_issue_get_title (issue), ==, "crash on startup");
+	g_ptr_array_unref (issues);
 
 	g_object_unref (package);
 

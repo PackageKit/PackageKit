@@ -15,6 +15,7 @@ from .backend import (  # noqa: F401
     ROLE_ARGS,
     Backend,
     CancelledError,
+    Issue,
     PkError,
     get_package_id,
     split_package_id,

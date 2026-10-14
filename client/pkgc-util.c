@@ -743,16 +743,13 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 	PkRestartEnum restart;
 	PkUpdateStateEnum state;
 	g_autofree gchar *changelog = NULL;
-	g_autofree gchar *issued = NULL;
+	g_autofree gchar *time_issued = NULL;
 	g_autofree gchar *package_id = NULL;
 	g_autofree gchar *package = NULL;
-	g_autofree gchar *updated = NULL;
 	g_autofree gchar *update_text = NULL;
-	g_auto(GStrv) bugzilla_urls = NULL;
-	g_auto(GStrv) cve_urls = NULL;
 	g_auto(GStrv) obsoletes = NULL;
 	g_auto(GStrv) updates = NULL;
-	g_auto(GStrv) vendor_urls = NULL;
+	g_autoptr(GPtrArray) issues = NULL;
 	gchar *tmp;
 
 	if (!update)
@@ -766,12 +763,8 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 		      &updates,
 		      "obsoletes",
 		      &obsoletes,
-		      "vendor-urls",
-		      &vendor_urls,
-		      "bugzilla-urls",
-		      &bugzilla_urls,
-		      "cve-urls",
-		      &cve_urls,
+		      "issues",
+		      &issues,
 		      "restart",
 		      &restart,
 		      "update-text",
@@ -780,10 +773,8 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 		      &changelog,
 		      "state",
 		      &state,
-		      "issued",
-		      &issued,
-		      "updated",
-		      &updated,
+		      "time-issued",
+		      &time_issued,
 		      NULL);
 
 	package = pk_package_id_to_printable (package_id);
@@ -806,6 +797,32 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 				json_array_append_new (obsoletes_array, json_string (*p));
 			}
 			json_object_set_new (root, "obsoletes", obsoletes_array);
+		}
+
+		if (issues != NULL && issues->len > 0) {
+			json_t *issues_array = json_array ();
+			for (guint i = 0; i < issues->len; i++) {
+				PkIssue *issue = g_ptr_array_index (issues, i);
+				json_t *obj = json_object ();
+				json_object_set_new (obj,
+						     "kind",
+						     json_string (pk_issue_kind_enum_to_string (
+							 pk_issue_get_kind (issue))));
+				json_object_set_new (obj,
+						     "url",
+						     json_string (pk_issue_get_url (issue)));
+				if (pk_issue_get_id (issue) != NULL)
+					json_object_set_new (obj,
+							     "id",
+							     json_string (pk_issue_get_id (issue)));
+				if (pk_issue_get_title (issue) != NULL)
+					json_object_set_new (
+					    obj,
+					    "title",
+					    json_string (pk_issue_get_title (issue)));
+				json_array_append_new (issues_array, obj);
+			}
+			json_object_set_new (root, "issues", issues_array);
 		}
 
 		if (update_text)
@@ -845,31 +862,49 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 			g_free (tmp);
 		}
 
-		if (vendor_urls && vendor_urls[0]) {
-			tmp = g_strjoinv (", ", vendor_urls);
-			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for vendor in update details */
-				 _("Vendor:"), get_reset_color (ctx), tmp);
-			g_free (tmp);
-		}
-
-		if (bugzilla_urls && bugzilla_urls[0]) {
-			tmp = g_strjoinv (", ", bugzilla_urls);
-			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for issue-tracker in update details */
-				 _("Issue Tracker:"), get_reset_color (ctx), tmp);
-			g_free (tmp);
-		}
-
-		if (cve_urls && cve_urls[0]) {
-			tmp = g_strjoinv (", ", cve_urls);
-			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for CVE information in update details */
-				 _("CVE:"), get_reset_color (ctx), tmp);
-			g_free (tmp);
+		if (issues != NULL && issues->len > 0) {
+			/* clang-format off */
+			const struct {
+				PkIssueKindEnum kind;
+				const gchar *label;
+			} groups[] = {
+				/* TRANSLATORS: Label for issue tracker entries in update details */
+				{ PK_ISSUE_KIND_ENUM_GENERIC, N_("Issues:") },
+				/* TRANSLATORS: Label for CVE records in update details */
+				{ PK_ISSUE_KIND_ENUM_CVE, N_("CVEs:") },
+				/* TRANSLATORS: Label for the distributor's advisory in update details */
+				{ PK_ISSUE_KIND_ENUM_ADVISORY, N_("Advisory:") },
+				/* TRANSLATORS: Label for references of unknown kind in update details */
+				{ PK_ISSUE_KIND_ENUM_UNKNOWN, N_("References:") },
+			};
+			/* clang-format on */
+			for (guint g = 0; g < G_N_ELEMENTS (groups); g++) {
+				gboolean first = TRUE;
+				for (guint i = 0; i < issues->len; i++) {
+					PkIssue *issue = g_ptr_array_index (issues, i);
+					const gchar *id = pk_issue_get_id (issue);
+					const gchar *title = pk_issue_get_title (issue);
+					if (pk_issue_get_kind (issue) != groups[g].kind)
+						continue;
+					if (first) {
+						g_print (" %s%s%s",
+							 get_color (ctx, COLOR_BOLD),
+							 _(groups[g].label), get_reset_color (ctx));
+						first = FALSE;
+					} else {
+						g_print (",");
+					}
+					if (id != NULL && title != NULL)
+						g_print (" %s (%s)", id, title);
+					else if (id != NULL)
+						g_print (" %s", id);
+					else if (title != NULL)
+						g_print (" %s", title);
+					g_print (" <%s>", pk_issue_get_url (issue));
+				}
+				if (!first)
+					g_print ("\n");
+			}
 		}
 
 		if (restart != PK_RESTART_ENUM_NONE) {
@@ -904,18 +939,11 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 				   pk_update_state_enum_to_string (state));
 		}
 
-		if (issued && issued[0] != '\0') {
+		if (time_issued && time_issued[0] != '\0') {
 			g_print (" %s%s%s %s\n",
 				 get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for issued date in update details */
-				 _("Issued:"), get_reset_color (ctx), issued);
-		}
-
-		if (updated && updated[0] != '\0') {
-			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for updated date in update details */
-				 _("Updated:"), get_reset_color (ctx), updated);
+				 _("Issued:"), get_reset_color (ctx), time_issued);
 		}
 	}
 }

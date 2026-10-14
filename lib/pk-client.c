@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2024-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -1172,6 +1173,44 @@ pk_client_signal_finished (PkClientState *state, PkExitEnum exit_enum, guint run
 	pk_client_state_finish (state, NULL);
 }
 
+/**
+ * pk_client_issues_from_variant:
+ *
+ * Parse the `issues` value of an update detail (an `aa{sv}`)
+ */
+static GPtrArray *
+pk_client_issues_from_variant (GVariant *variant)
+{
+	GPtrArray *issues = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_issue_free);
+	GVariantIter iter;
+	GVariant *child;
+
+	g_variant_iter_init (&iter, variant);
+	while ((child = g_variant_iter_next_value (&iter)) != NULL) {
+		guint kind = PK_ISSUE_KIND_ENUM_UNKNOWN;
+		const gchar *url = NULL;
+		const gchar *id = NULL;
+		const gchar *title = NULL;
+
+		g_variant_lookup (child, "kind", "u", &kind);
+		g_variant_lookup (child, "url", "&s", &url);
+		g_variant_lookup (child, "id", "&s", &id);
+		g_variant_lookup (child, "title", "&s", &title);
+		if (kind >= PK_ISSUE_KIND_ENUM_LAST)
+			kind = PK_ISSUE_KIND_ENUM_UNKNOWN;
+		if (url != NULL)
+			g_ptr_array_add (issues, pk_issue_new (kind, url, id, title));
+		g_variant_unref (child);
+	}
+
+	return issues;
+}
+
+/**
+ * results_add_update_detail_from_variant:
+ *
+ * Parse one `(sa{sv})` element of the UpdateDetails signal.
+ */
 static void
 results_add_update_detail_from_variant (PkResults *results,
 					GVariant *update_variant,
@@ -1179,61 +1218,45 @@ results_add_update_detail_from_variant (PkResults *results,
 					const gchar *transaction_id)
 {
 	g_autoptr(PkUpdateDetail) item = NULL;
+	g_autoptr(GVariantIter) dict = NULL;
 	const gchar *package_id;
-	g_autofree gchar **updates_strv = NULL;
-	g_autofree gchar **obsoletes_strv = NULL;
-	g_autofree gchar **vendor_urls_strv = NULL;
-	g_autofree gchar **bugzilla_urls_strv = NULL;
-	g_autofree gchar **cve_urls_strv = NULL;
-	guint restart, state;
-	const gchar *update_text, *changelog, *issued, *updated;
+	const gchar *key;
+	GVariant *value;
 
-	g_variant_get (update_variant,
-		       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
-		       &package_id,
-		       &updates_strv,
-		       &obsoletes_strv,
-		       &vendor_urls_strv,
-		       &bugzilla_urls_strv,
-		       &cve_urls_strv,
-		       &restart,
-		       &update_text,
-		       &changelog,
-		       &state,
-		       &issued,
-		       &updated);
-
+	g_variant_get (update_variant, "(&sa{sv})", &package_id, &dict);
 	item = pk_update_detail_new ();
 	g_object_set (item,
 		      "package-id",
 		      package_id,
-		      "updates",
-		      updates_strv[0] != NULL ? updates_strv : NULL,
-		      "obsoletes",
-		      obsoletes_strv[0] != NULL ? obsoletes_strv : NULL,
-		      "vendor-urls",
-		      vendor_urls_strv[0] != NULL ? vendor_urls_strv : NULL,
-		      "bugzilla-urls",
-		      bugzilla_urls_strv[0] != NULL ? bugzilla_urls_strv : NULL,
-		      "cve-urls",
-		      cve_urls_strv[0] != NULL ? cve_urls_strv : NULL,
-		      "restart",
-		      restart,
-		      "update-text",
-		      update_text,
-		      "changelog",
-		      changelog,
-		      "state",
-		      state,
-		      "issued",
-		      issued,
-		      "updated",
-		      updated,
 		      "role",
 		      role,
 		      "transaction-id",
 		      transaction_id,
 		      NULL);
+
+	while (g_variant_iter_loop (dict, "{&sv}", &key, &value)) {
+		if (g_strcmp0 (key, "updates") == 0 || g_strcmp0 (key, "obsoletes") == 0) {
+			g_autofree const gchar **strv = g_variant_get_strv (value, NULL);
+			g_object_set (item, key, strv, NULL);
+		} else if (g_strcmp0 (key, "issues") == 0) {
+			g_autoptr(GPtrArray) issues = pk_client_issues_from_variant (value);
+			g_object_set (item, "issues", issues, NULL);
+		} else if (g_strcmp0 (key, "restart") == 0) {
+			guint restart = g_variant_get_uint32 (value);
+			if (restart >= PK_RESTART_ENUM_LAST)
+				restart = PK_RESTART_ENUM_UNKNOWN;
+			g_object_set (item, "restart", restart, NULL);
+		} else if (g_strcmp0 (key, "state") == 0) {
+			guint state = g_variant_get_uint32 (value);
+			if (state >= PK_UPDATE_STATE_ENUM_LAST)
+				state = PK_UPDATE_STATE_ENUM_UNKNOWN;
+			g_object_set (item, "state", state, NULL);
+		} else if (g_strcmp0 (key, "update-text") == 0 ||
+			   g_strcmp0 (key, "changelog") == 0 ||
+			   g_strcmp0 (key, "time-issued") == 0) {
+			g_object_set (item, key, g_variant_get_string (value, NULL), NULL);
+		}
+	}
 
 	pk_results_add_update_detail (results, item);
 }
@@ -1348,7 +1371,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		g_autoptr(GVariantIter) iter = NULL;
 		g_autoptr(GVariant) update_detail = NULL;
 
-		g_variant_get (parameters, "(a(sasasasasasussuss))", &iter);
+		g_variant_get (parameters, "(a(sa{sv}))", &iter);
 
 		while ((update_detail = g_variant_iter_next_value (iter))) {
 			results_add_update_detail_from_variant (state->results,
