@@ -11,69 +11,69 @@ apt_pkg_dep = dependency('apt-pkg', version: '>=1.9.2')
 # Check whether apt supports ddtp
 ddtp_flag = []
 if cpp_compiler.compiles(
-  '''
+    '''
     #include <apt-pkg/pkgcache.h>
     int main () {
       pkgCache::DescIterator d;
       return 0;
     }
-  ''',
-  dependencies: [
-    apt_pkg_dep
-  ]
+    ''',
+    dependencies: [
+        apt_pkg_dep
+    ]
 )
-  ddtp_flag = ['-DHAVE_DDTP']
+    ddtp_flag = ['-DHAVE_DDTP']
 endif
 
 c_args = ['-DG_LOG_DOMAIN="PackageKit-APT"',
-          '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
+    '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
 ]
 
 # Required to be used by the test suite
 packagekit_backend_apt_lib = static_library(
-  'pk_backend_apt_lib',
-  'acqpkitstatus.cpp',
-  'acqpkitstatus.h',
-  'apt-cache-file.cpp',
-  'apt-cache-file.h',
-  'apt-job.cpp',
-  'apt-job.h',
-  'apt-messages.cpp',
-  'apt-messages.h',
-  'apt-sourceslist.cpp',
-  'apt-sourceslist.h',
-  'apt-utils.cpp',
-  'apt-utils.h',
-  'deb822.cpp',
-  'deb822.h',
-  'deb-file.cpp',
-  'deb-file.h',
-  'gst-matcher.cpp',
-  'gst-matcher.h',
-  'pkg-list.cpp',
-  'pkg-list.h',
-  include_directories: packagekit_src_include,
-  dependencies: [
-    packagekit_glib2_dep,
-    apt_pkg_dep,
-    appstream_dep,
-    gstreamer_dep,
-    gstreamer_base_dep,
-    gstreamer_plugins_base_dep,
-  ],
-  c_args: c_args,
-  cpp_args: [
-    c_args,
-    ddtp_flag,
-  ],
-  link_args: [
-    '-lutil',
-  ],
-  override_options: [
-    'b_lundef=false',
-    'c_std=gnu17',
-    'cpp_std=c++20'
-  ],
+    'pk_backend_apt_lib',
+    'acqpkitstatus.cpp',
+    'acqpkitstatus.h',
+    'apt-cache-file.cpp',
+    'apt-cache-file.h',
+    'apt-job.cpp',
+    'apt-job.h',
+    'apt-messages.cpp',
+    'apt-messages.h',
+    'apt-sourceslist.cpp',
+    'apt-sourceslist.h',
+    'apt-utils.cpp',
+    'apt-utils.h',
+    'deb822.cpp',
+    'deb822.h',
+    'deb-file.cpp',
+    'deb-file.h',
+    'gst-matcher.cpp',
+    'gst-matcher.h',
+    'pkg-list.cpp',
+    'pkg-list.h',
+    include_directories: packagekit_src_include,
+    dependencies: [
+        libpackagekit_dep,
+        apt_pkg_dep,
+        appstream_dep,
+        gstreamer_dep,
+        gstreamer_base_dep,
+        gstreamer_plugins_base_dep,
+    ],
+    c_args: c_args,
+    cpp_args: [
+        c_args,
+        ddtp_flag,
+    ],
+    link_args: [
+        '-lutil',
+    ],
+    override_options: [
+        'b_lundef=false',
+        'c_std=gnu17',
+        'cpp_std=c++20'
+    ],
 )
 
 packagekit_backend_apt_dep = declare_dependency(
@@ -83,71 +83,71 @@ packagekit_backend_apt_dep = declare_dependency(
         include_directories('.'),
     ],
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
     ],
 )
 
 pk_backend_modules += shared_module(
-  'pk_backend_apt',
-  'pk-backend-apt.cpp',
-  include_directories: packagekit_src_include,
-  dependencies: [
-    packagekit_glib2_dep,
-    packagekit_backend_apt_dep,
-  ],
-  c_args: c_args,
-  cpp_args: [
-    c_args,
-    ddtp_flag,
-  ],
-  override_options: [
-    'b_lundef=false',
-    'c_std=c11',
-    'cpp_std=c++17'
-  ],
-  install: true,
-  install_dir: pk_backends_dir,
+    'pk_backend_apt',
+    'pk-backend-apt.cpp',
+    include_directories: packagekit_src_include,
+    dependencies: [
+        libpackagekit_dep,
+        packagekit_backend_apt_dep,
+    ],
+    c_args: c_args,
+    cpp_args: [
+        c_args,
+        ddtp_flag,
+    ],
+    override_options: [
+        'b_lundef=false',
+        'c_std=c11',
+        'cpp_std=c++17'
+    ],
+    install: true,
+    install_dir: pk_backends_dir,
 )
 
 install_data(
-  '20packagekit',
-  install_dir: join_paths(get_option('sysconfdir'), 'apt', 'apt.conf.d'),
+    '20packagekit',
+    install_dir: join_paths(get_option('sysconfdir'), 'apt', 'apt.conf.d'),
 )
 
 install_data(
-  'pkconffile.nodiff',
-  install_dir: join_paths(get_option('datadir'), 'packagekit', 'helpers', 'apt'),
+    'pkconffile.nodiff',
+    install_dir: join_paths(get_option('datadir'), 'packagekit', 'helpers', 'apt'),
 )
 
 if get_option('systemd')
-  executable(
-    'pk-debconf-helper',
-    'pk-debconf-helper.c',
-    dependencies: [
-      packagekit_glib2_dep,
-      libsystemd
-    ],
-    install: true,
-    install_dir: get_option('libexecdir')
-  )
+    executable(
+        'pk-debconf-helper',
+        'pk-debconf-helper.c',
+        dependencies: [
+            libpackagekit_dep,
+            libsystemd
+        ],
+        install: true,
+        install_dir: get_option('libexecdir')
+    )
 
-  sd_config_data = configuration_data()
-  sd_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('libexecdir')))
+    sd_config_data = configuration_data()
+    sd_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('libexecdir')))
 
-  configure_file(
-    input: 'pk-debconf-helper.service.in',
-    output: 'pk-debconf-helper.service',
-    configuration: sd_config_data,
-    install: true,
-    install_dir: systemd_user_unit_dir,
-  )
-  configure_file(
-    input: 'pk-debconf-helper.socket.in',
-    output: 'pk-debconf-helper.socket',
-    configuration: sd_config_data,
-    install: true,
-    install_dir: systemd_user_unit_dir,
-  )
+    configure_file(
+        input: 'pk-debconf-helper.service.in',
+        output: 'pk-debconf-helper.service',
+        configuration: sd_config_data,
+        install: true,
+        install_dir: systemd_user_unit_dir,
+    )
+    configure_file(
+        input: 'pk-debconf-helper.socket.in',
+        output: 'pk-debconf-helper.socket',
+        configuration: sd_config_data,
+        install: true,
+        install_dir: systemd_user_unit_dir,
+    )
 endif
 
 subdir('tests')

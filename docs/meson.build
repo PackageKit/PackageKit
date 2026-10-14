@@ -16,7 +16,7 @@ gidocgen_toml = configure_file(
 
 custom_target(
     'api-docs',
-    input: [gidocgen_toml, packagekit_glib2_gir[0]],
+    input: [gidocgen_toml, libpackagekit_gir[0]],
     output: 'packagekit',
     command: [
         find_program('gi-docgen'),

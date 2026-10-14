@@ -6,21 +6,21 @@ nix_store_dep = dependency('nix-store', version: '>=2.34')
 nix_cmd_dep = dependency('nix-cmd', version: '>=2.34')
 
 pk_backend_modules += shared_module(
-  'pk_backend_nix',
-  'pk-backend-nix.cc',
-  'nix-lib-plus.cc',
-  include_directories: packagekit_src_include,
-  dependencies: [
-    packagekit_glib2_dep,
-    nix_expr_dep,
-    nix_main_dep,
-    nix_cmd_dep,
-    nix_store_dep,
-    gmodule_dep,
-  ],
-  cpp_args: [
-    '-DG_LOG_DOMAIN="PackageKit-Nix"',
-  ],
-  install: true,
-  install_dir: pk_backends_dir,
+    'pk_backend_nix',
+    'pk-backend-nix.cc',
+    'nix-lib-plus.cc',
+    include_directories: packagekit_src_include,
+    dependencies: [
+        packagekit_glib2_dep,
+        nix_expr_dep,
+        nix_main_dep,
+        nix_cmd_dep,
+        nix_store_dep,
+        gmodule_dep,
+    ],
+    cpp_args: [
+        '-DG_LOG_DOMAIN="PackageKit-Nix"',
+    ],
+    install: true,
+    install_dir: pk_backends_dir,
 )

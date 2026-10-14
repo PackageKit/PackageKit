@@ -3,22 +3,22 @@ pangoft2_dep = dependency('pangoft2')
 fontconfig_dep = dependency('fontconfig')
 
 shared_module(
-  'pk-gtk-module',
-  'pk-gtk-module.c',
-  dependencies: [
-    packagekit_glib2_dep,
-    gtk3_dep,
-    pangoft2_dep,
-    fontconfig_dep,
-  ],
-  install: true,
-  install_dir: join_paths(get_option('libdir'), 'gtk-3.0', 'modules'),
-  c_args: [
-    '-DVERSION="@0@"'.format(meson.project_version()),
-  ]
+    'pk-gtk-module',
+    'pk-gtk-module.c',
+    dependencies: [
+        libpackagekit_dep,
+        gtk3_dep,
+        pangoft2_dep,
+        fontconfig_dep,
+    ],
+    install: true,
+    install_dir: join_paths(get_option('libdir'), 'gtk-3.0', 'modules'),
+    c_args: [
+        '-DVERSION="@0@"'.format(meson.project_version()),
+    ]
 )
 
 install_data(
-  'pk-gtk-module.desktop',
-  install_dir: join_paths(get_option('libdir'), 'gnome-settings-daemon-3.0', 'gtk-modules')
+    'pk-gtk-module.desktop',
+    install_dir: join_paths(get_option('libdir'), 'gnome-settings-daemon-3.0', 'gtk-modules')
 )

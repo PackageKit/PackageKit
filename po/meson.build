@@ -1,9 +1,9 @@
 pk_gettext_domain = 'PackageKit'
 
 i18n.gettext(
-  pk_gettext_domain,
-  preset: 'glib',
-  args: [
+    pk_gettext_domain,
+    preset: 'glib',
+    args: [
         '--default-domain=' + pk_gettext_domain,
         '--from-code=UTF-8',
         '--keyword=Description',
@@ -16,7 +16,7 @@ i18n.gettext(
 
 run_target ('make-linguas',
     command: ['sh',
-              join_paths(source_root, 'contrib/update-linguas.sh')]
+        join_paths(source_root, 'contrib/update-linguas.sh')]
 )
 
 # maintainer shortcut for updating l10n data

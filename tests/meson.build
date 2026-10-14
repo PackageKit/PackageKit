@@ -9,7 +9,7 @@ pk_test_root_dir = join_paths(meson.current_build_dir(), '_test-root')
 # installed locations
 pk_test_root_links = [
     '--link', join_paths(pk_backends_dir, 'test_spawn') + '='
-              + join_paths(source_root, 'backends', 'test', 'helpers', 'test_spawn'),
+    + join_paths(source_root, 'backends', 'test', 'helpers', 'test_spawn'),
 ]
 pk_test_root_deps = []
 if get_option('python_backend')
@@ -48,9 +48,9 @@ pk_test_lib_exe = executable(
     'pk-test-library',
     'pk-test-library.c',
     pk_enum_type,
-    packagekitprivate_sources,
-    packagekit_glib2_sources,
-    include_directories: packagekit_glib2_includes,
+    libpackagekit_priv_src,
+    libpackagekit_src,
+    include_directories: libpackagekit_includes,
     dependencies: [
         glib_dep,
         gobject_dep,
@@ -77,10 +77,10 @@ test(
 pk_test_daemon_priv_exe = executable(
     'pk-test-daemon-internal',
     'pk-test-daemon-internal.c',
-    shared_sources,
+    pk_daemon_shared_src,
     pk_resources,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         jansson_dep,
         libsystemd,
         elogind,
@@ -107,7 +107,7 @@ pk_test_e2e_exe = executable(
     'pk-test-e2e',
     'pk-test-e2e.c',
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         glib_dep,
         gobject_dep,
         gio_dep,
@@ -158,12 +158,12 @@ if get_option('daemon_tests')
     test('pk-test-e2e',
         run_daemon_test,
         args: [
-          '--daemon', packagekitd_exec,
-          '--test', pk_test_e2e_exe,
-          '--config', pk_test_conf_file,
+            '--daemon', packagekitd_exe,
+            '--test', pk_test_e2e_exe,
+            '--config', pk_test_conf_file,
         ],
         depends: [
-            packagekitd_exec,
+            packagekitd_exe,
             pk_test_e2e_exe,
             pk_test_root,
         ],

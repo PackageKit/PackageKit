@@ -1,9 +1,9 @@
 project('PackageKit', 'c',
-  meson_version : '>=1.0',
-  default_options : ['warning_level=2', 'c_std=gnu23'],
+    meson_version : '>=1.0',
+    default_options : ['warning_level=2', 'c_std=gnu23'],
 
-  license : 'LGPL-2.1+',
-  version : '1.99.0',
+    license : 'LGPL-2.1+',
+    version : '1.99.0',
 )
 
 source_root = meson.project_source_root()
@@ -33,29 +33,29 @@ ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5', required: fal
 
 libsystemd = []
 if get_option('systemd')
-  libsystemd = dependency('libsystemd', version: '>=213')
-  systemd_system_unit_dir = get_option('systemdsystemunitdir')
-  systemd_user_unit_dir = get_option('systemduserunitdir')
-  if systemd_system_unit_dir == '' or systemd_user_unit_dir == ''
-    systemd = dependency('systemd')
-  endif
-  if systemd_system_unit_dir == ''
-    systemd_system_unit_dir = systemd.get_variable(pkgconfig: 'systemdsystemunitdir')
-  endif
-  if systemd_user_unit_dir == ''
-    systemd_user_unit_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
-  endif
+    libsystemd = dependency('libsystemd', version: '>=213')
+    systemd_system_unit_dir = get_option('systemdsystemunitdir')
+    systemd_user_unit_dir = get_option('systemduserunitdir')
+    if systemd_system_unit_dir == '' or systemd_user_unit_dir == ''
+        systemd = dependency('systemd')
+    endif
+    if systemd_system_unit_dir == ''
+        systemd_system_unit_dir = systemd.get_variable(pkgconfig: 'systemdsystemunitdir')
+    endif
+    if systemd_user_unit_dir == ''
+        systemd_user_unit_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
+    endif
 
-  add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
-  add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
-  add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
+    add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
+    add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
+    add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
 endif
 
 elogind = []
 if get_option('elogind')
-  elogind = dependency('elogind', version: '>=229.4')
-  add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
-  add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
+    elogind = dependency('elogind', version: '>=229.4')
+    add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
+    add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
 endif
 
 
@@ -95,29 +95,29 @@ conf.set_quoted('PROJECT_VERSION', meson.project_version())
 
 cc = meson.get_compiler('c')
 if cc.has_function('setpriority', args: feature_args)
-  conf.set('HAVE_SETPRIORITY', '1')
+    conf.set('HAVE_SETPRIORITY', '1')
 endif
 if cc.has_header_symbol('stdlib.h', 'clearenv', args: feature_args)
-  conf.set('HAVE_CLEARENV', '1')
+    conf.set('HAVE_CLEARENV', '1')
 endif
 if cc.has_header('unistd.h', args: feature_args)
-  conf.set('HAVE_UNISTD_H', '1')
+    conf.set('HAVE_UNISTD_H', '1')
 endif
 
 config_header = configure_file(
-  output: 'config.h',
-  configuration: conf,
+    output: 'config.h',
+    configuration: conf,
 )
 
 config_dep = declare_dependency(
-  sources: config_header,
-  include_directories: include_directories('.')
+    sources: config_header,
+    include_directories: include_directories('.')
 )
 
 # enable strict checks and make warnings errors in maintainer mode
 if get_option('maintainer')
-  add_project_arguments(
-    cc.get_supported_arguments([
+    add_project_arguments(
+        cc.get_supported_arguments([
             '-Werror',
             '-Wall',
             '-Wextra',
@@ -148,52 +148,52 @@ add_project_arguments(
 
 # default compiler warning/error flags for C only
 add_project_arguments(
-  cc.get_supported_arguments([
-    '-Wcast-align',
-    '-Wno-uninitialized',
-    '-Werror=missing-declarations',
-    '-Wredundant-decls',
-    '-Wpointer-arith',
-    '-Wcast-align',
-    '-Wwrite-strings',
-    '-Winit-self',
-    '-Wreturn-type',
-    '-Wformat-nonliteral',
-    '-Wformat-security',
-    '-Wmissing-include-dirs',
-    '-Wmissing-format-attribute',
-    '-Wclobbered',
-    '-Wempty-body',
-    '-Wignored-qualifiers',
-    '-Wsign-compare',
-    '-Wtype-limits',
-    '-Wuninitialized',
-    '-Wmissing-parameter-type',
-    '-Woverride-init',
-    '-Wno-unused-parameter',
-    '-Wno-error=unused-parameter',
-    '-Werror=misleading-indentation',
-    '-Werror=return-type',
-    '-Werror=format-security',
-    '-Wformat',
-    '-Werror=shadow',
-    '-Werror=missing-declarations',
-    '-Werror=pointer-arith',
-    '-Werror=strict-prototypes',
-    '-Werror=missing-prototypes',
-    '-Werror=implicit-function-declaration',
-    '-Werror=int-conversion',
-    '-Werror=incompatible-pointer-types',
-    '-Werror=declaration-after-statement',
-    '-Werror=empty-body',
-  ]),
-  language: 'c'
+    cc.get_supported_arguments([
+        '-Wcast-align',
+        '-Wno-uninitialized',
+        '-Werror=missing-declarations',
+        '-Wredundant-decls',
+        '-Wpointer-arith',
+        '-Wcast-align',
+        '-Wwrite-strings',
+        '-Winit-self',
+        '-Wreturn-type',
+        '-Wformat-nonliteral',
+        '-Wformat-security',
+        '-Wmissing-include-dirs',
+        '-Wmissing-format-attribute',
+        '-Wclobbered',
+        '-Wempty-body',
+        '-Wignored-qualifiers',
+        '-Wsign-compare',
+        '-Wtype-limits',
+        '-Wuninitialized',
+        '-Wmissing-parameter-type',
+        '-Woverride-init',
+        '-Wno-unused-parameter',
+        '-Wno-error=unused-parameter',
+        '-Werror=misleading-indentation',
+        '-Werror=return-type',
+        '-Werror=format-security',
+        '-Wformat',
+        '-Werror=shadow',
+        '-Werror=missing-declarations',
+        '-Werror=pointer-arith',
+        '-Werror=strict-prototypes',
+        '-Werror=missing-prototypes',
+        '-Werror=implicit-function-declaration',
+        '-Werror=int-conversion',
+        '-Werror=incompatible-pointer-types',
+        '-Werror=declaration-after-statement',
+        '-Werror=empty-body',
+    ]),
+    language: 'c'
 )
 
 # default warning flags for C++ only
 add_project_arguments(
-  '-Werror=init-self',
-  language: 'cpp'
+    '-Werror=init-self',
+    language: 'cpp'
 )
 
 subdir('po')
