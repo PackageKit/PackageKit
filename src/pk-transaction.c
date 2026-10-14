@@ -4615,23 +4615,46 @@ out:
 }
 
 static gboolean
+pk_transaction_hint_check_type (const gchar *key,
+				GVariant *value,
+				const GVariantType *type,
+				GError **error)
+{
+	if (g_variant_is_of_type (value, type))
+		return TRUE;
+	g_set_error (error,
+		     PK_TRANSACTION_ERROR,
+		     PK_TRANSACTION_ERROR_INPUT_INVALID,
+		     "hint '%s' expects type '%s', not '%s'",
+		     key,
+		     (const gchar *) type,
+		     g_variant_get_type_string (value));
+	return FALSE;
+}
+
+static gboolean
 pk_transaction_set_hint (PkTransaction *transaction,
 			 const gchar *key,
-			 const gchar *value,
+			 GVariant *value,
 			 GError **error)
 {
-	/* locale=en_GB.utf8 */
 	if (g_strcmp0 (key, "locale") == 0) {
-		pk_backend_job_set_locale (transaction->job, value);
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_STRING, error))
+			return FALSE;
+		pk_backend_job_set_locale (transaction->job, g_variant_get_string (value, NULL));
 		return TRUE;
 	}
 
-	/* frontend_socket=/tmp/socket.3456 */
 	if (g_strcmp0 (key, "frontend-socket") == 0) {
 		GStatBuf st;
+		const gchar *path;
+
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_STRING, error))
+			return FALSE;
+		path = g_variant_get_string (value, NULL);
 
 		/* nothing provided */
-		if (value == NULL || value[0] == '\0') {
+		if (path[0] == '\0') {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_INPUT_INVALID,
@@ -4639,8 +4662,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			return FALSE;
 		}
 
-		/* nothing provided */
-		if (value[0] != '/') {
+		if (path[0] != '/') {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_INPUT_INVALID,
@@ -4652,7 +4674,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		 * lstat() doesn't follow symlinks (which would let callers
 		 * probe arbitrary paths as root), and allows us to reject
 		 * anything that is not a Unix socket */
-		if (g_lstat (value, &st) != 0) {
+		if (g_lstat (path, &st) != 0) {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
 					     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
@@ -4668,55 +4690,30 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		}
 
 		/* success */
-		pk_backend_job_set_frontend_socket (transaction->job, value);
+		pk_backend_job_set_frontend_socket (transaction->job, path);
 		return TRUE;
 	}
 
-	/* background=true */
 	if (g_strcmp0 (key, "background") == 0) {
-		if (g_strcmp0 (value, "true") == 0) {
-			pk_backend_job_set_background (transaction->job, TRUE);
-		} else if (g_strcmp0 (value, "false") == 0) {
-			pk_backend_job_set_background (transaction->job, FALSE);
-		} else {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "background hint expects true or false, not %s",
-				     value);
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_BOOLEAN, error))
 			return FALSE;
-		}
+		pk_backend_job_set_background (transaction->job, g_variant_get_boolean (value));
 		return TRUE;
 	}
 
-	/* interactive=true */
 	if (g_strcmp0 (key, "interactive") == 0) {
-		if (g_strcmp0 (value, "true") == 0) {
-			pk_backend_job_set_interactive (transaction->job, TRUE);
-		} else if (g_strcmp0 (value, "false") == 0) {
-			pk_backend_job_set_interactive (transaction->job, FALSE);
-		} else {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "interactive hint expects true or false, not %s",
-				     value);
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_BOOLEAN, error))
 			return FALSE;
-		}
+		pk_backend_job_set_interactive (transaction->job, g_variant_get_boolean (value));
 		return TRUE;
 	}
 
-	/* cache-age=<time-in-seconds> */
 	if (g_strcmp0 (key, "cache-age") == 0) {
 		guint cache_age;
-		if (!pk_strtouint (value, &cache_age)) {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "cannot parse cache age value %s",
-				     value);
+
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_UINT32, error))
 			return FALSE;
-		}
+		cache_age = g_variant_get_uint32 (value);
 		if (cache_age == 0) {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
@@ -4728,26 +4725,17 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		return TRUE;
 	}
 
-	/* details-with-deps-size=true */
 	if (g_strcmp0 (key, "details-with-deps-size") == 0) {
-		if (g_strcmp0 (value, "true") == 0) {
-			pk_backend_job_set_details_with_deps_size (transaction->job, TRUE);
-		} else if (g_strcmp0 (value, "false") == 0) {
-			pk_backend_job_set_details_with_deps_size (transaction->job, FALSE);
-		} else {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "details-with-deps-size hint expects true or false, not %s",
-				     value);
+		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_BOOLEAN, error))
 			return FALSE;
-		}
+		pk_backend_job_set_details_with_deps_size (transaction->job,
+							   g_variant_get_boolean (value));
 		return TRUE;
 	}
 
 	/* to preserve forwards and backwards compatibility, we ignore
 	 * extra options here */
-	g_warning ("unknown option: %s with value %s", key, value);
+	g_warning ("unknown hint: %s", key);
 	return TRUE;
 }
 
@@ -4756,40 +4744,25 @@ pk_transaction_set_hints (PkTransaction *transaction,
 			  GVariant *params,
 			  GDBusMethodInvocation *context)
 {
-	gboolean ret;
-	guint i;
-	g_autofree gchar **hints = NULL;
+	const gchar *key;
+	GVariant *value;
+	g_autoptr(GVariantIter) iter = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *dbg = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	g_variant_get (params, "(^a&s)", &hints);
-	dbg = g_strjoinv (", ", (gchar **) hints);
+	dbg = g_variant_print (params, FALSE);
 	g_debug ("SetHints method called: %s", dbg);
 
-	/* parse */
-	for (i = 0; hints[i] != NULL; i++) {
-		g_auto(GStrv) sections = NULL;
-		sections = g_strsplit (hints[i], "=", 2);
-		if (g_strv_length (sections) == 2) {
-			ret = pk_transaction_set_hint (transaction,
-						       sections[0],
-						       sections[1],
-						       &error);
-			if (!ret)
-				goto out;
-		} else {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Could not parse hint '%s'",
-				     hints[i]);
-			goto out;
+	g_variant_get (params, "(a{sv})", &iter);
+	while (g_variant_iter_loop (iter, "{&sv}", &key, &value)) {
+		if (!pk_transaction_set_hint (transaction, key, value, &error)) {
+			g_variant_unref (value);
+			break;
 		}
 	}
-out:
 	pk_transaction_dbus_return (context, error);
 }
 

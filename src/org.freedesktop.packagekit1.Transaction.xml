@@ -104,7 +104,7 @@
     <!--*********************************************************************-->
     <!--
       SetHints:
-      @hints: The values as an array of strings, for example `['locale=en_GB.utf8','idle=true','interactive=false','cache-age=3600']`.
+      @hints: The hints as a dictionary, for example `{'locale': <'en_GB.utf8'>, 'background': <true>, 'interactive': <false>, 'cache-age': <3600>}`.
 
       This method allows the calling session to set transaction hints for the
       package manager which can change as the transaction runs.
@@ -114,36 +114,38 @@
       sent, although some backends may only use the values that were set
       before the transaction was started.
 
-      Each parameter value is optional.
+      Every hint is optional. A value of the wrong type is rejected with
+      `input-invalid`. Unknown keys are ignored, so that newer clients keep
+      working against older daemons.
 
       Notes on `hints`:
 
-      The following parameter values are understood:
+      The following hints are understood:
 
-      - `locale`: The locale code, for example `en_GB`.
-      - `background`: If the method should be executed as a background task,
-        valid values are `true` and `false`, and other values will result in
-        an error. Background tasks are normally treated with a low priority
-        than regular tasks, and normally only use idle CPU and network.
+      - `locale`: The locale code, for example `en_GB`. [`s`]
+      - `background`: If the method should be executed as a background task.
+        Background tasks are normally treated with a lower priority than
+        regular tasks, and normally only use idle CPU and network. [`b`]
       - `interactive`: If the method can ask interactive questions whilst
-        running, valid values are `true` and `false`, and other values will
-        result in an error.
+        running. [`b`]
       - `cache-age`: This allows the frontend to set how fresh it needs the
-        metadata used in the transaction. This allows fine control of the age
-        of the returned results, but means the frontend probably has to query
-        the updates check value and pass it this value for `GetUpdates`, and
-        choose something sane otherwise. Most interactive clients will set
-        this to `intmax` which means "never download new metadata, unless
-        required to return results". Most transactions will not have this
-        value set.
-
-      Other values will cause a verbose warning in the daemon, but will not
-      cause the method to fail. This will preserve forward and backwards
-      compatibility for future API versions.
+        metadata used in the transaction, in seconds. This allows fine control
+        of the age of the returned results, but means the frontend probably has
+        to query the updates check value and pass it this value for
+        `GetUpdates`, and choose something sane otherwise. Most interactive
+        clients will set this to the maximum value, which means "never download
+        new metadata, unless required to return results". Zero is rejected.
+        Most transactions will not have this value set. [`u`]
+      - `frontend-socket`: The absolute path of a Unix socket the backend may
+        use to talk to a frontend helper, e.g. for debconf. It has to exist and
+        be a socket. [`s`]
+      - `details-with-deps-size`: If `GetDetails` should also report the
+        download size of the dependencies. [`b`]
     -->
     <method name="SetHints">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="hints" direction="in"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+      <arg type="a{sv}" name="hints" direction="in"/>
     </method>
 
     <!--*********************************************************************-->

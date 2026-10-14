@@ -2108,17 +2108,6 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 }
 
 /*
- * pk_client_bool_to_string:
- **/
-static const gchar *
-pk_client_bool_to_string (gboolean value)
-{
-	if (value)
-		return "true";
-	return "false";
-}
-
-/*
  * pk_client_create_helper_argv_envp_test:
  **/
 static gboolean
@@ -2270,7 +2259,7 @@ pk_client_create_helper_socket (PkClientState *state)
 		    "pk-debconf-socket",
 		    NULL);
 		if (g_file_test (existing_socket_filename, G_FILE_TEST_EXISTS))
-			return g_strdup_printf ("frontend-socket=%s", existing_socket_filename);
+			return g_steal_pointer (&existing_socket_filename);
 	}
 
 	/* create object */
@@ -2288,7 +2277,7 @@ pk_client_create_helper_socket (PkClientState *state)
 	}
 
 	/* success */
-	return g_strdup_printf ("frontend-socket=%s", socket_filename);
+	return g_steal_pointer (&socket_filename);
 }
 
 /*
@@ -2297,10 +2286,9 @@ pk_client_create_helper_socket (PkClientState *state)
 static void
 pk_client_get_proxy_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
-	gchar *hint;
 	g_autoptr(PkClientState) state = PK_CLIENT_STATE (g_steal_pointer (&user_data));
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GPtrArray) array = NULL;
+	g_auto(GVariantBuilder) hints = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a{sv}"));
 	PkClientPrivate *priv = pk_client_get_instance_private (state->client);
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
@@ -2324,46 +2312,47 @@ pk_client_get_proxy_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 	pk_client_proxy_connect (state);
 
 	/* get hints */
-	array = g_ptr_array_new_with_free_func (g_free);
-
-	/* locale */
-	if (priv->locale != NULL) {
-		hint = g_strdup_printf ("locale=%s", priv->locale);
-		g_ptr_array_add (array, hint);
-	}
-
-	/* background */
-	hint = g_strdup_printf ("background=%s", pk_client_bool_to_string (priv->background));
-	g_ptr_array_add (array, hint);
-
-	/* interactive */
-	hint = g_strdup_printf ("interactive=%s", pk_client_bool_to_string (priv->interactive));
-	g_ptr_array_add (array, hint);
-
+	if (priv->locale != NULL)
+		g_variant_builder_add (&hints,
+				       "{sv}",
+				       "locale",
+				       g_variant_new_string (priv->locale));
+	g_variant_builder_add (&hints,
+			       "{sv}",
+			       "background",
+			       g_variant_new_boolean (priv->background));
+	g_variant_builder_add (&hints,
+			       "{sv}",
+			       "interactive",
+			       g_variant_new_boolean (priv->interactive));
 	if (priv->details_with_deps_size && state->role == PK_ROLE_ENUM_GET_DETAILS)
-		g_ptr_array_add (array, g_strdup ("details-with-deps-size=true"));
-
-	/* cache-age */
-	if (priv->cache_age > 0) {
-		hint = g_strdup_printf ("cache-age=%u", priv->cache_age);
-		g_ptr_array_add (array, hint);
-	}
+		g_variant_builder_add (&hints,
+				       "{sv}",
+				       "details-with-deps-size",
+				       g_variant_new_boolean (TRUE));
+	if (priv->cache_age > 0)
+		g_variant_builder_add (&hints,
+				       "{sv}",
+				       "cache-age",
+				       g_variant_new_uint32 (priv->cache_age));
 
 	/* create socket for roles that need interaction */
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
 	    state->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		hint = pk_client_create_helper_socket (state);
-		if (hint != NULL)
-			g_ptr_array_add (array, hint);
+		g_autofree gchar *socket_path = pk_client_create_helper_socket (state);
+		if (socket_path != NULL)
+			g_variant_builder_add (&hints,
+					       "{sv}",
+					       "frontend-socket",
+					       g_variant_new_string (socket_path));
 	}
 
 	/* set hints */
-	g_ptr_array_add (array, NULL);
 	g_dbus_proxy_call (state->proxy,
 			   "SetHints",
-			   g_variant_new ("(^a&s)", array->pdata),
+			   g_variant_new ("(a{sv})", &hints),
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 			   state->cancellable,
