@@ -2757,21 +2757,27 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-		GPtrArray *bugzilla = g_ptr_array_new();
-		GPtrArray *cve = g_ptr_array_new();
-		GPtrArray *vendor_urls = g_ptr_array_new();
+		GPtrArray *issues = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_issue_free);
 
 		if (isKind<Patch>(solvable)) {
 			Patch::constPtr patch = make<Patch>(solvable); // may use asKind<Patch> if libzypp-11.6.4 is asserted
 			zypp_check_restart (&restart, patch);
 
-			// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
+			// Any reference type that is neither a CVE nor the vendor's own
+			// advisory page is treated as an issue tracker entry, whatever
+			// tracker it comes from (bugzilla, fate, ...).
 			for (Patch::ReferenceIterator it = patch->referencesBegin (); it != patch->referencesEnd (); it ++) {
-				if (it.type () == "bugzilla") {
-				    g_ptr_array_add(bugzilla, g_strconcat (it.href ().c_str (), (gchar *)NULL));
-				} else {
-				    g_ptr_array_add(cve, g_strconcat (it.href ().c_str (), (gchar *)NULL));
-				}
+				PkIssueKindEnum kind;
+				if (it.href ().empty ())
+				    continue;
+				if (it.type () == "cve")
+				    kind = PK_ISSUE_KIND_ENUM_CVE;
+				else if (it.type () == "vendor" || it.type () == "self")
+				    kind = PK_ISSUE_KIND_ENUM_ADVISORY;
+				else
+				    kind = PK_ISSUE_KIND_ENUM_GENERIC;
+				g_ptr_array_add (issues, pk_issue_new (kind, it.href ().c_str (),
+								       it.id ().c_str (), it.title ().c_str ()));
 			}
 
 			sat::SolvableSet content = patch->contents ();
@@ -2783,30 +2789,22 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 				    g_ptr_array_add(obsoletes, nobs->pdata[i]);
 			}
 		}
-		g_ptr_array_add(bugzilla, NULL);
-		g_ptr_array_add(cve, NULL);
 		g_ptr_array_add(obsoletes, NULL);
-		g_ptr_array_add(vendor_urls, NULL);
 
 		PkUpdateDetail *item = pk_update_detail_new_full (
 			package_ids[i],
 			NULL,		// updates TODO with Resolver.installs
 			(gchar **)obsoletes->pdata,
-			(gchar **)vendor_urls->pdata,
-			(gchar **)bugzilla->pdata,	// bugzilla
-			(gchar **)cve->pdata,		// cve
+			issues,
 			restart,	// restart -flag
 			make<ResObject>(solvable)->description().c_str (),	// update-text
 			NULL,		// ChangeLog text
 			PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
-			NULL, // date that the update was issued
-			NULL);	// date that the update was updated
+			NULL);	// time the update was issued
 		g_ptr_array_add (update_details, item);
 
 		g_ptr_array_unref(obsoletes);
-		g_ptr_array_unref(vendor_urls);
-		g_ptr_array_unref(bugzilla);
-		g_ptr_array_unref(cve);
+		g_ptr_array_unref(issues);
 	}
 
 	pk_backend_job_update_details (job, update_details);
