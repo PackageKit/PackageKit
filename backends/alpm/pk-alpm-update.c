@@ -66,17 +66,6 @@ pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
 	return replaces;
 }
 
-static gchar **
-pk_alpm_pkg_build_urls (alpm_pkg_t *pkg)
-{
-	gchar **urls = g_new0 (gchar *, 2);
-	urls[0] = g_strdup_printf ("https://archlinux.org/packages/%s/%s/%s/",
-				   alpm_db_get_name (alpm_pkg_get_db (pkg)),
-				   alpm_pkg_get_arch (pkg),
-				   alpm_pkg_get_name (pkg));
-	return urls;
-}
-
 static gboolean
 pk_alpm_pkg_same_pkgver (alpm_pkg_t *a, alpm_pkg_t *b)
 {
@@ -144,13 +133,11 @@ pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer 
 		const gchar *reason;
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 		PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_STABLE;
-		alpm_time_t built, installed;
+		alpm_time_t built;
 		gchar *upgrades[2] = { NULL, NULL };
 		gchar **replaces;
 		gchar **charptr;
-		g_auto(GStrv) urls = NULL;
-		g_autofree gchar *issued = NULL;
-		g_autofree gchar *updated = NULL;
+		g_autofree gchar *time_issued = NULL;
 		g_autoptr(PkUpdateDetail) item = NULL;
 
 		if (pk_backend_job_is_cancelled (job))
@@ -174,7 +161,6 @@ pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer 
 
 		db = alpm_pkg_get_db (pkg);
 		replaces = pk_alpm_pkg_build_replaces (job, pkg);
-		urls = pk_alpm_pkg_build_urls (pkg);
 
 		if (g_str_has_prefix (alpm_pkg_get_name (pkg), "kernel"))
 			restart = PK_RESTART_ENUM_SYSTEM;
@@ -184,20 +170,14 @@ pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer 
 
 		built = alpm_pkg_get_builddate (pkg);
 		if (built > 0)
-			issued = pk_alpm_time_to_iso8601 (built);
-
-		if (upgrades[0] != NULL) {
-			installed = alpm_pkg_get_installdate (old);
-			if (installed > 0)
-				updated = pk_alpm_time_to_iso8601 (installed);
-		}
+			time_issued = pk_alpm_time_to_iso8601 (built);
 
 		/* the update detail object copies all strings, so the local
 		 * copies can be freed right after this */
 		item = pk_update_detail_new_full (*packages, upgrades, replaces,
-						  urls, NULL, NULL, restart,
+						  NULL, restart,
 						  reason, NULL, state,
-						  issued, updated);
+						  time_issued);
 		g_ptr_array_add (update_details, g_steal_pointer (&item));
 
 		if (upgrades[0]) g_free (upgrades[0]);
