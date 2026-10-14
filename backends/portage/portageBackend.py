@@ -1439,13 +1439,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
             for cpv in self.pvar.vardb.match(portage.versions.pkgsplit(cpv)[0]):
                 updates.append(cpv)
 
-            # temporarily set vendor_url = homepage
-            homepage = self._get_metadata(cpv, ["HOMEPAGE"])[0]
-
             self.update_detail(
                 pkg,
                 updates=updates,
-                vendor_urls=[homepage] if homepage else [],
                 update_text="No update text",
                 changelog="No ChangeLog",
                 state=pkb.UPDATE_STATE_STABLE,

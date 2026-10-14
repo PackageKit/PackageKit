@@ -3022,7 +3022,7 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 			if (strcmp (pkg->name, parts[PK_PACKAGE_ID_NAME]) == 0) {
 				GPtrArray *obsoletes = NULL;
 				GPtrArray *updates = NULL;
-				GPtrArray *cve_urls = NULL;
+				GPtrArray *issues = NULL;
 				const gchar *changes = NULL;
 				tn_array *cves = NULL;
 				struct pkguinf *upkg_uinf = NULL;
@@ -3040,43 +3040,44 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 					changes = pkguinf_get_changelog (upkg_uinf, pkg->btime);
 				}
 
-				cve_urls = g_ptr_array_new ();
+				issues = g_ptr_array_new_with_free_func (
+				    (GDestroyNotify) pk_issue_free);
 				if ((cves = poldek_pkg_get_cves_from_pld_changelog (upkg,
 										    pkg->btime))) {
 					guint i;
 
 					for (i = 0; i < (guint) n_array_size (cves); i++) {
 						gchar *cve = n_array_nth (cves, i);
+						g_autofree gchar *url = g_strdup_printf (
+						    "https://www.cve.org/CVERecord?id=%s",
+						    cve);
 
 						g_ptr_array_add (
-						    cve_urls,
-						    g_strdup_printf ("http://web.nvd.nist.gov/view/"
-								     "vuln/detail?vulnId=%s",
-								     cve));
+						    issues,
+						    pk_issue_new (PK_ISSUE_KIND_ENUM_CVE,
+								  url,
+								  cve,
+								  NULL));
 					}
 				}
 
 				g_ptr_array_add (updates, NULL);
 				g_ptr_array_add (obsoletes, NULL);
-				g_ptr_array_add (cve_urls, NULL);
 
 				item = pk_update_detail_new_full (package_ids[n],
 								  (gchar **) updates->pdata,
 								  (gchar **) obsoletes->pdata,
-								  NULL, // vendor urls
-								  NULL, // bugzilla urls
-								  (gchar **) cve_urls->pdata,
+								  issues,
 								  PK_RESTART_ENUM_NONE,
 								  "", // update text
 								  changes,
 								  PK_UPDATE_STATE_ENUM_UNKNOWN,
-								  NULL,	 // issued
-								  NULL); // updated
+								  NULL); // time issued
 				g_ptr_array_add (update_details, item);
 
 				g_ptr_array_unref (updates);
 				g_ptr_array_unref (obsoletes);
-				g_ptr_array_unref (cve_urls);
+				g_ptr_array_unref (issues);
 
 				n_array_cfree (&cves);
 			}

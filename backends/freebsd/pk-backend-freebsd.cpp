@@ -713,18 +713,18 @@ pk_freebsd_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
     updates.push_back(nullptr);
     obsoletes.push_back(nullptr);
 
-    // We have no vendor/bugzilla/CVE URLs, update text, changelog or dates
+    // We have no issue references, update text, changelog or dates
     // to report, so those properties are left at their defaults.
     g_autoptr(GPtrArray) update_details = g_ptr_array_new_with_free_func (g_object_unref);
     for (guint i = 0; i < size; i++) {
         PkUpdateDetail* item = pk_update_detail_new_full (package_ids[i],
                                                           updates.data(),
                                                           obsoletes.data(),
-                                                          nullptr, nullptr, nullptr,
+                                                          nullptr,
                                                           PK_RESTART_ENUM_NONE,
                                                           nullptr, nullptr,
                                                           PK_UPDATE_STATE_ENUM_UNKNOWN,
-                                                          nullptr, nullptr);
+                                                          nullptr);
         g_ptr_array_add (update_details, item);
     }
 

@@ -693,7 +693,7 @@ class PackageKitEopkgBackend(pkb.Backend):
 
             update_message = pkg.history[0].comment
 
-            updated_date = pkg.history[0].date
+            issued_date = pkg.history[0].date
 
             changelog = ""  # we do not have an enforced standard for changelogs in commit msgs
 
@@ -705,22 +705,24 @@ class PackageKitEopkgBackend(pkb.Backend):
             reboot = "none"
 
             # TODO: Eopkg doesn't provide any time
-            split_date = updated_date.split("-")
-            updated = "{}-{}-{}T00:00:00Z".format(split_date[0], split_date[1], split_date[2])
-            # Note: updates are always fixed
-            issued = updated
+            split_date = issued_date.split("-")
+            time_issued = "{}-{}-{}T00:00:00Z".format(split_date[0], split_date[1], split_date[2])
+
+            issues = [pkb.Issue(pkb.ISSUE_KIND_ADVISORY, vendor_url)] if vendor_url else []
+            issues += [
+                pkb.Issue(pkb.ISSUE_KIND_CVE, 'https://www.cve.org/CVERecord?id=' + cve, cve)
+                for cve in cvelist
+            ]
 
             self.update_detail(
                 package_id,
                 updates=[updates] if updates else [],
-                vendor_urls=[vendor_url] if vendor_url else [],
-                cve_urls=cvelist,
+                issues=issues,
                 restart=reboot,
                 update_text=update_message,
                 changelog=changelog,
                 state=state,
-                issued=issued,
-                updated=updated,
+                time_issued=time_issued,
             )
 
     @privileged
