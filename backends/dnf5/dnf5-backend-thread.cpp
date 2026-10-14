@@ -269,16 +269,27 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					if (it != pkg_to_adv_pkg.end()) {
 						auto advisory = it->second.get_advisory();
 
-						std::vector<std::string> bugzilla_urls, cve_urls, vendor_urls;
+						g_autoptr(GPtrArray) issues = g_ptr_array_new_with_free_func(
+							(GDestroyNotify) pk_issue_free);
 						for (const auto &ref : advisory.get_references()) {
+							PkIssueKindEnum kind;
 							if (ref.get_url().empty())
 								continue;
-							if (ref.get_type() == "bugzilla")
-								bugzilla_urls.push_back(ref.get_url());
-							else if (ref.get_type() == "cve")
-								cve_urls.push_back(ref.get_url());
-							else if (ref.get_type() == "vendor")
-								vendor_urls.push_back(ref.get_url());
+							if (ref.get_type() == "cve")
+								kind = PK_ISSUE_KIND_ENUM_CVE;
+							else if (ref.get_type() == "vendor" || ref.get_type() == "self")
+								// the vendor's own advisory page
+								kind = PK_ISSUE_KIND_ENUM_ADVISORY;
+							else
+								// bugzilla, or any other issue tracker
+								kind = PK_ISSUE_KIND_ENUM_GENERIC;
+							g_ptr_array_add(
+								issues,
+								pk_issue_new(
+									kind,
+									ref.get_url().c_str(),
+									ref.get_id().c_str(),
+									ref.get_title().c_str()));
 						}
 
 						auto buildtime = advisory.get_buildtime();
@@ -293,35 +304,17 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 						else if (it->second.get_relogin_suggested())
 							restart = PK_RESTART_ENUM_SESSION;
 
-						g_auto(GStrv) bugzilla_strv = (gchar **) g_new0(
-							gchar *,
-							bugzilla_urls.size() + 1);
-						for (size_t i = 0; i < bugzilla_urls.size(); i++)
-							bugzilla_strv[i] = g_strdup(bugzilla_urls[i].c_str());
-						g_auto(GStrv)
-							cve_strv = (gchar **) g_new0(gchar *, cve_urls.size() + 1);
-						for (size_t i = 0; i < cve_urls.size(); i++)
-							cve_strv[i] = g_strdup(cve_urls[i].c_str());
-						g_auto(GStrv) vendor_strv = (gchar **) g_new0(
-							gchar *,
-							vendor_urls.size() + 1);
-						for (size_t i = 0; i < vendor_urls.size(); i++)
-							vendor_strv[i] = g_strdup(vendor_urls[i].c_str());
-
 						g_ptr_array_add(
 							update_details,
 							pk_update_detail_new_full(
 								pid.c_str(),
 								NULL,
 								NULL,
-								vendor_strv,
-								bugzilla_strv,
-								cve_strv,
+								issues,
 								restart,
 								advisory.get_description().c_str(),
 								NULL,
 								PK_UPDATE_STATE_ENUM_STABLE,
-								date_str,
 								date_str));
 					}
 				}
