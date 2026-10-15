@@ -1556,20 +1556,21 @@ void AptJob::emitPackageFiles(const gchar *pi)
 
 void AptJob::emitPackageFilesLocal(const gchar *file)
 {
-    DebFile deb(file);
-    if (!deb.isValid()) {
+    const auto deb = DebFile::open(file);
+    if (!deb) {
+        pk_backend_job_error_code(m_job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", deb.error().c_str());
         return;
     }
 
     g_autofree gchar *package_id = pk_package_id_build(
-        deb.packageName().c_str(),
-        deb.version().c_str(),
-        deb.architecture().c_str(),
+        deb->packageName().c_str(),
+        deb->version().c_str(),
+        deb->architecture().c_str(),
         file,
         nullptr);
 
     g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
-    for (const auto &[path, kind] : deb.files()) {
+    for (const auto &[path, kind] : deb->files()) {
         g_autofree gchar *canonical = g_canonicalize_filename(path.c_str(), "/");
         g_ptr_array_add(files, pk_file_new(canonical, kind));
     }

@@ -74,7 +74,7 @@ packagekit_backend_apt_lib = static_library(
     override_options: [
         'b_lundef=false',
         'c_std=gnu17',
-        'cpp_std=c++20'
+        'cpp_std=c++23'
     ],
 )
 
@@ -105,7 +105,7 @@ pk_backend_modules += shared_module(
     override_options: [
         'b_lundef=false',
         'c_std=c11',
-        'cpp_std=c++17'
+        'cpp_std=c++23'
     ],
     install: true,
     install_dir: pk_backends_dir,

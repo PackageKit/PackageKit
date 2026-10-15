@@ -27,6 +27,7 @@
 #include "apt-cache-file.h"
 #include "apt-job.h"
 #include "deb822.h"
+#include "deb-file.h"
 #include "apt-sourceslist.h"
 #include "apt-utils.h"
 #include "gst-matcher.h"
@@ -693,6 +694,14 @@ static void apt_test_install_marks_package_manual(void)
     g_assert_false(test_pkg_marked_auto(job, "foo-firmware"));
 }
 
+static void apt_test_deb_file_open_error(void)
+{
+    const std::string missing = testdata_dir + "/does-not-exist.deb";
+    const auto deb = DebFile::open(missing);
+    g_assert_false(deb.has_value());
+    g_assert_true(deb.error().find(missing) != std::string::npos);
+}
+
 int main(int argc, char **argv)
 {
     if (argc == 0)
@@ -713,6 +722,7 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/gst-matcher/without-caps", apt_test_gst_matcher_without_caps);
     g_test_add_func("/apt/gst-matcher/bad-caps", apt_test_gst_matcher_bad_caps);
     g_test_add_func("/apt/deb822/readwrite", apt_test_deb822);
+    g_test_add_func("/apt/deb-file/open-error", apt_test_deb_file_open_error);
     g_test_add_func("/apt/sources/read", apt_test_sources_read);
     g_test_add_func("/apt/sources/write", apt_test_sources_write);
     g_test_add_func("/apt/sources/source-record-assign", apt_test_source_record_assign);

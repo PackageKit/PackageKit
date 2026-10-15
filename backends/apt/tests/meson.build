@@ -14,6 +14,7 @@ apt_tests_exe = executable(
         gstreamer_dep,
         apt_pkg_dep,
     ],
+    override_options: ['cpp_std=c++23'],
     build_by_default: true,
     install: false,
 )

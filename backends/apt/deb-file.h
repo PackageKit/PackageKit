@@ -22,40 +22,50 @@
 #ifndef DEB_FILE_H
 #define DEB_FILE_H
 
-#include <memory>
+#include <expected>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include <apt-pkg/debfile.h>
 #include <pk-enum.h>
 
-using std::string;
-
+/**
+ * The control data and file list of a local .deb file.
+ */
 class DebFile
 {
 public:
-    DebFile(const string &filename);
-    ~DebFile() = default;
-    bool isValid() const;
+    /**
+     * Read the control data and file list of the .deb at filename.
+     * @returns the file's data, or a message saying why it could not be read.
+     */
+    static std::expected<DebFile, std::string> open(const std::string &filename);
 
-    string packageName() const;
-    string sourcePackage() const;
-    string version() const;
-    string architecture() const;
-    string summary() const;
-    string description() const;
-    string conflicts() const;
+    const std::string &packageName() const
+    {
+        return m_packageName;
+    }
+    const std::string &version() const
+    {
+        return m_version;
+    }
+    const std::string &architecture() const
+    {
+        return m_architecture;
+    }
     /// Paths of the archive entries and what they are.
-    std::vector<std::pair<std::string, PkFileKindEnum>> files() const;
-
-    // FIXME: THIS should be moved to the AptJob class
-    bool check();
-    string errorMsg() const;
+    const std::vector<std::pair<std::string, PkFileKindEnum>> &files() const
+    {
+        return m_files;
+    }
 
 private:
-    std::unique_ptr<debDebFile::MemControlExtract> m_extractor;
-    pkgTagSection m_controlData;
-    string m_errorMsg;
+    DebFile() = default;
+
+    std::string m_packageName;
+    std::string m_version;
+    std::string m_architecture;
     std::vector<std::pair<std::string, PkFileKindEnum>> m_files;
-    bool m_isValid = false;
 };
 
 #endif
