@@ -342,7 +342,7 @@ PkgList AptJob::filterPackages(const PkgList &packages, PkBitfield filters)
                     if (m_cancel)
                         break;
 
-                    m_cache->tryToInstall(Fix, pki, autoInst, false);
+                    m_cache->tryToInstall(Fix, pki, autoInst);
                 }
             }
         }
@@ -884,13 +884,18 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     string archive = safeStr(vf.File().Archive());
     g_autofree gchar *package_id = m_cache->buildPackageId(candver);
 
-    PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
-    if (archive == "stable") {
-        updateState = PK_UPDATE_STATE_ENUM_STABLE;
-    } else if (archive == "testing") {
-        updateState = PK_UPDATE_STATE_ENUM_TESTING;
-    } else if (archive == "unstable" || archive == "experimental") {
+    // assume stable updates for all but some special suites
+    PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_STABLE;
+    if (archive == "experimental") {
+        // these are guaranteed to be unstable updates
         updateState = PK_UPDATE_STATE_ENUM_UNSTABLE;
+    } else if (archive == "testing" || archive == "unstable") {
+        // we don't know the stability of updates in quasi-rolling release suites
+        updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
+    } else if (
+        archive == "proposed-updates" || ends_with(archive, "-proposed-updates") || ends_with(archive, "-proposed")) {
+        // these are guaranteed to be pre-release updates
+        updateState = PK_UPDATE_STATE_ENUM_TESTING;
     }
 
     PkRestartEnum restart = PK_RESTART_ENUM_NONE;
@@ -2347,14 +2352,6 @@ bool AptJob::runTransaction(
 
     pkgProblemResolver Fix(*m_cache);
 
-    // TODO: could use std::bind an have a generic operation array iff toRemove had the same
-    //       signature
-
-    struct Operation {
-        const PkgList &list;
-        const bool preserveAuto;
-    };
-
     // Calculate existing garbage before the transaction
     PkgList initial_garbage;
     std::vector<unsigned int> explicitRemovalPkgIds;
@@ -2377,24 +2374,21 @@ bool AptJob::runTransaction(
     {
         pkgDepCache::ActionGroup group(*m_cache);
 
-        for (auto op : {
-                 Operation{install, false},
-                 Operation{update,  true }
-        }) {
-            // We first need to mark all manual selections with AutoInst=false, so they influence which packages
-            // are chosen when resolving dependencies.
-            // Consider A depends X|Y, with installation of A,Y requested.
-            // With just one run and AutoInst=true, A would be marked for install, it would auto-install X;
-            // then Y is marked for install, and we end up with both X and Y marked for install.
-            // With two runs (one without AutoInst and one with AutoInst), we first mark A and Y for install.
-            // In the 2nd run, when resolving X|Y APT notices that X is already marked for install, and does not install
-            // Y.
-            for (auto autoInst : {false, true}) {
-                for (const PkgInfo &pkInfo : op.list) {
+        // We first need to mark all manual selections with AutoInst=false, so they influence which packages
+        // are chosen when resolving dependencies.
+        // Consider A depends X|Y, with installation of A,Y requested.
+        // With just one run and AutoInst=true, A would be marked for install, it would auto-install X;
+        // then Y is marked for install, and we end up with both X and Y marked for install.
+        // With two runs (one without AutoInst and one with AutoInst), we first mark A and Y for install.
+        // In the 2nd run, when resolving X|Y APT notices that X is already marked for install, and does not install
+        // Y.
+        for (auto autoInst : {false, true}) {
+            for (const PkgList *list : {&install, &update}) {
+                for (const PkgInfo &pkInfo : *list) {
                     if (m_cancel) {
                         break;
                     }
-                    if (!m_cache->tryToInstall(Fix, pkInfo, autoInst, op.preserveAuto, attemptFixBroken)) {
+                    if (!m_cache->tryToInstall(Fix, pkInfo, autoInst, attemptFixBroken)) {
                         return false;
                     }
                 }

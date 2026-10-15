@@ -345,26 +345,26 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
     if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end()))
         return PkgInfo(pkgCache::VerIterator());
 
-    // check if any intended action was encoded in this package-ID
-    auto piAction = PkgAction::NONE;
+    // check if any intended install mode was encoded in this package-ID
+    auto mode = InstallMode::KeepCurrent;
     if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+auto") == 0)
-        piAction = PkgAction::INSTALL_AUTO;
+        mode = InstallMode::Auto;
     else if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+manual") == 0)
-        piAction = PkgAction::INSTALL_MANUAL;
+        mode = InstallMode::Manual;
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (!ver.end() && strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-        return PkgInfo(ver, piAction);
+        return PkgInfo(ver, mode);
 
     // check to see if the provided package isn't virtual too
     // also iterate through all available past versions
     for (auto candidateVer = findCandidateVer(pkg); !candidateVer.end(); candidateVer++) {
         if (strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-            return PkgInfo(candidateVer, piAction);
+            return PkgInfo(candidateVer, mode);
     }
 
-    return PkgInfo(ver, piAction);
+    return PkgInfo(ver, mode);
 }
 
 gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
@@ -458,12 +458,7 @@ std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &
     return debParser(getLongDescription(ver));
 }
 
-bool AptCacheFile::tryToInstall(
-    pkgProblemResolver &Fix,
-    const PkgInfo &pki,
-    bool autoInst,
-    bool preserveAuto,
-    bool fixBroken)
+bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix, const PkgInfo &pki, bool autoInst, bool fixBroken)
 {
     // attempt to fix broken packages, if requested
     if (fixBroken) {
@@ -492,20 +487,23 @@ bool AptCacheFile::tryToInstall(
         return false;
     }
 
-    // Always install as "automatic" or "manual" if the package is explicitly set to
-    // either of the modes (because it may have been resolved in a previous transaction
-    // to be marked as automatic, for example in updates)
-    // If the package indicates no explicit preference we keep the current state
-    // unless the package should explicitly be marked as manually installed
-    // (via preserveAuto == false).
+    // The install mode decides whether APT treats this as a user request:
+    // MarkInstall(FromUser=true) clears the Auto flag, FromUser=false sets it
+    // on a new install. KeepCurrent therefore mirrors the flag the package has,
+    // and a package that is not installed yet has none, so it becomes manual.
     // See https://github.com/PackageKit/PackageKit/issues/450 for details.
-    bool fromUser = false;
-    if (pki.action == PkgAction::INSTALL_AUTO)
+    bool fromUser = true;
+    switch (pki.mode) {
+    case InstallMode::Auto:
         fromUser = false;
-    else if (pki.action == PkgAction::INSTALL_MANUAL)
+        break;
+    case InstallMode::Manual:
         fromUser = true;
-    else
-        fromUser = preserveAuto ? !(State.Flags & pkgCache::Flag::Auto) : true;
+        break;
+    case InstallMode::KeepCurrent:
+        fromUser = (Pkg->CurrentVer == 0) || !(State.Flags & pkgCache::Flag::Auto);
+        break;
+    }
 
     // FIXME: this is ignoring the return value. OTOH the return value means little to us
     //   since we run markinstall twice, once without autoinst and once with.

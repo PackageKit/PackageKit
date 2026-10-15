@@ -86,9 +86,9 @@ public:
     }
 };
 
-void PkgList::append(const pkgCache::VerIterator &verIter, PkgAction action)
+void PkgList::append(const pkgCache::VerIterator &verIter, InstallMode mode)
 {
-    this->push_back(PkgInfo(verIter, action));
+    this->push_back(PkgInfo(verIter, mode));
 }
 
 bool PkgList::contains(const pkgCache::PkgIterator &pkg) const

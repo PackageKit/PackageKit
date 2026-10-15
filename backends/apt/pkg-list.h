@@ -1,7 +1,7 @@
 /* pkg-list.h
  *
  * Copyright (c) 2012-2016 Daniel Nicoletti <dantti12@gmail.com>
- * Copyright (c) 2015-2022 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (c) 2015-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,30 +26,28 @@
 using std::vector;
 
 /**
- * A designated action to perform on a package.
+ * How a package is to be flagged (automatically or manually installed)
+ * when a transaction installs it.
  */
-enum class PkgAction {
-    NONE,
-    INSTALL_AUTO,
-    INSTALL_MANUAL
+enum class InstallMode {
+    KeepCurrent, /// Keep the flag the package already has (a not-yet-installed package becomes manually installed)
+    /**  */
+    Auto,  /// Mark as automatically installed, e.g. a new dependency
+    Manual /// Mark as manually installed, e.g. explicitly requested by the user.
 };
 
 /**
  * Information about a package, mainly containing its VerIterator
- * and some information about the intended action on a package
- * extracted from a PackageKit package-ID.
+ * and the install mode to apply if the package gets installed.
  */
 class PkgInfo
 {
 public:
-    explicit PkgInfo(const pkgCache::VerIterator &verIter)
+    explicit PkgInfo(const pkgCache::VerIterator &verIter, InstallMode m = InstallMode::KeepCurrent)
         : ver(verIter),
-          action(PkgAction::NONE) {};
-    explicit PkgInfo(const pkgCache::VerIterator &verIter, PkgAction a)
-        : ver(verIter),
-          action(a) {};
+          mode(m) {};
     pkgCache::VerIterator ver;
-    PkgAction action;
+    InstallMode mode;
 };
 
 /**
@@ -61,9 +59,9 @@ public:
     /**
      * Add a new package to the list
      * @param verIter The pkgCache::VerIterator assoicated with this package.
-     * @param action An optional action that should be performed on this package in future.
+     * @param mode The install mode to apply if this package gets installed.
      */
-    void append(const pkgCache::VerIterator &verIter, PkgAction action = PkgAction::NONE);
+    void append(const pkgCache::VerIterator &verIter, InstallMode mode = InstallMode::KeepCurrent);
 
     void append(const PkgInfo &pi)
     {

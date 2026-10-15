@@ -159,12 +159,11 @@ public:
      */
     std::string getLongDescriptionParsed(const pkgCache::VerIterator &ver);
 
-    bool tryToInstall(
-        pkgProblemResolver &Fix,
-        const PkgInfo &pki,
-        bool autoInst,
-        bool preserveAuto,
-        bool fixBroken = false);
+    /**
+     * Mark the package for installation, flagged according to pki.mode,
+     * and protect it from the problem resolver.
+     */
+    bool tryToInstall(pkgProblemResolver &Fix, const PkgInfo &pki, bool autoInst, bool fixBroken = false);
 
     void tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki);
 

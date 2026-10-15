@@ -657,6 +657,11 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             removePkgs = apt->resolvePackageIds(package_ids);
         } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
             installPkgs = apt->resolvePackageIds(package_ids);
+            // the user asked for these, so they are manually installed unless the ID says otherwise
+            for (PkgInfo &pki : installPkgs) {
+                if (pki.mode == InstallMode::KeepCurrent)
+                    pki.mode = InstallMode::Manual;
+            }
         } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
             PkgList downgradeIgnored; // FIXME: We likely shouldn't ignore downgrades here...
             if (!apt->resolvePackageUpdateIds(
@@ -672,6 +677,8 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             }
         } else if (role == PK_ROLE_ENUM_INSTALL_FILES) {
             installPkgs = apt->resolveLocalFiles(full_paths);
+            for (PkgInfo &pki : installPkgs)
+                pki.mode = InstallMode::Manual;
         } else {
             pk_backend_job_error_code(
                 job,
