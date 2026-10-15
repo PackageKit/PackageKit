@@ -276,6 +276,12 @@ public:
 
     AptCacheFile *aptCacheFile() const;
 
+    /**
+     * Find a package of the running transaction by name, falling back to
+     * the cache for packages dpkg touches that we did not mark ourselves.
+     */
+    pkgCache::VerIterator findTransactionPackage(const std::string &name);
+
 private:
     void setEnvLocaleFromJob();
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
@@ -290,16 +296,6 @@ private:
         PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
         PkSeverityEnum updateSeverity = PK_SEVERITY_ENUM_NONE) const;
     void stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterator &candver);
-
-    /**
-     *  interprets dpkg status fd
-     */
-    void updateInterface(int readFd, int writeFd, bool *errorEmitted = nullptr);
-
-    /**
-     * Handle a single newline-terminated line read from the dpkg status pipe.
-     */
-    void handleDpkgStatusLine(const std::string &line, int writeFd, bool *errorEmitted);
 
     /**
      * Check that no packages are marked for deletion other than those the user
@@ -317,7 +313,6 @@ private:
     void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage);
 
     PkgList checkChangedPackages(bool emitChanged);
-    pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
     /**
      * Append the packages of this transaction that listed themselves in
@@ -333,13 +328,6 @@ private:
     PkgList m_pkgs;
     PkgList m_restartPackages;
 
-    time_t m_lastTermAction;
-    std::string m_lastPackage;
-    uint m_lastSubProgress;
-    bool m_startCounting;
     bool m_interactive;
-
-    // when the internal terminal timesout after no activity
-    int m_terminalTimeout;
     pid_t m_child_pid;
 };

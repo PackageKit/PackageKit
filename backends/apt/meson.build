@@ -48,6 +48,8 @@ packagekit_backend_apt_lib = static_library(
     'deb822.h',
     'deb-file.cpp',
     'deb-file.h',
+    'dpkg-progress.cpp',
+    'dpkg-progress.h',
     'gst-matcher.cpp',
     'gst-matcher.h',
     'pkg-list.cpp',
