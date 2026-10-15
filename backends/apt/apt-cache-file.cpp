@@ -345,26 +345,19 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
     if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end()))
         return PkgInfo(pkgCache::VerIterator());
 
-    // check if any intended install mode was encoded in this package-ID
-    auto mode = InstallMode::KeepCurrent;
-    if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+auto") == 0)
-        mode = InstallMode::Auto;
-    else if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+manual") == 0)
-        mode = InstallMode::Manual;
-
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (!ver.end() && strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-        return PkgInfo(ver, mode);
+        return PkgInfo(ver);
 
     // check to see if the provided package isn't virtual too
     // also iterate through all available past versions
     for (auto candidateVer = findCandidateVer(pkg); !candidateVer.end(); candidateVer++) {
         if (strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-            return PkgInfo(candidateVer, mode);
+            return PkgInfo(candidateVer);
     }
 
-    return PkgInfo(ver, mode);
+    return PkgInfo(ver);
 }
 
 gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
@@ -377,19 +370,13 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
 
     // when a package is installed manually, the data part of a package-id is "manual",
-    // otherwise it is "auto". Available (not installed) packages have no data, unless
-    // a pending installation is marked, in which case we prefix the desired new mode of
-    // the installed package (auto/manual) with a plus sign (+).
-    std::string data = "";
-    if (isInstalled) {
+    // otherwise it is "auto". Available (not installed) packages have no data.
+    const char *data = "";
+    if (isInstalled)
         data = isAuto ? "auto" : "manual";
-    } else {
-        if (State.NewInstall())
-            data = isAuto ? "+auto" : "+manual";
-    }
     const auto origin = utilBuildPackageOriginId(vf);
 
-    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), origin.c_str(), data.c_str());
+    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), origin.c_str(), data);
 }
 
 pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)
