@@ -589,19 +589,26 @@ static void apt_test_updates_new_dependency(void)
     g_assert_true(job.init());
 
     // foo 1.0 -> 2.0 pulls in foo-firmware as a new dependency
-    PkgList updates, blocked, downgrades, installs, removals, obsoleted;
-    g_assert_true(job.getUpdates(updates, blocked, downgrades, installs, removals, obsoleted));
+    auto plan = job.computeUpdatePlan();
+    g_assert_true(plan.has_value());
 
-    g_assert_cmpuint(updates.size(), ==, 1);
-    g_assert_cmpuint(installs.size(), ==, 1);
-    g_assert_cmpuint(removals.size() + obsoleted.size() + downgrades.size() + blocked.size(), ==, 0);
-    g_assert_nonnull(test_find_pkg(updates, "foo"));
-    g_assert_nonnull(test_find_pkg(installs, "foo-firmware"));
-    g_assert_cmpstr(updates[0].ver.VerStr(), ==, "2.0");
+    g_assert_cmpuint(plan->updates.size(), ==, 1);
+    g_assert_cmpuint(plan->installs.size(), ==, 1);
+    g_assert_cmpuint(
+        plan->removals.size() + plan->obsoleted.size() + plan->downgrades.size() + plan->blocked.size(),
+        ==,
+        0);
+    g_assert_nonnull(test_find_pkg(plan->updates, "foo"));
+    g_assert_nonnull(test_find_pkg(plan->installs, "foo-firmware"));
+    g_assert_cmpstr(plan->updates[0].ver.VerStr(), ==, "2.0");
+
+    // computing the plan must leave no marks behind in the cache
+    for (pkgCache::PkgIterator pkg = (*job.aptCacheFile())->PkgBegin(); !pkg.end(); ++pkg)
+        g_assert_true((*job.aptCacheFile())[pkg].Keep());
 
     // the package-IDs we emit for GetUpdates must resolve back to the same plan
-    const std::string fooId = test_package_id(job, updates[0]);
-    const std::string firmwareId = test_package_id(job, installs[0]);
+    const std::string fooId = test_package_id(job, plan->updates[0]);
+    const std::string firmwareId = test_package_id(job, plan->installs[0]);
     g_auto(GStrv) ids = g_new0(gchar *, 3);
     ids[0] = g_strdup(fooId.c_str());
     ids[1] = g_strdup(firmwareId.c_str());

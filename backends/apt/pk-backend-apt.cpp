@@ -339,20 +339,16 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
-    PkgList updates;
-    PkgList installs;
-    PkgList removals;
-    PkgList obsoleted;
-    PkgList downgrades;
-    PkgList blocked;
-    apt->getUpdates(updates, blocked, downgrades, installs, removals, obsoleted);
+    auto plan = apt->computeUpdatePlan();
+    if (!plan)
+        return;
 
-    apt->emitUpdates(updates, filters);
-    apt->emitPackages(installs, filters, PK_INFO_ENUM_INSTALL);
-    apt->emitPackages(removals, filters, PK_INFO_ENUM_REMOVE);
-    apt->emitPackages(obsoleted, filters, PK_INFO_ENUM_OBSOLETE);
-    apt->emitPackages(downgrades, filters, PK_INFO_ENUM_DOWNGRADE);
-    apt->emitUpdates(blocked, filters, true);
+    apt->emitUpdates(plan->updates, filters);
+    apt->emitPackages(plan->installs, filters, PK_INFO_ENUM_INSTALL);
+    apt->emitPackages(plan->removals, filters, PK_INFO_ENUM_REMOVE);
+    apt->emitPackages(plan->obsoleted, filters, PK_INFO_ENUM_OBSOLETE);
+    apt->emitPackages(plan->downgrades, filters, PK_INFO_ENUM_DOWNGRADE);
+    apt->emitUpdates(plan->blocked, filters, true);
 }
 
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)

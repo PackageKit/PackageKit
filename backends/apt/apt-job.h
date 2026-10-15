@@ -22,6 +22,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <glib.h>
@@ -38,6 +39,21 @@
 class pkgProblemResolver;
 class Matcher;
 class AptCacheFile;
+
+/**
+ * The result of resolving a full upgrade of the system: what would be
+ * upgraded, newly installed, removed, obsoleted, downgraded or is held back.
+ * Computed by AptJob::computeUpdatePlan().
+ */
+struct UpdatePlan {
+    PkgList updates;
+    PkgList blocked;
+    PkgList downgrades;
+    PkgList installs;
+    PkgList removals;
+    PkgList obsoleted;
+};
+
 class AptJob
 {
 public:
@@ -82,6 +98,13 @@ public:
         PkgList &installs,
         PkgList &removals,
         PkgList &obsoleted);
+
+    /**
+     * Determines all available updates and their consequences.
+     * Leaves the cache without any install/remove marks.
+     * @returns the plan, or std::nullopt if the upgrade could not be resolved.
+     */
+    std::optional<UpdatePlan> computeUpdatePlan();
 
     /**
      * Refreshes the sources of packages
@@ -159,18 +182,6 @@ public:
      * Returns a list of all packages that matched contains the given files
      */
     PkgList searchPackageFiles(gchar **values);
-
-    /**
-     * Determines available updates.
-     * Returns true on success.
-     */
-    bool getUpdates(
-        PkgList &updates,
-        PkgList &blocked,
-        PkgList &downgrades,
-        PkgList &installs,
-        PkgList &removals,
-        PkgList &obsoleted);
 
     /**
      *  Emits a package with the given state

@@ -1316,19 +1316,47 @@ PkgList AptJob::searchPackageFiles(gchar **values)
     return output;
 }
 
-bool AptJob::getUpdates(
-    PkgList &updates,
-    PkgList &blocked,
-    PkgList &downgrades,
-    PkgList &installs,
-    PkgList &removals,
-    PkgList &obsoleted)
+/**
+ * Clears every install/remove mark of the dependency cache when the scope ends.
+ * DistUpgrade() marks ALL upgradable packages; without this a later transaction
+ * on the same cache would upgrade everything instead of only what the user
+ * selected.
+ */
+class DepCacheMarksGuard
 {
+public:
+    explicit DepCacheMarksGuard(AptCacheFile &cache)
+        : m_cache(cache)
+    {
+    }
+    ~DepCacheMarksGuard()
+    {
+        pkgDepCache::ActionGroup group(m_cache);
+        for (pkgCache::PkgIterator pkg = m_cache->PkgBegin(); !pkg.end(); ++pkg)
+            m_cache->MarkKeep(pkg, false);
+    }
+
+private:
+    AptCacheFile &m_cache;
+};
+
+std::optional<UpdatePlan> AptJob::computeUpdatePlan()
+{
+    UpdatePlan plan;
+    DepCacheMarksGuard marksGuard(*m_cache);
+
     if (m_cache->DistUpgrade() == false) {
         m_cache->ShowBroken(false);
         g_debug("Internal error, DistUpgrade broke stuff");
-        return false;
+        return std::nullopt;
     }
+
+    PkgList &updates = plan.updates;
+    PkgList &blocked = plan.blocked;
+    PkgList &downgrades = plan.downgrades;
+    PkgList &installs = plan.installs;
+    PkgList &removals = plan.removals;
+    PkgList &obsoleted = plan.obsoleted;
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
         const auto &state = (*m_cache)[pkg];
@@ -1385,17 +1413,7 @@ bool AptJob::getUpdates(
         }
     }
 
-    // DistUpgrade() marks ALL packages for upgrade in the cache.
-    // We need to clear these marks again, to not interfere with later actions
-    // where e.g. the user only selected *some* package for upgrade.
-    // We do this by creating a temporary ActionGroup scope that will be discarded.
-    {
-        pkgDepCache::ActionGroup clearGroup(*m_cache);
-        for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg)
-            (*m_cache)->MarkKeep(pkg, false);
-    }
-
-    return true;
+    return plan;
 }
 
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
@@ -2200,22 +2218,15 @@ bool AptJob::resolvePackageUpdateIds(
     PkgList &removals,
     PkgList &obsoleted)
 {
-    PkgList updateCandidates;
-    PkgList installCandidates;
-    PkgList removeCandidates;
-    PkgList obsoleteCandidates;
-    PkgList downgradeCandidates;
-    PkgList unusedBlocked;
-
     // fetch update candidates
-    if (!getUpdates(
-            updateCandidates,
-            unusedBlocked,
-            downgradeCandidates,
-            installCandidates,
-            removeCandidates,
-            obsoleteCandidates))
+    auto plan = computeUpdatePlan();
+    if (!plan)
         return false;
+    PkgList &updateCandidates = plan->updates;
+    PkgList &installCandidates = plan->installs;
+    PkgList &removeCandidates = plan->removals;
+    PkgList &obsoleteCandidates = plan->obsoleted;
+    PkgList &downgradeCandidates = plan->downgrades;
 
     // transform candidate lists into package-id lookup maps
     std::unordered_map<std::string, PkgInfo> updateIdMap;
