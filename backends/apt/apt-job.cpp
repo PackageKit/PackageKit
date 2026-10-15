@@ -2227,47 +2227,21 @@ bool AptJob::resolvePackageUpdateIds(
     auto plan = computeUpdatePlan();
     if (!plan)
         return false;
-    PkgList &updateCandidates = plan->updates;
-    PkgList &installCandidates = plan->installs;
-    PkgList &removeCandidates = plan->removals;
-    PkgList &obsoleteCandidates = plan->obsoleted;
-    PkgList &downgradeCandidates = plan->downgrades;
 
-    // transform candidate lists into package-id lookup maps
-    std::unordered_map<std::string, PkgInfo> updateIdMap;
-    std::unordered_map<std::string, PkgInfo> downgradeIdMap;
-    std::unordered_map<std::string, PkgInfo> installIdMap;
-    std::unordered_map<std::string, PkgInfo> removalIdMap;
-    std::unordered_map<std::string, PkgInfo> obsoleteIdMap;
-
-    updateCandidates.removeDuplicates();
-    for (const auto &pkgInfo : updateCandidates) {
-        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
-        updateIdMap.emplace(pkid, pkgInfo);
-    }
-
-    downgradeCandidates.removeDuplicates();
-    for (const auto &pkgInfo : downgradeCandidates) {
-        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
-        downgradeIdMap.emplace(pkid, pkgInfo);
-    }
-
-    installCandidates.removeDuplicates();
-    for (const auto &pkgInfo : installCandidates) {
-        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
-        installIdMap.emplace(pkid, pkgInfo);
-    }
-
-    removeCandidates.removeDuplicates();
-    for (const auto &pkgInfo : removeCandidates) {
-        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
-        removalIdMap.emplace(pkid, pkgInfo);
-    }
-
-    obsoleteCandidates.removeDuplicates();
-    for (const auto &pkgInfo : obsoleteCandidates) {
-        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
-        obsoleteIdMap.emplace(pkid, pkgInfo);
+    // map every candidate's package-ID to the candidate and the output list it belongs in
+    std::unordered_map<std::string, std::pair<PkgList *, PkgInfo>> candidates;
+    for (auto [source, target] : {
+             std::pair{&plan->updates,    &updates   },
+             std::pair{&plan->downgrades, &downgrades},
+             std::pair{&plan->installs,   &installs  },
+             std::pair{&plan->removals,   &removals  },
+             std::pair{&plan->obsoleted,  &obsoleted }
+    }) {
+        source->removeDuplicates();
+        for (const auto &pkgInfo : *source) {
+            g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+            candidates.emplace(pkid, std::make_pair(target, pkgInfo));
+        }
     }
 
     // Resolve IDs
@@ -2285,41 +2259,8 @@ bool AptJob::resolvePackageUpdateIds(
             return false;
         }
 
-        // Try to find the package ID in each map
-        bool found = false;
-
-        auto updateIt = updateIdMap.find(pkgid);
-        if (updateIt != updateIdMap.end()) {
-            updates.append(updateIt->second);
-            found = true;
-        } else {
-            auto downgradeIt = downgradeIdMap.find(pkgid);
-            if (downgradeIt != downgradeIdMap.end()) {
-                downgrades.append(downgradeIt->second);
-                found = true;
-            } else {
-                auto installIt = installIdMap.find(pkgid);
-                if (installIt != installIdMap.end()) {
-                    installs.append(installIt->second);
-                    found = true;
-                } else {
-                    auto removalIt = removalIdMap.find(pkgid);
-                    if (removalIt != removalIdMap.end()) {
-                        removals.append(removalIt->second);
-                        found = true;
-                    } else {
-                        auto obsoleteIt = obsoleteIdMap.find(pkgid);
-                        if (obsoleteIt != obsoleteIdMap.end()) {
-                            obsoleted.append(obsoleteIt->second);
-                            found = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        // If the package ID wasn't found in any candidate set, error out
-        if (!found) {
+        auto it = candidates.find(pkgid);
+        if (it == candidates.end()) {
             pk_backend_job_error_code(
                 m_job,
                 PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -2327,6 +2268,7 @@ bool AptJob::resolvePackageUpdateIds(
                 pkgid);
             return false;
         }
+        it->second.first->append(it->second.second);
     }
 
     return true;
