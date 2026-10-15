@@ -1385,7 +1385,10 @@ std::optional<UpdatePlan> AptJob::computeUpdatePlan()
         } else if (state.NewInstall()) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                installs.append(ver);
+                // Record how the upgrade marked the new package (a pulled-in dependency is
+                // automatic), since the marks are gone by the time the transaction runs.
+                const bool isAuto = state.Flags & pkgCache::Flag::Auto;
+                installs.append(ver, isAuto ? InstallMode::Auto : InstallMode::Manual);
             }
         } else if (state.Delete()) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);

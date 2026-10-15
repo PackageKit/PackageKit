@@ -601,6 +601,9 @@ static void apt_test_updates_new_dependency(void)
     g_assert_nonnull(test_find_pkg(plan->updates, "foo"));
     g_assert_nonnull(test_find_pkg(plan->installs, "foo-firmware"));
     g_assert_cmpstr(plan->updates[0].ver.VerStr(), ==, "2.0");
+    // the new dependency is pulled in automatically, not requested by the user
+    g_assert_true(plan->installs[0].mode == InstallMode::Auto);
+    g_assert_true(plan->updates[0].mode == InstallMode::Keep);
 
     // computing the plan must leave no marks behind in the cache
     for (pkgCache::PkgIterator pkg = (*job.aptCacheFile())->PkgBegin(); !pkg.end(); ++pkg)
@@ -621,12 +624,73 @@ static void apt_test_updates_new_dependency(void)
     const std::string rFirmwareId = test_package_id(job, rInstalls[0]);
     g_assert_cmpstr(rFooId.c_str(), ==, fooId.c_str());
     g_assert_cmpstr(rFirmwareId.c_str(), ==, firmwareId.c_str());
+    g_assert_true(rInstalls[0].mode == InstallMode::Auto);
 
     // an unknown ID is an error, not silently ignored
     g_auto(GStrv) badIds = g_new0(gchar *, 2);
     badIds[0] = g_strdup("nonexistent;1.0;amd64;");
     PkgList unused;
     g_assert_false(job.resolvePackageUpdateIds(badIds, unused, unused, unused, unused, unused));
+}
+
+static bool test_pkg_marked_auto(AptJob &job, const char *name)
+{
+    AptCacheFile *cache = job.aptCacheFile();
+    const pkgCache::PkgIterator pkg = (*cache)->FindPkg(name);
+    g_assert_false(pkg.end());
+    g_assert_true((*cache)[pkg].NewInstall());
+    return (*cache)[pkg].Flags & pkgCache::Flag::Auto;
+}
+
+/* issue #1025: a dependency pulled in by UpdatePackages must end up automatically installed */
+static void apt_test_update_marks_new_dependency_auto(void)
+{
+    AptTestRoot testRoot("cache-auto-deps");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+
+    // what the daemon does for UpdatePackages with the IDs from GetUpdates
+    auto plan = job.computeUpdatePlan();
+    g_assert_true(plan.has_value());
+    g_auto(GStrv) ids = g_new0(gchar *, 3);
+    ids[0] = job.aptCacheFile()->buildPackageId(plan->updates[0].ver);
+    ids[1] = job.aptCacheFile()->buildPackageId(plan->installs[0].ver);
+
+    TransactionRequest request;
+    PkgList downgradeIgnored;
+    g_assert_true(job.resolvePackageUpdateIds(
+        ids,
+        request.update,
+        downgradeIgnored,
+        request.install,
+        request.remove,
+        request.remove));
+    request.flags = pk_bitfield_from_enums(PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1);
+    g_assert_true(job.runTransaction(request));
+
+    g_assert_true(test_pkg_marked_auto(job, "foo-firmware"));
+}
+
+/* ...whereas the same package explicitly requested via InstallPackages is manual */
+static void apt_test_install_marks_package_manual(void)
+{
+    AptTestRoot testRoot("cache-auto-deps");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+
+    const pkgCache::PkgIterator pkg = (*job.aptCacheFile())->FindPkg("foo-firmware");
+    g_assert_false(pkg.end());
+    g_auto(GStrv) ids = g_new0(gchar *, 2);
+    ids[0] = job.aptCacheFile()->buildPackageId(job.aptCacheFile()->findCandidateVer(pkg));
+
+    TransactionRequest request;
+    request.install = job.resolvePackageIds(ids);
+    g_assert_cmpuint(request.install.size(), ==, 1);
+    request.install[0].mode = InstallMode::Manual;
+    request.flags = pk_bitfield_from_enums(PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1);
+    g_assert_true(job.runTransaction(request));
+
+    g_assert_false(test_pkg_marked_auto(job, "foo-firmware"));
 }
 
 int main(int argc, char **argv)
@@ -654,6 +718,8 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/sources/source-record-assign", apt_test_source_record_assign);
     g_test_add_func("/apt/utils/changelog-date", apt_test_changelog_date);
     g_test_add_func("/apt/updates/new-dependency", apt_test_updates_new_dependency);
+    g_test_add_func("/apt/updates/new-dependency-auto", apt_test_update_marks_new_dependency_auto);
+    g_test_add_func("/apt/install/package-manual", apt_test_install_marks_package_manual);
 
     return g_test_run();
 }
