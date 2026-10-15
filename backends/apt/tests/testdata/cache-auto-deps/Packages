@@ -1,0 +1,29 @@
+Package: foo
+Version: 2.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 10
+Depends: foo-firmware (>= 2.0)
+Priority: optional
+Section: misc
+Filename: ./foo_2.0_amd64.deb
+Size: 1000
+MD5sum: 00000000000000000000000000000000
+SHA256: 0000000000000000000000000000000000000000000000000000000000000000
+Description: Test package foo
+ Update candidate that pulls in foo-firmware as a new dependency.
+
+Package: foo-firmware
+Version: 2.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 10
+Priority: optional
+Section: misc
+Filename: ./foo-firmware_2.0_amd64.deb
+Size: 1000
+MD5sum: 00000000000000000000000000000000
+SHA256: 0000000000000000000000000000000000000000000000000000000000000000
+Description: Test package foo-firmware
+ New dependency of foo 2.0, must be installed as automatic.
+
