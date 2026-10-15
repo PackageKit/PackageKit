@@ -1876,17 +1876,6 @@ void AptJob::refreshCache()
     }
 }
 
-void AptJob::markAutoInstalled(const PkgList &pkgs)
-{
-    for (const PkgInfo &pkInfo : pkgs) {
-        if (m_cancel)
-            break;
-
-        // Mark package as auto-installed
-        (*m_cache)->MarkAuto(pkInfo.ver.ParentPkg(), true);
-    }
-}
-
 bool AptJob::markFileForInstall(std::string const &file)
 {
     return m_cache->GetSourceList()->AddVolatileFile(file);

@@ -200,7 +200,7 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
 {
     PkRoleEnum role;
     PkBitfield filters;
-    gchar **package_ids;
+    g_autofree gchar **package_ids = nullptr;
     gboolean recursive;
     gchar *pi;
 
@@ -246,7 +246,7 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
 
 static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **package_ids;
+    g_autofree gchar **package_ids = nullptr;
     gchar *pi;
 
     g_variant_get(params, "(^a&s)", &package_ids);
@@ -282,8 +282,8 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
 
 static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **package_ids = nullptr;
-    gchar **files = nullptr;
+    g_autofree gchar **package_ids = nullptr;
+    g_autofree gchar **files = nullptr;
     PkRoleEnum role;
     role = pk_backend_job_get_role(job);
 
@@ -354,7 +354,7 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkBitfield filters;
-    gchar **values;
+    g_autofree gchar **values = nullptr;
     auto apt = static_cast<AptJob *>(pk_backend_job_get_user_data(job));
 
     g_variant_get(params, "(t^a&s)", &filters, &values);
@@ -364,7 +364,6 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
     // We can handle libraries, mimetypes and codecs
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        g_strfreev(values);
         return;
     }
 
@@ -384,11 +383,11 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
  */
 static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **package_ids;
+    g_autofree gchar **package_ids = nullptr;
     const gchar *tmpDir;
     string directory;
 
-    g_variant_get(params, "(^a&ss)", &package_ids, &tmpDir);
+    g_variant_get(params, "(^a&s&s)", &package_ids, &tmpDir);
     directory = _config->FindDir("Dir::Cache::archives");
     pk_backend_job_set_allow_cancel(job, true);
 
@@ -504,7 +503,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **search;
+    g_autofree gchar **search = nullptr;
     PkBitfield filters;
 
     g_variant_get(params, "(t^a&s)", &filters, &search);
@@ -524,7 +523,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 
 static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **search;
+    g_autofree gchar **search = nullptr;
     PkBitfield filters;
     auto apt = static_cast<AptJob *>(pk_backend_job_get_user_data(job));
 
@@ -550,7 +549,7 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 
 static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **search;
+    g_autofree gchar **search = nullptr;
     PkBitfield filters;
 
     g_variant_get(params, "(t^a&s)", &filters, &search);
@@ -571,7 +570,7 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
 
 static void backend_search_package_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **values;
+    g_autofree gchar **values = nullptr;
     PkBitfield filters;
     PkRoleEnum role;
     vector<string> queries;
@@ -627,7 +626,7 @@ static bool apt_init_for_request(PkBackendJob *job, AptJob *apt, gchar **localDe
 
 static std::optional<TransactionRequest> requestForInstall(PkBackendJob *job, AptJob *apt, GVariant *params)
 {
-    gchar **package_ids = nullptr;
+    g_autofree gchar **package_ids = nullptr;
     TransactionRequest request;
     g_variant_get(params, "(t^a&s)", &request.flags, &package_ids);
 
@@ -642,7 +641,7 @@ static std::optional<TransactionRequest> requestForInstall(PkBackendJob *job, Ap
 
 static std::optional<TransactionRequest> requestForRemove(PkBackendJob *job, AptJob *apt, GVariant *params)
 {
-    gchar **package_ids = nullptr;
+    g_autofree gchar **package_ids = nullptr;
     gboolean allowRemoveDeps = true;
     gboolean autoremove = false;
     TransactionRequest request;
@@ -658,7 +657,7 @@ static std::optional<TransactionRequest> requestForRemove(PkBackendJob *job, Apt
 
 static std::optional<TransactionRequest> requestForUpdate(PkBackendJob *job, AptJob *apt, GVariant *params)
 {
-    gchar **package_ids = nullptr;
+    g_autofree gchar **package_ids = nullptr;
     TransactionRequest request;
     g_variant_get(params, "(t^a&s)", &request.flags, &package_ids);
 
@@ -680,7 +679,7 @@ static std::optional<TransactionRequest> requestForUpdate(PkBackendJob *job, Apt
 
 static std::optional<TransactionRequest> requestForInstallFiles(PkBackendJob *job, AptJob *apt, GVariant *params)
 {
-    gchar **full_paths = nullptr;
+    g_autofree gchar **full_paths = nullptr;
     TransactionRequest request;
     g_variant_get(params, "(t^a&s)", &request.flags, &full_paths);
 

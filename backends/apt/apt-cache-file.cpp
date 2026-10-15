@@ -252,35 +252,6 @@ bool AptCacheFile::isGarbage(const pkgCache::PkgIterator &pkg)
     return (*this)[pkg].Garbage;
 }
 
-bool AptCacheFile::doAutomaticRemove()
-{
-    pkgDepCache::ActionGroup group(*this);
-
-    // look over the cache to see what can be removed
-    for (pkgCache::PkgIterator Pkg = (*this)->PkgBegin(); !Pkg.end(); ++Pkg) {
-        if ((*this)[Pkg].Garbage) {
-            if (Pkg.CurrentVer() != 0 && Pkg->CurrentState != pkgCache::State::ConfigFiles) {
-                // TODO, packagekit could provide a way to purge
-                (*this)->MarkDelete(Pkg, false);
-            } else {
-                (*this)->MarkKeep(Pkg, false, false);
-            }
-        }
-    }
-
-    // Now see if we destroyed anything
-    if ((*this)->BrokenCount() != 0) {
-        g_warning(
-            "Seems like the AutoRemover destroyed something which really "
-            "shouldn't happen. Please file a bug report against APT.");
-        // TODO call show_broken
-        //       ShowBroken(c1out,cache,false);
-        return _error->Error("Internal Error, AutoRemover broke stuff");
-    }
-
-    return true;
-}
-
 bool AptCacheFile::isRemovingEssentialPackages()
 {
     std::string List;

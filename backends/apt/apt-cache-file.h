@@ -106,13 +106,6 @@ public:
     bool isGarbage(const pkgCache::PkgIterator &pkg);
 
     /**
-     * DoAutomaticRemove - Remove all automatic unused packages
-     *
-     * Remove unused automatic packages
-     */
-    bool doAutomaticRemove();
-
-    /**
      * Checks if there are Essential packages marked to be removed
      */
     bool isRemovingEssentialPackages();

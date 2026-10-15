@@ -84,12 +84,6 @@ public:
     PkBackendJob *pkJob() const;
 
     /**
-     * Tries to find a package with the given packageId
-     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
-     */
-    pkgCache::VerIterator findPackageId(const gchar *packageId);
-
-    /**
      * Tries to find a list of packages mathing the package ids
      * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
      */
@@ -132,11 +126,6 @@ public:
      * @returns true if the package can be installed
      */
     bool markFileForInstall(std::string const &file);
-
-    /**
-     * Marks the given packages as auto installed
-     */
-    void markAutoInstalled(const PkgList &pkgs);
 
     /**
      * Runs a transaction to install/remove/update packages, or simulates it
