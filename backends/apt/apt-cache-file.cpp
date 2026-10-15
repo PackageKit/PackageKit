@@ -487,7 +487,7 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix, const PkgInfo &pki, boo
     case InstallMode::Manual:
         fromUser = true;
         break;
-    case InstallMode::KeepCurrent:
+    case InstallMode::Keep:
         fromUser = (Pkg->CurrentVer == 0) || !(State.Flags & pkgCache::Flag::Auto);
         break;
     }

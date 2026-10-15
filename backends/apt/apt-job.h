@@ -54,6 +54,19 @@ struct UpdatePlan {
     PkgList obsoleted;
 };
 
+/**
+ * Everything a transaction needs: which packages to install, remove or
+ * update, the transaction flags, and how to treat dependent packages.
+ */
+struct TransactionRequest {
+    PkgList install;
+    PkgList remove;
+    PkgList update;
+    PkBitfield flags = 0;
+    bool autoremove = false;
+    bool allowRemoveDeps = true;
+};
+
 class AptJob
 {
 public:
@@ -125,23 +138,10 @@ public:
     void markAutoInstalled(const PkgList &pkgs);
 
     /**
-     * runs a transaction to install/remove/update packages
-     * @param install List of packages to install
-     * @param remove List of packages to remove
-     * @param update List of packages to update
-     * @param fixBroken whether to automatically fix broken packages
-     * @param flags operation flags as per public API
-     * @param autoremove whether to autoremove dangling packages
-     * @param allowRemoveDeps whether to allow removal of dependent packages
+     * Runs a transaction to install/remove/update packages, or simulates it
+     * if the request's flags say so. An empty request repairs broken packages.
      */
-    bool runTransaction(
-        const PkgList &install,
-        const PkgList &remove,
-        const PkgList &update,
-        bool fixBroken,
-        PkBitfield flags,
-        bool autoremove,
-        bool allowRemoveDeps);
+    bool runTransaction(const TransactionRequest &request);
 
     /**
      *  Get package depends

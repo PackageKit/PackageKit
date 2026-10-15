@@ -612,99 +612,141 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     pk_backend_job_set_percentage(job, 100);
 }
 
-static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+/**
+ * Open the package cache for resolving the packages of a transaction request.
+ */
+static bool apt_init_for_request(PkBackendJob *job, AptJob *apt, gchar **localDebs = nullptr)
 {
-    // Transaction flags
-    PkBitfield transaction_flags = 0;
+    if (!apt->init(localDebs)) {
+        g_debug("Failed to create apt cache");
+        return false;
+    }
+    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+    return true;
+}
+
+static std::optional<TransactionRequest> requestForInstall(PkBackendJob *job, AptJob *apt, GVariant *params)
+{
+    gchar **package_ids = nullptr;
+    TransactionRequest request;
+    g_variant_get(params, "(t^a&s)", &request.flags, &package_ids);
+
+    if (!apt_init_for_request(job, apt))
+        return std::nullopt;
+    request.install = apt->resolvePackageIds(package_ids);
+    // the user asked for these, so they are manually installed
+    for (PkgInfo &pki : request.install)
+        pki.mode = InstallMode::Manual;
+    return request;
+}
+
+static std::optional<TransactionRequest> requestForRemove(PkBackendJob *job, AptJob *apt, GVariant *params)
+{
+    gchar **package_ids = nullptr;
     gboolean allowRemoveDeps = true;
     gboolean autoremove = false;
-    gchar **full_paths = nullptr;
+    TransactionRequest request;
+    g_variant_get(params, "(t^a&sbb)", &request.flags, &package_ids, &allowRemoveDeps, &autoremove);
+    request.allowRemoveDeps = allowRemoveDeps;
+    request.autoremove = autoremove;
+
+    if (!apt_init_for_request(job, apt))
+        return std::nullopt;
+    request.remove = apt->resolvePackageIds(package_ids);
+    return request;
+}
+
+static std::optional<TransactionRequest> requestForUpdate(PkBackendJob *job, AptJob *apt, GVariant *params)
+{
     gchar **package_ids = nullptr;
+    TransactionRequest request;
+    g_variant_get(params, "(t^a&s)", &request.flags, &package_ids);
 
-    // Get the transaction role since this method is called by install/remove/update/repair
-    PkRoleEnum role = pk_backend_job_get_role(job);
-    if (role == PK_ROLE_ENUM_INSTALL_FILES) {
-        g_variant_get(params, "(t^a&s)", &transaction_flags, &full_paths);
-    } else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-        g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allowRemoveDeps, &autoremove);
-    } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-        g_variant_get(params, "(t^a&s)", &transaction_flags, &package_ids);
-    } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-        g_variant_get(params, "(t^a&s)", &transaction_flags, &package_ids);
+    if (!apt_init_for_request(job, apt))
+        return std::nullopt;
+    PkgList downgradeIgnored; // FIXME: We likely shouldn't ignore downgrades here...
+    if (!apt->resolvePackageUpdateIds(
+            package_ids,
+            request.update,
+            downgradeIgnored,
+            request.install,
+            request.remove,
+            request.remove)) {
+        // the resolve method already emitted the error message
+        return std::nullopt;
     }
+    return request;
+}
 
-    // Check if we should fix broken packages
-    bool fixBroken = false;
-    if (role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-        // On fix broken mode no package to remove/install is allowed
-        fixBroken = true;
-    }
+static std::optional<TransactionRequest> requestForInstallFiles(PkBackendJob *job, AptJob *apt, GVariant *params)
+{
+    gchar **full_paths = nullptr;
+    TransactionRequest request;
+    g_variant_get(params, "(t^a&s)", &request.flags, &full_paths);
 
+    if (!apt_init_for_request(job, apt, full_paths))
+        return std::nullopt;
+    request.install = apt->resolveLocalFiles(full_paths);
+    for (PkgInfo &pki : request.install)
+        pki.mode = InstallMode::Manual;
+    return request;
+}
+
+static std::optional<TransactionRequest> requestForRepair(PkBackendJob *job, AptJob *apt, GVariant *params)
+{
+    TransactionRequest request;
+    g_variant_get(params, "(t)", &request.flags);
+
+    // Nothing to resolve: the cache is opened allowing broken packages for this
+    // role, and runTransaction() has the problem resolver fix what it finds.
+    if (!apt_init_for_request(job, apt))
+        return std::nullopt;
+    return request;
+}
+
+static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+{
     pk_backend_job_set_allow_cancel(job, true);
-
     auto apt = static_cast<AptJob *>(pk_backend_job_get_user_data(job));
-    if (!apt->init(full_paths)) {
-        g_debug("Failed to create apt cache");
+
+    // This method is called by install/remove/update/repair
+    const PkRoleEnum role = pk_backend_job_get_role(job);
+    std::optional<TransactionRequest> request;
+    switch (role) {
+    case PK_ROLE_ENUM_INSTALL_PACKAGES:
+        request = requestForInstall(job, apt, params);
+        break;
+    case PK_ROLE_ENUM_REMOVE_PACKAGES:
+        request = requestForRemove(job, apt, params);
+        break;
+    case PK_ROLE_ENUM_UPDATE_PACKAGES:
+        request = requestForUpdate(job, apt, params);
+        break;
+    case PK_ROLE_ENUM_INSTALL_FILES:
+        request = requestForInstallFiles(job, apt, params);
+        break;
+    case PK_ROLE_ENUM_REPAIR_SYSTEM:
+        request = requestForRepair(job, apt, params);
+        break;
+    default:
+        pk_backend_job_error_code(
+            job,
+            PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+            "Could not figure out what to do to apply the change.");
         return;
     }
+    if (!request)
+        return;
 
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    PkgList installPkgs, removePkgs, updatePkgs;
-
-    if (!fixBroken) {
-        // Resolve the given packages
-        if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-            removePkgs = apt->resolvePackageIds(package_ids);
-        } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-            installPkgs = apt->resolvePackageIds(package_ids);
-            // the user asked for these, so they are manually installed
-            for (PkgInfo &pki : installPkgs)
-                pki.mode = InstallMode::Manual;
-        } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-            PkgList downgradeIgnored; // FIXME: We likely shouldn't ignore downgrades here...
-            if (!apt->resolvePackageUpdateIds(
-                    package_ids,
-                    updatePkgs,
-                    downgradeIgnored,
-                    installPkgs,
-                    removePkgs,
-                    removePkgs)) {
-                // the resolve method already emitted the error message,
-                // we don't need to do anything else here
-                return;
-            }
-        } else if (role == PK_ROLE_ENUM_INSTALL_FILES) {
-            installPkgs = apt->resolveLocalFiles(full_paths);
-            for (PkgInfo &pki : installPkgs)
-                pki.mode = InstallMode::Manual;
-        } else {
-            pk_backend_job_error_code(
-                job,
-                PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-                "Could not figure out what to do to apply the change.");
-            return;
-        }
-
-        if (removePkgs.size() == 0 && installPkgs.size() == 0 && updatePkgs.size() == 0) {
-            pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Could not find package(s)");
-            return;
-        }
+    if (role != PK_ROLE_ENUM_REPAIR_SYSTEM && request->install.empty() && request->remove.empty()
+        && request->update.empty()) {
+        pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Could not find package(s)");
+        return;
     }
 
     // Install/Update/Remove packages, or just simulate
-    bool ret = apt->runTransaction(
-        installPkgs,
-        removePkgs,
-        updatePkgs,
-        fixBroken,
-        transaction_flags,
-        autoremove,
-        allowRemoveDeps);
-    if (!ret) {
-        // Print transaction errors
+    if (!apt->runTransaction(*request))
         g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
-        return;
-    }
 }
 
 static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -788,19 +830,12 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         return;
                     }
 
-                    PkgList removePkgs = apt->getPackagesFromRepo(sourceRecord.get());
-                    if (removePkgs.size() > 0) {
-                        // Install/Update/Remove packages, or just simulate
-                        bool ret;
-                        ret = apt->runTransaction(
-                            PkgList(),
-                            removePkgs,
-                            PkgList(),
-                            false,
-                            transaction_flags,
-                            false,
-                            true);
-                        if (!ret) {
+                    TransactionRequest request;
+                    request.remove = apt->getPackagesFromRepo(sourceRecord.get());
+                    request.flags = transaction_flags;
+                    if (request.remove.size() > 0) {
+                        // Remove packages, or just simulate
+                        if (!apt->runTransaction(request)) {
                             // Print transaction errors
                             g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
                             return;

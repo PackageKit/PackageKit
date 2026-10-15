@@ -2274,19 +2274,18 @@ bool AptJob::resolvePackageUpdateIds(
     return true;
 }
 
-bool AptJob::runTransaction(
-    const PkgList &install,
-    const PkgList &remove,
-    const PkgList &update,
-    bool fixBroken,
-    PkBitfield flags,
-    bool autoremove,
-    bool allowRemoveDeps)
+bool AptJob::runTransaction(const TransactionRequest &request)
 {
+    const PkgList &install = request.install;
+    const PkgList &remove = request.remove;
+    const PkgList &update = request.update;
+    const PkBitfield flags = request.flags;
+    const bool autoremove = request.autoremove;
+    const bool allowRemoveDeps = request.allowRemoveDeps;
+
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_RUNNING);
 
-    // Enter the special broken fixing mode if the user specified arguments
-    // THIS mode will run if fixBroken is false and the cache has broken packages
+    // Enter the special broken fixing mode if the cache has broken packages
     bool attemptFixBroken = false;
     if ((*m_cache)->BrokenCount() != 0) {
         attemptFixBroken = true;

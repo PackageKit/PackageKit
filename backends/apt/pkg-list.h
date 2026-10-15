@@ -30,8 +30,7 @@ using std::vector;
  * when a transaction installs it.
  */
 enum class InstallMode {
-    KeepCurrent, /// Keep the flag the package already has (a not-yet-installed package becomes manually installed)
-    /**  */
+    Keep,  /// Keep the flag the package already has (a not-yet-installed package becomes manually installed)
     Auto,  /// Mark as automatically installed, e.g. a new dependency
     Manual /// Mark as manually installed, e.g. explicitly requested by the user.
 };
@@ -43,7 +42,7 @@ enum class InstallMode {
 class PkgInfo
 {
 public:
-    explicit PkgInfo(const pkgCache::VerIterator &verIter, InstallMode m = InstallMode::KeepCurrent)
+    explicit PkgInfo(const pkgCache::VerIterator &verIter, InstallMode m = InstallMode::Keep)
         : ver(verIter),
           mode(m) {};
     pkgCache::VerIterator ver;
@@ -61,7 +60,7 @@ public:
      * @param verIter The pkgCache::VerIterator assoicated with this package.
      * @param mode The install mode to apply if this package gets installed.
      */
-    void append(const pkgCache::VerIterator &verIter, InstallMode mode = InstallMode::KeepCurrent);
+    void append(const pkgCache::VerIterator &verIter, InstallMode mode = InstallMode::Keep);
 
     void append(const PkgInfo &pi)
     {
