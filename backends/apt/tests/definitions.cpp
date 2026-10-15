@@ -42,7 +42,7 @@ void pk_backend_job_set_download_size_remaining(PkBackendJob *job, guint64 downl
 
 void pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...) {}
 
-void pk_backend_job_files(PkBackendJob *job, const gchar *package_id, gchar **files) {}
+void pk_backend_job_files(PkBackendJob *job, const gchar *package_id, GPtrArray *files) {}
 
 void pk_backend_job_require_restart(PkBackendJob *job, PkRestartEnum restart, const gchar *package_id) {}
 

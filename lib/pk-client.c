@@ -939,13 +939,13 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 	/* remove any not in the destination directory */
 	for (i = 0; i < array->len;) {
 		PkFiles *item;
-		gchar **files;
+		GPtrArray *files;
 		g_autoptr(GFile) file = NULL;
 		g_autoptr(GFile) parent = NULL;
 
 		item = g_ptr_array_index (array, i);
 		files = pk_files_get_files (item);
-		file = g_file_new_for_path (files[0]);
+		file = g_file_new_for_path (pk_file_get_path (g_ptr_array_index (files, 0)));
 		parent = g_file_get_parent (file);
 		if (parent == NULL || !g_file_equal (parent, directory))
 			g_ptr_array_remove_index_fast (array, i);
@@ -1017,7 +1017,7 @@ pk_client_copy_downloaded_file (PkClientState *state,
 	g_autoptr(GFile) destination = NULL;
 	g_autoptr(GFile) source = NULL;
 	g_autoptr(PkFiles) item = NULL;
-	g_auto(GStrv) files = NULL;
+	g_autoptr(GPtrArray) files = NULL;
 
 	/* generate the destination location */
 	basename = g_path_get_basename (source_file);
@@ -1046,8 +1046,9 @@ pk_client_copy_downloaded_file (PkClientState *state,
 			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb,
 			   g_object_ref (state));
 
-	/* Add the result (as a GStrv) to the results set */
-	files = g_strsplit (path, ",", -1);
+	/* add the result to the results set */
+	files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+	g_ptr_array_add (files, pk_file_new (path, PK_FILE_KIND_ENUM_REGULAR));
 	item = pk_files_new ();
 	g_object_set (item,
 		      "package-id",
@@ -1074,8 +1075,6 @@ pk_client_copy_downloaded_file (PkClientState *state,
 static void
 pk_client_copy_downloaded (PkClientState *state)
 {
-	guint i;
-	guint j;
 	guint len;
 	PkFiles *item;
 	g_autoptr(GPtrArray) array = NULL;
@@ -1086,9 +1085,9 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* get the number of files to copy */
 	n_files_to_copy = 0;
-	for (i = 0; i < array->len; i++) {
+	for (guint i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		n_files_to_copy += g_strv_length (pk_files_get_files (item));
+		n_files_to_copy += pk_files_get_files (item)->len;
 	}
 
 	g_atomic_int_set (&state->remaining_files_to_copy, n_files_to_copy);
@@ -1100,18 +1099,19 @@ pk_client_copy_downloaded (PkClientState *state)
 	pk_progress_set_percentage (state->progress, -1);
 
 	/* do the copies pipelined */
-	for (i = 0; i < len; i++) {
-		gchar **files;
+	for (guint i = 0; i < len; i++) {
+		GPtrArray *files;
 		item = g_ptr_array_index (array, i);
 		files = pk_files_get_files (item);
-		for (j = 0; files[j] != NULL; j++) {
-			pk_client_copy_downloaded_file (state,
-							pk_files_get_package_id (item),
-							files[j]);
+		for (guint j = 0; j < files->len; j++) {
+			pk_client_copy_downloaded_file (
+			    state,
+			    pk_files_get_package_id (item),
+			    pk_file_get_path (g_ptr_array_index (files, j)));
 		}
 	}
 
-	/* Were there actually any files to copy? */
+	/* were there actually any files to copy? */
 	if (n_files_to_copy == 0) {
 		state->ret = TRUE;
 		pk_client_state_finish (state, NULL);
@@ -1494,9 +1494,15 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Files") == 0) {
-		g_autofree gchar **files = NULL;
+		g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func (
+		    (GDestroyNotify) pk_file_free);
+		g_autoptr(GVariantIter) iter = NULL;
 		g_autoptr(PkFiles) item = NULL;
-		g_variant_get (parameters, "(&s^a&s)", &tmp_str[0], &files);
+		const gchar *path;
+		guint32 kind;
+		g_variant_get (parameters, "(&sa(su))", &tmp_str[0], &iter);
+		while (g_variant_iter_next (iter, "(&su)", &path, &kind))
+			g_ptr_array_add (files, pk_file_new (path, kind));
 		item = pk_files_new ();
 		g_object_set (item,
 			      "package-id",

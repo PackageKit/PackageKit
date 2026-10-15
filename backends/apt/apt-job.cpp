@@ -1515,17 +1515,17 @@ void AptJob::emitPackageFiles(const gchar *pi)
             return;
         }
 
-        files = g_ptr_array_new_with_free_func(g_free);
+        // dpkg's list has no types, but these are installed files
+        files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
         while (in.eof() == false) {
             getline(in, line);
             if (!line.empty()) {
-                g_ptr_array_add(files, g_strdup(line.c_str()));
+                g_ptr_array_add(files, pk_file_new_from_disk(line.c_str()));
             }
         }
 
         if (files->len) {
-            g_ptr_array_add(files, nullptr);
-            pk_backend_job_files(m_job, pi, (gchar **)files->pdata);
+            pk_backend_job_files(m_job, pi, files);
         }
         g_ptr_array_unref(files);
     }
@@ -1545,12 +1545,12 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
         file,
         nullptr);
 
-    g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
-    for (auto cFile : deb.files()) {
-        g_ptr_array_add(files, g_canonicalize_filename(cFile.c_str(), "/"));
+    g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
+    for (const auto &[path, kind] : deb.files()) {
+        g_autofree gchar *canonical = g_canonicalize_filename(path.c_str(), "/");
+        g_ptr_array_add(files, pk_file_new(canonical, kind));
     }
-    g_ptr_array_add(files, nullptr);
-    pk_backend_job_files(m_job, package_id, (gchar **)files->pdata);
+    pk_backend_job_files(m_job, package_id, files);
 }
 
 /**

@@ -73,7 +73,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 	array = pk_results_get_files_array (results);
 	for (guint i = 0; i < array->len; i++) {
 		PkFiles *files = PK_FILES (g_ptr_array_index (array, i));
-		gchar **filelist = NULL;
+		GPtrArray *filelist;
 		const char *package_id;
 
 		package_id = pk_files_get_package_id (files);
@@ -81,21 +81,30 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			g_autoptr(json_t) root = json_object ();
-			json_t *files_array;
+			json_t *files_obj;
 
-			files_array = json_array ();
+			files_obj = json_object ();
 
 			json_object_set_new (root, "package", json_string (package_id));
 
-			for (guint j = 0; filelist && filelist[j] != NULL; j++)
-				json_array_append_new (files_array, json_string (filelist[j]));
+			for (guint j = 0; j < filelist->len; j++) {
+				PkFile *file = g_ptr_array_index (filelist, j);
+				json_object_set_new (files_obj,
+						     pk_file_get_path (file),
+						     json_string (pk_file_kind_enum_to_string (
+							 pk_file_get_kind (file))));
+			}
 
-			json_object_set_new (root, "files", files_array);
+			json_object_set_new (root, "files", files_obj);
 
 			pkgc_print_json (root);
 		} else {
-			for (guint j = 0; filelist && filelist[j] != NULL; j++)
-				g_print ("%s\n", filelist[j]);
+			for (guint j = 0; j < filelist->len; j++) {
+				PkFile *file = g_ptr_array_index (filelist, j);
+				gboolean is_dir = pk_file_get_kind (file) ==
+						  PK_FILE_KIND_ENUM_DIRECTORY;
+				g_print ("%s%s\n", pk_file_get_path (file), is_dir ? "/" : "");
+			}
 		}
 	}
 

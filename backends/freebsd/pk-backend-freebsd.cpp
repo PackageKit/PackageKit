@@ -1317,8 +1317,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
                     ? cacheDir + "/" + pkg_namever + ".pkg"
                     : directory + "/All/" + pkg_namever + ".pkg";
 
-        gchar* files[] = {NULL, NULL};
-        files[0] = const_cast<gchar*>(filepath.c_str());
+        g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
+        g_ptr_array_add(files, pk_file_new(filepath.c_str(), PK_FILE_KIND_ENUM_REGULAR));
         pk_backend_job_files(job, pkg.packageKitId(), files);
 
         if (jc.cancelIfRequested())

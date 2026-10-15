@@ -30,12 +30,27 @@
 class GetFilesStream : public pkgDirStream
 {
 public:
-    std::vector<std::string> files;
+    std::vector<std::pair<std::string, PkFileKindEnum>> files;
 
     virtual bool DoItem(Item &Itm, int &Fd) override
     {
         Fd = -1;
-        files.push_back(Itm.Name);
+        PkFileKindEnum kind = PK_FILE_KIND_ENUM_UNKNOWN;
+        switch (Itm.Type) {
+        case Item::File:
+        case Item::HardLink:
+            kind = PK_FILE_KIND_ENUM_REGULAR;
+            break;
+        case Item::SymbolicLink:
+            kind = PK_FILE_KIND_ENUM_SYMLINK;
+            break;
+        case Item::Directory:
+            kind = PK_FILE_KIND_ENUM_DIRECTORY;
+            break;
+        default:
+            break;
+        }
+        files.emplace_back(Itm.Name, kind);
         return true;
     }
 };
@@ -65,7 +80,7 @@ DebFile::DebFile(const string &filename)
     m_isValid = true;
 }
 
-std::vector<std::string> DebFile::files() const
+std::vector<std::pair<std::string, PkFileKindEnum>> DebFile::files() const
 {
     return m_files;
 }

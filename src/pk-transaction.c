@@ -615,23 +615,21 @@ pk_transaction_error_code_cb (PkBackendJob *job, PkError *item, PkTransaction *t
 static void
 pk_transaction_files_cb (PkBackendJob *job, PkFiles *item, PkTransaction *transaction)
 {
-	guint i;
-	g_autofree gchar *package_id = NULL;
-	g_auto(GStrv) files = NULL;
+	const gchar *package_id = pk_files_get_package_id (item);
+	GPtrArray *files = pk_files_get_files (item);
+	GVariantBuilder builder;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	/* get data */
-	g_object_get (item, "package-id", &package_id, "files", &files, NULL);
-
 	/* ensure the files have the correct prefix */
 	if (transaction->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
 	    transaction->cached_directory != NULL) {
-		for (i = 0; files[i] != NULL; i++) {
-			if (!g_str_has_prefix (files[i], transaction->cached_directory)) {
+		for (guint i = 0; i < files->len; i++) {
+			const gchar *path = pk_file_get_path (g_ptr_array_index (files, i));
+			if (!g_str_has_prefix (path, transaction->cached_directory)) {
 				g_warning ("%s does not have the correct prefix (%s)",
-					   files[i],
+					   path,
 					   transaction->cached_directory);
 			}
 		}
@@ -642,13 +640,21 @@ pk_transaction_files_cb (PkBackendJob *job, PkFiles *item, PkTransaction *transa
 
 	/* emit */
 	g_debug ("emitting files %s", package_id);
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(su)"));
+	for (guint i = 0; i < files->len; i++) {
+		PkFile *file = g_ptr_array_index (files, i);
+		g_variant_builder_add (&builder,
+				       "(su)",
+				       pk_file_get_path (file),
+				       pk_file_get_kind (file));
+	}
 	g_dbus_connection_emit_signal (
 	    transaction->connection,
 	    NULL,
 	    transaction->tid,
 	    PK_DBUS_INTERFACE_TRANSACTION,
 	    "Files",
-	    g_variant_new ("(s^as)", package_id != NULL ? package_id : "", files),
+	    g_variant_new ("(sa(su))", package_id != NULL ? package_id : "", &builder),
 	    NULL);
 }
 

@@ -20,6 +20,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/stat.h>
+
 #include "pk-backend-alpm.h"
 #include "pk-alpm-error.h"
 #include "pk-alpm-groups.h"
@@ -288,7 +290,7 @@ pk_alpm_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		alpm_pkg_t *pkg;
 
 		gsize i;
-		g_auto(GStrv) files = NULL;
+		g_autoptr(GPtrArray) files = NULL;
 
 		if (pk_backend_job_is_cancelled (job))
 			break;
@@ -298,9 +300,18 @@ pk_alpm_get_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 			break;
 
 		filelist = alpm_pkg_get_files (pkg);
-		files = g_new0 (gchar*, filelist->count + 1);
+		files = g_ptr_array_new_full (filelist->count, (GDestroyNotify) pk_file_free);
 		for (i = 0; i < filelist->count; ++i) {
-			files[i] = g_strconcat (root, filelist->files[i].name, NULL);
+			mode_t mode = filelist->files[i].mode;
+			g_autofree gchar *path = g_strconcat (root, filelist->files[i].name, NULL);
+			PkFileKindEnum kind = PK_FILE_KIND_ENUM_UNKNOWN;
+			if (S_ISDIR (mode))
+				kind = PK_FILE_KIND_ENUM_DIRECTORY;
+			else if (S_ISLNK (mode))
+				kind = PK_FILE_KIND_ENUM_SYMLINK;
+			else if (S_ISREG (mode))
+				kind = PK_FILE_KIND_ENUM_REGULAR;
+			g_ptr_array_add (files, pk_file_new (path, kind));
 		}
 
 		pk_backend_job_files (job, *packages, files);

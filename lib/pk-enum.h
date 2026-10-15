@@ -630,6 +630,26 @@ typedef enum {
 } PkIssueKindEnum;
 
 /**
+ * PkFileKindEnum:
+ * @PK_FILE_KIND_ENUM_UNKNOWN: The backend does not know what the entry is
+ * @PK_FILE_KIND_ENUM_REGULAR: A regular file
+ * @PK_FILE_KIND_ENUM_DIRECTORY: A directory owned by the package
+ * @PK_FILE_KIND_ENUM_SYMLINK: A symbolic link
+ *
+ * What an entry of a package file list is.
+ *
+ * Since: 2.0.0
+ **/
+typedef enum {
+	PK_FILE_KIND_ENUM_UNKNOWN,
+	PK_FILE_KIND_ENUM_REGULAR,
+	PK_FILE_KIND_ENUM_DIRECTORY,
+	PK_FILE_KIND_ENUM_SYMLINK,
+	/*< private >*/
+	PK_FILE_KIND_ENUM_LAST
+} PkFileKindEnum;
+
+/**
  * PkInfoEnum:
  * @PK_INFO_ENUM_UNKNOWN:	Package status is unknown
  * @PK_INFO_ENUM_AVAILABLE:	Package is available to be installed
@@ -834,6 +854,8 @@ PkUpdateStateEnum     pk_update_state_enum_from_string (const gchar *update_stat
 const gchar	     *pk_update_state_enum_to_string (PkUpdateStateEnum update_state);
 PkIssueKindEnum	      pk_issue_kind_enum_from_string (const gchar *issue_kind);
 const gchar	     *pk_issue_kind_enum_to_string (PkIssueKindEnum issue_kind);
+PkFileKindEnum	      pk_file_kind_enum_from_string (const gchar *file_kind);
+const gchar	     *pk_file_kind_enum_to_string (PkFileKindEnum file_kind);
 
 PkExitEnum	      pk_exit_enum_from_string (const gchar *exit);
 const gchar	     *pk_exit_enum_to_string (PkExitEnum exit);

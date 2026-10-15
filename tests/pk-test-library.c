@@ -215,6 +215,20 @@ pk_test_common_func (void)
 }
 
 static void
+pk_test_file_func (void)
+{
+	g_autoptr(PkFile) dir = pk_file_new_from_disk ("/");
+	g_autoptr(PkFile) missing = pk_file_new_from_disk ("/does/not/exist");
+	g_autoptr(PkFile) given = pk_file_new ("/x", PK_FILE_KIND_ENUM_SYMLINK);
+	g_autoptr(PkFile) copy = pk_file_copy (given);
+
+	g_assert_cmpint (pk_file_get_kind (dir), ==, PK_FILE_KIND_ENUM_DIRECTORY);
+	g_assert_cmpint (pk_file_get_kind (missing), ==, PK_FILE_KIND_ENUM_UNKNOWN);
+	g_assert_cmpstr (pk_file_get_path (copy), ==, "/x");
+	g_assert_cmpint (pk_file_get_kind (copy), ==, PK_FILE_KIND_ENUM_SYMLINK);
+}
+
+static void
 pk_test_enum_func (void)
 {
 	const gchar *string;
@@ -1087,6 +1101,7 @@ main (int argc, char **argv)
 	/* tests go here */
 	g_test_add_func ("/libpackagekit/common", pk_test_common_func);
 	g_test_add_func ("/libpackagekit/enum", pk_test_enum_func);
+	g_test_add_func ("/libpackagekit/file", pk_test_file_func);
 	g_test_add_func ("/libpackagekit/bitfield", pk_test_bitfield_func);
 	g_test_add_func ("/libpackagekit/package-id", pk_test_package_id_func);
 	g_test_add_func ("/libpackagekit/package-ids", pk_test_package_ids_func);

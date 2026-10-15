@@ -919,14 +919,19 @@
     <!--*********************************************************************-->
     <!--
       Files:
-      @package_id: The Package ID that called the method.
-      @file_list: The file list as an array.
+      @package_id: The Package ID that called the method, or an empty string
+        for files downloaded by DownloadPackages.
+      @files: The file list; each entry is an absolute path without a trailing
+        slash and a PkFileKindEnum saying whether it is a regular file, a
+        directory owned by the package, a symbolic link, or unknown when the
+        backend has no such information.
 
       This signal is used to push file lists from the backend to the session.
     -->
     <signal name="Files">
       <arg type="s" name="package_id" direction="out"/>
-      <arg type="as" name="file_list" direction="out"/>
+      <arg type="a(su)" name="files" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QVariantList"/>
     </signal>
 
     <!--*********************************************************************-->

@@ -79,7 +79,9 @@ pk_alpm_transaction_download_end (PkBackendJob *job)
 	/* tell DownloadPackages what files were downloaded */
 	if (dfiles != NULL) {
 		g_autofree gchar *package_id = pk_alpm_pkg_build_id (dpkg);
-		pk_backend_job_files (job, package_id, &dfiles->str);
+		g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+		g_ptr_array_add (files, pk_file_new (dfiles->str, PK_FILE_KIND_ENUM_REGULAR));
+		pk_backend_job_files (job, package_id, files);
 		g_string_free (dfiles, TRUE);
 	}
 

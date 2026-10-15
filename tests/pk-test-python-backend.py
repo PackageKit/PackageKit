@@ -21,6 +21,7 @@ from packagekit_backend import (
     ERROR_INTERNAL_ERROR,
     ERROR_NOT_SUPPORTED,
     ERROR_TRANSACTION_CANCELLED,
+    FILE_KIND_DIRECTORY,
     INFO_AVAILABLE,
     INFO_INSTALLED,
     STATUS_QUERY,
@@ -52,6 +53,10 @@ class TestBackend(Backend):
             self.details(package_id, summary='s', license='MIT', description='d\ne')
         self.percentage(None)  # flushes the batch before it is sent
         self.percentage(100)
+
+    def get_files(self, package_ids):
+        self.files(package_ids[0], ['/usr/bin/a', '/usr/share/a/'])
+        self.files(package_ids[0], {'/usr/share/a': FILE_KIND_DIRECTORY})
 
     def refresh_cache(self, force):
         if force:
@@ -124,7 +129,14 @@ class PythonBackendTest(unittest.TestCase):
         self.assertFalse(hello['parallel'])
         self.assertEqual(
             hello['roles'],
-            ['search-name', 'get-details', 'install-packages', 'remove-packages', 'refresh-cache'],
+            [
+                'search-name',
+                'get-details',
+                'get-files',
+                'install-packages',
+                'remove-packages',
+                'refresh-cache',
+            ],
         )
         self.exit()
 
@@ -163,7 +175,12 @@ class PythonBackendTest(unittest.TestCase):
         self.assertIsNone(events[1]['value'])
         self.assertEqual(events[2]['value'], 100)
 
-    def test_errors(self):
+    def test_files_list_or_mapping(self):
+        events = self.run_job('3', 'get-files', package_ids=['x;1;a;r;'])
+        self.assertEqual([e['ev'] for e in events], ['files', 'files', 'finished'])
+        self.assertEqual(events[0]['files'], {'/usr/bin/a': 'any', '/usr/share/a/': 'any'})
+        self.assertEqual(events[1]['files'], {'/usr/share/a': 'dir'})
+
         events = self.run_job('3', 'refresh-cache', force=True)
         self.assertEqual([e['ev'] for e in events], ['error', 'finished'])
         self.assertEqual(events[0]['code'], ERROR_NOT_SUPPORTED)

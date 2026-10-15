@@ -412,6 +412,24 @@ dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum in
 	pk_backend_job_package_status(job, package_id.c_str(), info);
 }
 
+/**
+ * dnf5_emit_files:
+ *
+ * libdnf5 has no file types; for installed packages they are taken from disk.
+ */
+void
+dnf5_emit_files(PkBackendJob *job, const std::string &package_id, const libdnf5::rpm::Package &pkg)
+{
+	g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify) pk_file_free);
+	const bool installed = pkg.is_installed();
+	for (const auto &path : pkg.get_files())
+		g_ptr_array_add(
+			files,
+			installed ? pk_file_new_from_disk(path.c_str())
+				  : pk_file_new(path.c_str(), PK_FILE_KIND_ENUM_UNKNOWN));
+	pk_backend_job_files(job, package_id.c_str(), files);
+}
+
 void
 dnf5_stage_pkg(GPtrArray *packages, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkSeverityEnum severity)
 {

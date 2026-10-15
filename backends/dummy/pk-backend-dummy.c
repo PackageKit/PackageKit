@@ -193,13 +193,16 @@ backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 static void
 backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
 {
-	const gchar *files[] = { "/usr/share/man/man1",
-				 "/usr/share/applications/dave.desktop",
-				 "/etc/yum.repos.d/dave.repo",
-				 NULL };
+	g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+	g_ptr_array_add (files, pk_file_new ("/usr/share/man/man1", PK_FILE_KIND_ENUM_DIRECTORY));
+	g_ptr_array_add (
+	    files,
+	    pk_file_new ("/usr/share/applications/dave.desktop", PK_FILE_KIND_ENUM_REGULAR));
+	g_ptr_array_add (files,
+			 pk_file_new ("/etc/yum.repos.d/dave.repo", PK_FILE_KIND_ENUM_REGULAR));
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	pk_backend_job_files (job, "test;0.01;i386;local;", (gchar **) files);
+	pk_backend_job_files (job, "test;0.01;i386;local;", files);
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
 }
@@ -341,6 +344,8 @@ backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 
 	len = g_strv_length (package_ids);
 	for (i = 0; i < len; i++) {
+		g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func (
+		    (GDestroyNotify) pk_file_free);
 		package_id = package_ids[i];
 		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora;") == 0) {
 			to_strv[0] = "/usr/share/man/man1/boo";
@@ -348,21 +353,25 @@ backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 			to_strv[2] = NULL;
 		} else if (g_strcmp0 (package_id,
 				      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed") == 0) {
-			to_strv[0] = "/usr/share/man/man1";
+			to_strv[0] = "/usr/share/man/man1/";
 			to_strv[1] = "/usr/share/man/man1/gnome-power-manager.1.gz";
 			to_strv[2] = "/usr/lib/firefox-3.5.7/firefox";
 			to_strv[3] = NULL;
 		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0) {
-			to_strv[0] = "/usr/share/man/man1";
+			to_strv[0] = "/usr/share/man/man1/";
 			to_strv[1] = "/usr/bin/ck-xinit-session";
 			to_strv[2] = "/lib/libselinux.so.1";
 			to_strv[3] = NULL;
 		} else {
-			to_strv[0] = "/usr/share/gnome-power-manager";
+			to_strv[0] = "/usr/share/gnome-power-manager/";
 			to_strv[1] = "/usr/bin/ck-xinit-session";
 			to_strv[2] = NULL;
 		}
-		pk_backend_job_files (job, package_id, (gchar **) to_strv);
+		/* a trailing slash marks the directories */
+		for (guint j = 0; to_strv[j] != NULL; j++)
+			g_ptr_array_add (files,
+					 pk_file_new (to_strv[j], PK_FILE_KIND_ENUM_UNKNOWN));
+		pk_backend_job_files (job, package_id, files);
 	}
 	pk_backend_job_finished (job);
 }
@@ -1771,7 +1780,7 @@ backend_download_packages (PkBackend *backend,
 			   const gchar *directory)
 {
 	gchar *filename;
-	gchar *to_strv[] = { NULL, NULL };
+	g_autoptr(GPtrArray) files = NULL;
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 
@@ -1781,8 +1790,9 @@ backend_download_packages (PkBackend *backend,
 	pk_backend_job_package_status (job,
 				       "powertop;1.8-1.fc8;i386;fedora;",
 				       PK_INFO_ENUM_DOWNLOADING);
-	to_strv[0] = filename;
-	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora;", to_strv);
+	files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+	g_ptr_array_add (files, pk_file_new (filename, PK_FILE_KIND_ENUM_REGULAR));
+	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora;", files);
 	g_free (filename);
 
 	/* second package */
@@ -1791,8 +1801,10 @@ backend_download_packages (PkBackend *backend,
 	pk_backend_job_package_status (job,
 				       "powertop-common;1.8-1.fc8;i386;fedora;",
 				       PK_INFO_ENUM_DOWNLOADING);
-	to_strv[0] = filename;
-	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora;", to_strv);
+	g_clear_pointer (&files, g_ptr_array_unref);
+	files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+	g_ptr_array_add (files, pk_file_new (filename, PK_FILE_KIND_ENUM_REGULAR));
+	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora;", files);
 	g_free (filename);
 
 	pk_backend_job_finished (job);

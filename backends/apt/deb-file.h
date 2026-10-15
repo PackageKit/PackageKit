@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <apt-pkg/debfile.h>
+#include <pk-enum.h>
 
 using std::string;
 
@@ -42,7 +43,8 @@ public:
     string summary() const;
     string description() const;
     string conflicts() const;
-    std::vector<std::string> files() const;
+    /// Paths of the archive entries and what they are.
+    std::vector<std::pair<std::string, PkFileKindEnum>> files() const;
 
     // FIXME: THIS should be moved to the AptJob class
     bool check();
@@ -52,7 +54,7 @@ private:
     std::unique_ptr<debDebFile::MemControlExtract> m_extractor;
     pkgTagSection m_controlData;
     string m_errorMsg;
-    std::vector<std::string> m_files;
+    std::vector<std::pair<std::string, PkFileKindEnum>> m_files;
     bool m_isValid = false;
 };
 

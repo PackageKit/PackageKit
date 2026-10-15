@@ -69,6 +69,7 @@ std::string dnf5_build_package_id(const libdnf5::rpm::Package &pkg);
 // happens during a transaction. Query results must be staged with
 // dnf5_stage_pkg() and reported in one go with pk_backend_job_packages().
 void dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info);
+void dnf5_emit_files(PkBackendJob *job, const std::string &package_id, const libdnf5::rpm::Package &pkg);
 // Append a PkPackage for @pkg to @packages, an array created with
 // g_ptr_array_new_with_free_func (g_object_unref). Packages with an invalid
 // package-id are skipped with a warning.

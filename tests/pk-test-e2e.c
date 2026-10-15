@@ -571,7 +571,7 @@ pk_test_client_download_cb (GObject *object, GAsyncResult *res, gpointer user_da
 	PkFiles *item;
 	GPtrArray *array = NULL;
 	gchar *package_id = NULL;
-	gchar **files = NULL;
+	GPtrArray *files = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
@@ -589,10 +589,15 @@ pk_test_client_download_cb (GObject *object, GAsyncResult *res, gpointer user_da
 	item = g_ptr_array_index (array, 0);
 	g_object_get (item, "package-id", &package_id, "files", &files, NULL);
 	g_assert_cmpstr (package_id, ==, "powertop-common;1.8-1.fc8;i386;fedora;");
-	g_assert_cmpint (g_strv_length (files), ==, 1);
-	g_assert_cmpstr (files[0], ==, "/tmp/powertop-common-1.8-1.fc8.rpm");
+	g_assert_cmpint (files->len, ==, 1);
+	g_assert_cmpstr (pk_file_get_path (g_ptr_array_index (files, 0)),
+			 ==,
+			 "/tmp/powertop-common-1.8-1.fc8.rpm");
+	g_assert_cmpint (pk_file_get_kind (g_ptr_array_index (files, 0)),
+			 ==,
+			 PK_FILE_KIND_ENUM_REGULAR);
 
-	g_strfreev (files);
+	g_ptr_array_unref (files);
 	g_free (package_id);
 	g_ptr_array_unref (array);
 	if (results != NULL)

@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <glib/gprintf.h>
+#include <string.h>
 
 #include <pk-results.h>
 
@@ -1358,13 +1359,14 @@ pk_backend_job_details (PkBackendJob *job,
 
 /**
  * pk_backend_job_files:
- *
- * @package_id is %NULL when we are using this as a calback from DownloadPackages
+ * @package_id: the package, or %NULL as a callback from DownloadPackages
+ * @files: (element-type PkFile): the entries
  **/
 void
-pk_backend_job_files (PkBackendJob *job, const gchar *package_id, gchar **files)
+pk_backend_job_files (PkBackendJob *job, const gchar *package_id, GPtrArray *files)
 {
 	g_autoptr(PkFiles) item = NULL;
+	g_autoptr(GPtrArray) entries = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (files != NULL);
@@ -1383,9 +1385,31 @@ pk_backend_job_files (PkBackendJob *job, const gchar *package_id, gchar **files)
 		}
 	}
 
+	entries = g_ptr_array_new_full (files->len, (GDestroyNotify) pk_file_free);
+	for (guint i = 0; i < files->len; i++) {
+		PkFile *file = g_ptr_array_index (files, i);
+		const gchar *path = pk_file_get_path (file);
+
+		if (pk_file_get_kind (file) != PK_FILE_KIND_ENUM_UNKNOWN) {
+			g_ptr_array_add (entries, pk_file_copy (file));
+			continue;
+		} else {
+			gsize len = strlen (path);
+			if (len > 1 && path[len - 1] == '/') {
+				g_autofree gchar *stripped = g_strndup (path, len - 1);
+				g_ptr_array_add (
+				    entries,
+				    pk_file_new (stripped, PK_FILE_KIND_ENUM_DIRECTORY));
+				continue;
+			}
+		}
+
+		g_ptr_array_add (entries, pk_file_copy (file));
+	}
+
 	/* form PkFiles struct */
 	item = pk_files_new ();
-	g_object_set (item, "package-id", package_id, "files", files, NULL);
+	g_object_set (item, "package-id", package_id, "files", entries, NULL);
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,

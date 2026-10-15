@@ -822,6 +822,49 @@ pk_backend_protocol_handle_update_details (json_t *root, PkBackendJob *job, GErr
 	return TRUE;
 }
 
+/**
+ * pk_backend_protocol_handle_files:
+ *
+ * `files` is an object of path: kind, as a path cannot be listed twice
+ */
+static gboolean
+pk_backend_protocol_handle_files (json_t *root, PkBackendJob *job, GError **error)
+{
+	const gchar *package_id = NULL;
+	json_t *obj = json_object_get (root, "files");
+	const gchar *path;
+	json_t *value;
+	g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+
+	if (!pk_backend_protocol_get_package_id (root, "package_id", TRUE, &package_id, error))
+		return FALSE;
+	if (obj == NULL || !json_is_object (obj))
+		return pk_backend_protocol_invalid (
+		    error,
+		    "field 'files' must be an object of path: kind");
+	json_object_foreach (obj, path, value)
+	{
+		PkFileKindEnum kind;
+		const gchar *text = json_string_value (value);
+
+		if (text == NULL)
+			return pk_backend_protocol_invalid (error,
+							    "file kind of '%s' must be a string",
+							    path);
+		kind = pk_file_kind_enum_from_string (text);
+		if (kind == PK_FILE_KIND_ENUM_UNKNOWN &&
+		    g_strcmp0 (text, pk_file_kind_enum_to_string (PK_FILE_KIND_ENUM_UNKNOWN)) != 0)
+			return pk_backend_protocol_invalid (
+			    error,
+			    "file kind of '%s' has unknown value '%s'",
+			    path,
+			    text);
+		g_ptr_array_add (files, pk_file_new (path, kind));
+	}
+	pk_backend_job_files (job, package_id, files);
+	return TRUE;
+}
+
 static gboolean
 pk_backend_protocol_handle_repo_details (json_t *root, PkBackendJob *job, GError **error)
 {
@@ -1021,15 +1064,7 @@ pk_backend_protocol_handle_event (const gchar *log_domain,
 		return pk_backend_protocol_handle_update_details (root, job, error);
 
 	} else if (g_strcmp0 (ev, "files") == 0) {
-		g_auto(GStrv) files = NULL;
-		if (!pk_backend_protocol_get_package_id (root,
-							 "package_id",
-							 TRUE,
-							 &package_id,
-							 error) ||
-		    !pk_backend_protocol_get_strv (root, "files", &files, error))
-			return FALSE;
-		pk_backend_job_files (job, package_id, files);
+		return pk_backend_protocol_handle_files (root, job, error);
 
 	} else if (g_strcmp0 (ev, "repo-details") == 0) {
 		return pk_backend_protocol_handle_repo_details (root, job, error);

@@ -31,10 +31,141 @@
 #include "config.h"
 
 #include <glib-object.h>
+#include <glib/gstdio.h>
+#include <sys/stat.h>
 
 #include "pk-files.h"
 
 static void pk_files_finalize (GObject *object);
+
+/**
+ * PkFile:
+ *
+ * One entry of a #PkFiles list: an absolute path and what it is.
+ *
+ * Since: 2.0.0
+ */
+
+struct _PkFile
+{
+	gchar *path;
+	PkFileKindEnum kind;
+};
+
+G_DEFINE_BOXED_TYPE (PkFile, pk_file, pk_file_copy, pk_file_free)
+
+/**
+ * pk_file_new:
+ * @path: the absolute path
+ * @kind: what the entry is
+ *
+ * Returns: (transfer full): a new #PkFile
+ *
+ * Since: 2.0.0
+ */
+PkFile *
+pk_file_new (const gchar *path, PkFileKindEnum kind)
+{
+	PkFile *file;
+
+	g_return_val_if_fail (path != NULL, NULL);
+
+	file = g_new0 (PkFile, 1);
+	file->path = g_strdup (path);
+	file->kind = kind;
+	return file;
+}
+
+/**
+ * pk_file_new_from_disk:
+ * @path: the absolute path of an entry that is on the filesystem
+ *
+ * Creates an entry for a file of an installed package, taking its kind from
+ * the filesystem, as package metadata often does not record it. The kind is
+ * unknown if @path does not exist.
+ *
+ * Returns: (transfer full): a new #PkFile
+ *
+ * Since: 2.0.0
+ */
+PkFile *
+pk_file_new_from_disk (const gchar *path)
+{
+	PkFileKindEnum kind = PK_FILE_KIND_ENUM_UNKNOWN;
+	GStatBuf st;
+
+	g_return_val_if_fail (path != NULL, NULL);
+
+	if (g_lstat (path, &st) == 0) {
+		if (S_ISDIR (st.st_mode))
+			kind = PK_FILE_KIND_ENUM_DIRECTORY;
+		else if (S_ISLNK (st.st_mode))
+			kind = PK_FILE_KIND_ENUM_SYMLINK;
+		else if (S_ISREG (st.st_mode))
+			kind = PK_FILE_KIND_ENUM_REGULAR;
+	}
+	return pk_file_new (path, kind);
+}
+
+/**
+ * pk_file_copy:
+ * @file: a #PkFile
+ *
+ * Returns: (transfer full): a copy of @file
+ *
+ * Since: 2.0.0
+ */
+PkFile *
+pk_file_copy (PkFile *file)
+{
+	g_return_val_if_fail (file != NULL, NULL);
+	return pk_file_new (file->path, file->kind);
+}
+
+/**
+ * pk_file_free:
+ * @file: a #PkFile
+ *
+ * Since: 2.0.0
+ */
+void
+pk_file_free (PkFile *file)
+{
+	if (file == NULL)
+		return;
+	g_free (file->path);
+	g_free (file);
+}
+
+/**
+ * pk_file_get_path:
+ * @file: a #PkFile
+ *
+ * Returns: the absolute path, without a trailing slash
+ *
+ * Since: 2.0.0
+ */
+const gchar *
+pk_file_get_path (PkFile *file)
+{
+	g_return_val_if_fail (file != NULL, NULL);
+	return file->path;
+}
+
+/**
+ * pk_file_get_kind:
+ * @file: a #PkFile
+ *
+ * Returns: what the entry is
+ *
+ * Since: 2.0.0
+ */
+PkFileKindEnum
+pk_file_get_kind (PkFile *file)
+{
+	g_return_val_if_fail (file != NULL, PK_FILE_KIND_ENUM_UNKNOWN);
+	return file->kind;
+}
 
 /**
  * PkFilesPrivate:
@@ -44,7 +175,7 @@ static void pk_files_finalize (GObject *object);
 struct _PkFilesPrivate
 {
 	gchar *package_id;
-	gchar **files;
+	GPtrArray *files;
 };
 
 enum {
@@ -83,11 +214,11 @@ pk_files_get_package_id (PkFiles *files)
  *
  * Gets the file list
  *
- * Return value: (transfer none): Gets the file list for the files object
+ * Return value: (transfer none) (element-type PkFile): the entries of the file list
  *
  * Since: 0.9.1
  **/
-gchar **
+GPtrArray *
 pk_files_get_files (PkFiles *files)
 {
 	PkFilesPrivate *priv = GET_PRIVATE(files);
@@ -113,6 +244,7 @@ pk_files_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 	case PROP_FILES:
 		g_value_set_boxed (value, priv->files);
 		break;
+
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -134,8 +266,7 @@ pk_files_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 		priv->package_id = g_value_dup_string (value);
 		break;
 	case PROP_FILES:
-		if (priv->files != NULL)
-			g_strfreev (priv->files);
+		g_clear_pointer (&priv->files, g_ptr_array_unref);
 		priv->files = g_value_dup_boxed (value);
 		break;
 	default:
@@ -171,12 +302,15 @@ pk_files_class_init (PkFilesClass *klass)
 	/**
 	 * PkFiles:files:
 	 *
+	 * A #GPtrArray of #PkFile. The array is referenced, not copied, so it
+	 * must own its elements via pk_file_free().
+	 *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_boxed ("files",
 				    NULL,
 				    NULL,
-				    G_TYPE_STRV,
+				    G_TYPE_PTR_ARRAY,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_FILES, pspec);
 }
@@ -198,7 +332,7 @@ pk_files_finalize (GObject *object)
 	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	g_clear_pointer (&priv->package_id, g_free);
-	g_clear_pointer (&priv->files, g_strfreev);
+	g_clear_pointer (&priv->files, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (pk_files_parent_class)->finalize (object);
 }

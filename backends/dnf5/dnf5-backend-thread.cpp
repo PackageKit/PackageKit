@@ -228,16 +228,16 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				}
 				downloader.download();
 
-				std::vector<char *> files_c;
+				g_autoptr(GPtrArray)
+					files = g_ptr_array_new_with_free_func((GDestroyNotify) pk_file_free);
 				for (auto &pkg : pkgs) {
 					std::string path = pkg.get_package_path();
 					if (!path.empty())
-						files_c.push_back(g_strdup(path.c_str()));
+						g_ptr_array_add(
+							files,
+							pk_file_new(path.c_str(), PK_FILE_KIND_ENUM_REGULAR));
 				}
-				files_c.push_back(nullptr);
-				pk_backend_job_files(job, NULL, files_c.data());
-				for (auto p : files_c)
-					g_free(p);
+				pk_backend_job_files(job, NULL, files);
 				pk_backend_job_finished(job);
 				return;
 			} else {
@@ -341,12 +341,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 						pkg.get_install_size(),
 						pkg.get_download_size());
 				} else if (role == PK_ROLE_ENUM_GET_FILES) {
-					auto files_vec = pkg.get_files();
-					std::vector<char *> files_c;
-					for (const auto &f : files_vec)
-						files_c.push_back(const_cast<char *>(f.c_str()));
-					files_c.push_back(nullptr);
-					pk_backend_job_files(job, pid.c_str(), files_c.data());
+					dnf5_emit_files(job, pid, pkg);
 				}
 			}
 		} else if (role == PK_ROLE_ENUM_GET_DETAILS_LOCAL || role == PK_ROLE_ENUM_GET_FILES_LOCAL) {
@@ -375,12 +370,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 						pkg.get_install_size(),
 						0);
 				} else {
-					auto files_vec = pkg.get_files();
-					std::vector<char *> files_c;
-					for (const auto &f : files_vec)
-						files_c.push_back(const_cast<char *>(f.c_str()));
-					files_c.push_back(nullptr);
-					pk_backend_job_files(job, pid.c_str(), files_c.data());
+					dnf5_emit_files(job, pid, pkg);
 				}
 			}
 		} else if (role == PK_ROLE_ENUM_GET_REPO_LIST) {

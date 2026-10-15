@@ -9,6 +9,7 @@ import signal
 import sys
 import traceback
 from collections import namedtuple
+from collections.abc import Mapping
 from types import SimpleNamespace
 
 from . import enums
@@ -357,8 +358,15 @@ class Backend:
         )
 
     def files(self, package_id, files):
-        """Report the files of a package, or of a download when package_id is None."""
-        self._emit('files', package_id=package_id, files=list(files))
+        """Report the files of a package, or of a download when package_id is None.
+
+        files maps each path to a file kind (FILE_KIND_REGULAR, FILE_KIND_DIRECTORY,
+        FILE_KIND_SYMLINK or FILE_KIND_UNKNOWN). A plain iterable of paths reports
+        every entry as unknown; a path ending in "/" is a directory either way.
+        """
+        if not isinstance(files, Mapping):
+            files = dict.fromkeys(files, enums.FILE_KIND_UNKNOWN)
+        self._emit('files', package_id=package_id, files=dict(files))
 
     def repo_detail(self, repo_id, description, enabled):
         self._queue(

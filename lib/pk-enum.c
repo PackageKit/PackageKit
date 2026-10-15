@@ -302,6 +302,14 @@ static const PkEnumMatch enum_issue_kind[] = {
 	{0, NULL}
 };
 
+static const PkEnumMatch enum_file_kind[] = {
+	{PK_FILE_KIND_ENUM_UNKNOWN,		"any"},	/* fall though value */
+	{PK_FILE_KIND_ENUM_REGULAR,		"file"},
+	{PK_FILE_KIND_ENUM_DIRECTORY,		"dir"},
+	{PK_FILE_KIND_ENUM_SYMLINK,		"link"},
+	{0, NULL}
+};
+
 static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -858,6 +866,38 @@ const gchar *
 pk_issue_kind_enum_to_string (PkIssueKindEnum issue_kind)
 {
 	return pk_enum_find_string (enum_issue_kind, issue_kind);
+}
+
+/**
+ * pk_file_kind_enum_from_string:
+ * @file_kind: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_FILE_KIND_ENUM_REGULAR
+ *
+ * Since: 2.0.0
+ **/
+PkFileKindEnum
+pk_file_kind_enum_from_string (const gchar *file_kind)
+{
+	return pk_enum_find_value (enum_file_kind, file_kind);
+}
+
+/**
+ * pk_file_kind_enum_to_string:
+ * @file_kind: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "dir"
+ *
+ * Since: 2.0.0
+ **/
+const gchar *
+pk_file_kind_enum_to_string (PkFileKindEnum file_kind)
+{
+	return pk_enum_find_string (enum_file_kind, file_kind);
 }
 
 /**

@@ -188,7 +188,7 @@ void	       pk_backend_job_details (PkBackendJob *job,
 				       guint64	     download_size);
 void	       pk_backend_job_files (PkBackendJob *job,
 				     const gchar  *package_id,
-				     gchar	 **files);
+				     GPtrArray	  *files);
 void	       pk_backend_job_distro_upgrade (PkBackendJob	 *job,
 					      PkDistroUpgradeEnum type,
 					      const gchar	 *name,

@@ -262,11 +262,14 @@ Each item of `issues` has a `kind` and a `url`, plus an optional `id` and `title
    "state":"stable","time_issued":"2026-09-01T10:00:00Z"}]}
 ```
 
-`files`: `pk_backend_job_files`. For `download-packages`, `package_id` may
-be `null` and `files` lists the downloaded paths.
+`files`: `pk_backend_job_files`. `files` maps each path to an `enum_file_kind`
+(`file`, `dir`, `link`, or `any` when the metadata does not say).
+For `download-packages`, `package_id` may be `null` and `files` lists the
+downloaded paths.
 
 ```json
-{"ev":"files","job":"42","package_id":"foo;1.0;x86_64;main;","files":["/usr/bin/foo","/usr/share/doc/foo"]}
+{"ev":"files","job":"42","package_id":"foo;1.0;x86_64;main;",
+ "files":{"/usr/bin/foo":"file","/usr/share/doc/foo":"dir"}}
 ```
 
 `repo-details`: `pk_backend_job_repo_detail` per item; `description` is

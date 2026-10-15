@@ -2625,16 +2625,17 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			struct pkg *pkg = n_array_nth (pkgs, i);
 			gchar *package_id;
 			gchar *path;
-			gchar *to_strv[] = { NULL, NULL };
+			g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func (
+			    (GDestroyNotify) pk_file_free);
 			gchar buf[256];
 
 			package_id = package_id_from_pkg (pkg, NULL, PK_FILTER_ENUM_NONE);
 			path = g_build_filename (destdir,
 						 pkg_filename (pkg, buf, sizeof (buf)),
 						 NULL);
-			to_strv[0] = path;
+			g_ptr_array_add (files, pk_file_new (path, PK_FILE_KIND_ENUM_REGULAR));
 
-			pk_backend_job_files (job, package_id, to_strv);
+			pk_backend_job_files (job, package_id, files);
 
 			g_free (package_id);
 			g_free (path);
@@ -2790,7 +2791,7 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 				continue;
 			}
 
-			files = g_ptr_array_new_with_free_func (g_free);
+			files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
 
 			for (i = 0; i < n_tuple_size (flist->fl); i++) {
 				struct pkgfl_ent *flent = n_tuple_nth (flist->fl, i);
@@ -2810,13 +2811,15 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 						fname = g_strdup_printf ("%s/%s",
 									 dirname,
 									 f->basename);
-					g_ptr_array_add (files, fname);
+					g_ptr_array_add (
+					    files,
+					    pk_file_new (fname, PK_FILE_KIND_ENUM_UNKNOWN));
+					g_free (fname);
 				}
 				g_free (dirname);
 			}
 
-			g_ptr_array_add (files, NULL);
-			pk_backend_job_files (job, package_ids[n], (gchar **) files->pdata);
+			pk_backend_job_files (job, package_ids[n], files);
 			g_ptr_array_unref (files);
 
 			pkg_free (pkg);

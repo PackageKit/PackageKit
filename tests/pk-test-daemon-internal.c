@@ -690,6 +690,49 @@ pk_test_backend_protocol_job_new (GKeyFile *conf)
 }
 
 static void
+pk_test_backend_job_files_cb (PkBackendJob *job, PkFiles *item, gpointer user_data)
+{
+	PkFiles **out = user_data;
+	*out = g_object_ref (item);
+}
+
+#define FILE_PATH(files, i) pk_file_get_path (g_ptr_array_index (files, i))
+#define FILE_KIND(files, i) pk_file_get_kind (g_ptr_array_index (files, i))
+
+/* trailing slashes mark directories and are stripped; everything else is passed through */
+static void
+pk_test_backend_job_files_func (void)
+{
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(PkBackendJob) job = pk_backend_job_new (conf);
+	g_autoptr(PkFiles) item = NULL;
+	g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+	GPtrArray *out;
+
+	g_ptr_array_add (files, pk_file_new ("/", PK_FILE_KIND_ENUM_UNKNOWN));
+	g_ptr_array_add (files, pk_file_new ("/usr/share/doc/", PK_FILE_KIND_ENUM_UNKNOWN));
+	g_ptr_array_add (files, pk_file_new ("/etc", PK_FILE_KIND_ENUM_SYMLINK));
+
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_FILES,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_job_files_cb),
+				  &item);
+
+	pk_backend_job_files (job, "foo;1.0;x86_64;main;", files);
+	while (g_main_context_iteration (NULL, FALSE))
+		;
+	g_assert_nonnull (item);
+	out = pk_files_get_files (item);
+	g_assert_cmpuint (out->len, ==, 3);
+	g_assert_cmpstr (FILE_PATH (out, 0), ==, "/");
+	g_assert_cmpstr (FILE_PATH (out, 1), ==, "/usr/share/doc");
+	g_assert_cmpstr (FILE_PATH (out, 2), ==, "/etc");
+	g_assert_cmpint (FILE_KIND (out, 0), ==, PK_FILE_KIND_ENUM_UNKNOWN);
+	g_assert_cmpint (FILE_KIND (out, 1), ==, PK_FILE_KIND_ENUM_DIRECTORY);
+	g_assert_cmpint (FILE_KIND (out, 2), ==, PK_FILE_KIND_ENUM_SYMLINK);
+}
+
+static void
 pk_test_backend_protocol_func (void)
 {
 	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
@@ -1334,7 +1377,15 @@ pk_test_spawn_module_update_details_cb (PkBackendJob *job, GPtrArray *items, gpo
 static void
 pk_test_spawn_module_files_cb (PkBackendJob *job, PkFiles *item, gpointer user_data)
 {
-	g_assert_cmpuint (g_strv_length (pk_files_get_files (item)), ==, 2);
+	GPtrArray *files = pk_files_get_files (item);
+	g_assert_cmpuint (files->len, ==, 2);
+	g_assert_cmpstr (pk_file_get_path (g_ptr_array_index (files, 0)), ==, "/usr/bin/foo");
+	g_assert_cmpint (pk_file_get_kind (g_ptr_array_index (files, 0)),
+			 ==,
+			 PK_FILE_KIND_ENUM_REGULAR);
+	g_assert_cmpint (pk_file_get_kind (g_ptr_array_index (files, 1)),
+			 ==,
+			 PK_FILE_KIND_ENUM_DIRECTORY);
 	sm_files++;
 }
 
@@ -2161,6 +2212,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/backend-spawn", pk_test_backend_spawn_func);
+	g_test_add_func ("/packagekit/backend-job-files", pk_test_backend_job_files_func);
 	g_test_add_func ("/packagekit/backend-protocol", pk_test_backend_protocol_func);
 	g_test_add_func ("/packagekit/spawn-module", pk_test_spawn_module_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);

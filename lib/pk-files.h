@@ -28,8 +28,25 @@
 #include <glib-object.h>
 
 #include "pk-source.h"
+#include "pk-enum.h"
 
 G_BEGIN_DECLS
+
+#define PK_TYPE_FILE (pk_file_get_type ())
+
+typedef struct _PkFile PkFile;
+
+GType		       pk_file_get_type (void);
+PkFile		      *pk_file_new (const gchar	  *path,
+				    PkFileKindEnum kind);
+PkFile		      *pk_file_new_from_disk (const gchar *path);
+PkFile		      *pk_file_copy (PkFile *file);
+void		       pk_file_free (PkFile *file);
+
+const gchar	      *pk_file_get_path (PkFile *file);
+PkFileKindEnum	       pk_file_get_kind (PkFile *file);
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (PkFile, pk_file_free)
 
 #define PK_TYPE_FILES	      (pk_files_get_type ())
 #define PK_FILES(o)	      (G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_FILES, PkFiles))
@@ -66,7 +83,7 @@ struct _PkFilesClass
 GType	     pk_files_get_type (void);
 PkFiles	    *pk_files_new (void);
 const gchar *pk_files_get_package_id (PkFiles *files);
-gchar	   **pk_files_get_files (PkFiles *files);
+GPtrArray   *pk_files_get_files (PkFiles *files);
 
 G_END_DECLS
 

@@ -74,7 +74,13 @@ class TestSpawnBackend(pkb.Backend):
 
     def get_files(self, package_ids):
         for package_id in package_ids:
-            self.files(package_id, ['/usr/bin/foo', '/usr/share/doc/foo'])
+            self.files(
+                package_id,
+                {
+                    '/usr/bin/foo': pkb.FILE_KIND_REGULAR,
+                    '/usr/share/doc/foo': pkb.FILE_KIND_DIRECTORY,
+                },
+            )
 
     def get_repo_list(self, filters):
         self.repo_detail('main', 'Main repository', True)

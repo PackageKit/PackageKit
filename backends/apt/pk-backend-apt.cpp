@@ -463,11 +463,13 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                     return;
                 }
 
-                gchar **files = (gchar **)g_malloc(2 * sizeof(gchar *));
-                files[0] = g_strdup_printf("%s/%s", directory.c_str(), std::string{flNotDir(storeFileName)}.c_str());
-                files[1] = nullptr;
+                g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
+                g_autofree gchar *path = g_strdup_printf(
+                    "%s/%s",
+                    directory.c_str(),
+                    std::string{flNotDir(storeFileName)}.c_str());
+                g_ptr_array_add(files, pk_file_new(path, PK_FILE_KIND_ENUM_REGULAR));
                 pk_backend_job_files(job, pi, files);
-                g_strfreev(files);
             }
         }
 

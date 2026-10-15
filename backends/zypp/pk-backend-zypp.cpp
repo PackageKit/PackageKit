@@ -2447,18 +2447,14 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 					NULL);
 
 		std::list<std::string> filenames = rpmHeader->tag_filenames ();
-		GPtrArray *array = g_ptr_array_new ();
+		g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
 
 		for (std::list<std::string>::iterator it = filenames.begin (); it != filenames.end (); it++)
-			g_ptr_array_add (array, g_strdup ((*it).c_str ()));
+			g_ptr_array_add (files, pk_file_new ((*it).c_str (), PK_FILE_KIND_ENUM_UNKNOWN));
 
-		g_ptr_array_add(array, NULL);
-		gchar **files_array = (gchar**)g_ptr_array_free (array, FALSE);
-
-		pk_backend_job_files (job, package_id, files_array);
+		pk_backend_job_files (job, package_id, files);
 
 		g_free (package_id);
-		g_strfreev (files_array);
 	}
 }
 
@@ -3402,10 +3398,9 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			return;
 		}
 
-		g_auto(GStrv) strv = NULL;
 		g_autoptr(GPtrArray) pkg_files = NULL;
 
-		pkg_files = g_ptr_array_new ();
+		pkg_files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
 
 		if (solvable.isSystem ()){
 			try {
@@ -3413,7 +3408,7 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 				list<string> files = rpmHeader->tag_filenames ();
 
 				for (list<string>::iterator it = files.begin (); it != files.end (); ++it) {
-					g_ptr_array_add (pkg_files, g_strdup (it->c_str ()));
+					g_ptr_array_add (pkg_files, pk_file_new (it->c_str (), PK_FILE_KIND_ENUM_UNKNOWN));
 				}
 
 			} catch (const target::rpm::RpmException &ex) {
@@ -3423,13 +3418,10 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			}
 		} else {
 			g_ptr_array_add (pkg_files,
-					 g_strdup ("Only available for installed packages"));
+					 pk_file_new ("Only available for installed packages", PK_FILE_KIND_ENUM_UNKNOWN));
 		}
 
-		/* Convert to GStrv. */
-		g_ptr_array_add (pkg_files, NULL);
-		strv = g_strdupv ((gchar **) pkg_files->pdata);
-		pk_backend_job_files (job, package_ids[i], strv);
+		pk_backend_job_files (job, package_ids[i], pkg_files);
 	}
 }
 
@@ -3923,9 +3915,9 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			target += "/";
 			target += tmp_file->basename();
 			zypp::filesystem::hardlinkCopy(tmp_file, target);
-			const gchar *to_strv[] = { NULL, NULL };
-			to_strv[0] =  target.c_str();
-			pk_backend_job_files (job, package_ids[i],(gchar **) to_strv);
+			g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+			g_ptr_array_add (files, pk_file_new (target.c_str (), PK_FILE_KIND_ENUM_REGULAR));
+			pk_backend_job_files (job, package_ids[i], files);
 			pk_backend_job_package_status (job, package_ids[i], PK_INFO_ENUM_DOWNLOADING);
 		}
 	} catch (const Exception &ex) {
