@@ -2147,7 +2147,6 @@ void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &in
 bool AptJob::installPackages(PkBitfield flags)
 {
     bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
 
     // check for essential packages!!!
     if (m_cache->isRemovingEssentialPackages()) {
@@ -2189,6 +2188,54 @@ bool AptJob::installPackages(PkBitfield flags)
         || _error->PendingError() == true) {
         return false;
     }
+
+    if (!checkDownloadRequirements(fetcher, simulate))
+        return false;
+
+    // Make sure we are not installing any untrusted package is untrusted is not set
+    if (!checkTrusted(fetcher, flags) && !simulate) {
+        return false;
+    }
+
+    if (simulate) {
+        // Print out a list of packages that are going to be installed extra
+        checkChangedPackages(true);
+
+        return true;
+    } else {
+        // Store the packages that are going to change
+        // so we can emit them as we process it
+        m_pkgs = checkChangedPackages(false);
+    }
+
+    // Download and check if we can continue
+    if (fetcher.Run() != pkgAcquire::Continue && m_cancel == false) {
+        // We failed and we did not cancel
+        show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
+        return false;
+    }
+
+    if (_error->PendingError() == true) {
+        g_debug("PendingError download");
+        return false;
+    }
+
+    // Download finished, check if we should proceed the install
+    if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+        return true;
+    }
+
+    // Check if the user canceled
+    if (m_cancel) {
+        return true;
+    }
+
+    return runDpkg(*PM);
+}
+
+bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher, bool simulate)
+{
+    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
 
     // Display statistics
     unsigned long long FetchBytes = fetcher.FetchNeeded();
@@ -2237,44 +2284,11 @@ bool AptJob::installPackages(PkBitfield flags)
         return false;
     }
 
-    // Make sure we are not installing any untrusted package is untrusted is not set
-    if (!checkTrusted(fetcher, flags) && !simulate) {
-        return false;
-    }
+    return true;
+}
 
-    if (simulate) {
-        // Print out a list of packages that are going to be installed extra
-        checkChangedPackages(true);
-
-        return true;
-    } else {
-        // Store the packages that are going to change
-        // so we can emit them as we process it
-        m_pkgs = checkChangedPackages(false);
-    }
-
-    // Download and check if we can continue
-    if (fetcher.Run() != pkgAcquire::Continue && m_cancel == false) {
-        // We failed and we did not cancel
-        show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
-        return false;
-    }
-
-    if (_error->PendingError() == true) {
-        g_debug("PendingError download");
-        return false;
-    }
-
-    // Download finished, check if we should proceed the install
-    if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-        return true;
-    }
-
-    // Check if the user canceled
-    if (m_cancel) {
-        return true;
-    }
-
+bool AptJob::runDpkg(pkgPackageManager &PM)
+{
     // Right now it's not safe to cancel
     pk_backend_job_set_allow_cancel(m_job, false);
 
@@ -2286,7 +2300,7 @@ bool AptJob::installPackages(PkBitfield flags)
     _system->UnLockInner();
 
     pkgPackageManager::OrderResult res;
-    res = PM->DoInstallPreFork();
+    res = PM.DoInstallPreFork();
     if (res == pkgPackageManager::Failed) {
         g_warning("Failed to prepare installation");
         show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
@@ -2349,7 +2363,7 @@ bool AptJob::installPackages(PkBitfield flags)
 
         // Pass the write end of the pipe to the install function
         auto *progress = new Progress::PackageManagerProgressFd(readFromChildFD[1]);
-        res = PM->DoInstallPostFork(progress);
+        res = PM.DoInstallPostFork(progress);
         delete progress;
 
         // dump errors into cerr (pass it to the parent process)

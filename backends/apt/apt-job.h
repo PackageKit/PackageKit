@@ -37,6 +37,7 @@
 #include "apt-sourceslist.h"
 
 class pkgProblemResolver;
+class pkgPackageManager;
 class Matcher;
 class AptCacheFile;
 
@@ -285,6 +286,19 @@ public:
 private:
     void setEnvLocaleFromJob();
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
+
+    /**
+     * Check that the archives can be downloaded: emit the download size,
+     * require a network connection if anything is left to fetch, and make
+     * sure the archive directory has enough free space.
+     */
+    bool checkDownloadRequirements(pkgAcquire &fetcher, bool simulate);
+
+    /**
+     * Fork dpkg via the package manager, relay its progress and conffile
+     * prompts, and report an error if it fails.
+     */
+    bool runDpkg(pkgPackageManager &PM);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, std::string component);
     bool isApplication(const pkgCache::VerIterator &verIter);
     bool matchesQueries(const std::vector<std::string> &queries, std::string s);
