@@ -59,6 +59,9 @@ using namespace APT;
 
 #define RAMFS_MAGIC 0x858458f6
 
+#define REBOOT_REQUIRED_FILE      "/run/reboot-required"
+#define REBOOT_REQUIRED_PKGS_FILE "/run/reboot-required.pkgs"
+
 AptJob::AptJob(PkBackendJob *job)
     : m_job(job),
       m_cancel(false),
@@ -459,6 +462,51 @@ void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state,
     // emit
     if (pkgArray->len > 0)
         pk_backend_job_packages(m_job, pkgArray);
+}
+
+// Returns the modification time of path, or zero if it does not exist
+static struct timespec fileMtime(const char *path)
+{
+    struct stat st;
+    if (g_stat(path, &st) != 0)
+        return {0, 0};
+    return st.st_mtim;
+}
+
+static bool mtimeNewer(const struct timespec &a, const struct timespec &b)
+{
+    return a.tv_sec > b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec > b.tv_nsec);
+}
+
+void AptJob::readRebootRequiredPackages(PkgList &output)
+{
+    // Packages that need a reboot write their name, optionally followed by a
+    // slash and their version, as a line to /run/reboot-required (or, with
+    // older policy, to /run/reboot-required.pkgs). Some only touch the flag
+    // file, so the list may be incomplete. The files accumulate entries until
+    // the next boot, so only packages of this transaction are looked up.
+    for (const char *path : {REBOOT_REQUIRED_FILE, REBOOT_REQUIRED_PKGS_FILE}) {
+        g_autofree gchar *contents = nullptr;
+        if (!g_file_get_contents(path, &contents, nullptr, nullptr))
+            continue;
+
+        bool found = false;
+        g_auto(GStrv) lines = g_strsplit(contents, "\n", -1);
+        for (gchar **line = lines; *line != nullptr; ++line) {
+            const std::string entry = g_strstrip(*line);
+            const std::string name = entry.substr(0, entry.find('/'));
+            if (name.empty())
+                continue;
+            for (const PkgInfo &info : m_pkgs) {
+                if (name == info.ver.ParentPkg().Name()) {
+                    output.append(info);
+                    found = true;
+                }
+            }
+        }
+        if (found)
+            return;
+    }
 }
 
 void AptJob::emitRequireRestart(PkgList &output)
@@ -2372,30 +2420,32 @@ bool AptJob::runTransaction(
         markNewGarbageForRemoval(Fix, initial_garbage);
 
     // Prepare for the restart thing
-    struct stat restartStatStart;
-    if (g_file_test(REBOOT_REQUIRED_FILE, G_FILE_TEST_EXISTS)) {
-        g_stat(REBOOT_REQUIRED_FILE, &restartStatStart);
-    }
+    const struct timespec rebootFlagStart = fileMtime(REBOOT_REQUIRED_FILE);
+    const struct timespec rebootPkgsStart = fileMtime(REBOOT_REQUIRED_PKGS_FILE);
 
     // If we are simulating the install packages
     // will just calculate the trusted packages
     const auto ret = installPackages(flags);
+    if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        return ret;
 
-    if (g_file_test(REBOOT_REQUIRED_FILE, G_FILE_TEST_EXISTS)) {
-        struct stat restartStat;
-        g_stat(REBOOT_REQUIRED_FILE, &restartStat);
+    // A reboot is required if a package touched one of the flag files, or if
+    // a package known to need one was changed.
+    const bool flagTouched = mtimeNewer(fileMtime(REBOOT_REQUIRED_FILE), rebootFlagStart)
+                             || mtimeNewer(fileMtime(REBOOT_REQUIRED_PKGS_FILE), rebootPkgsStart);
+    if (flagTouched || !m_restartPackages.empty()) {
+        PkgList restartPackages = m_restartPackages;
+        if (flagTouched)
+            readRebootRequiredPackages(restartPackages);
 
-        if (restartStat.st_mtime > restartStatStart.st_mtime) {
-            // Emit the packages that caused the restart
-            if (!m_restartPackages.empty()) {
-                emitRequireRestart(m_restartPackages);
-            } else if (!m_pkgs.empty()) {
-                // Assume all of them
-                emitRequireRestart(m_pkgs);
-            } else {
-                // Emit a foo require restart
-                pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, "apt-backend;;;");
-            }
+        if (!restartPackages.empty()) {
+            emitRequireRestart(restartPackages);
+        } else if (!m_pkgs.empty()) {
+            // The packages did not say which of them needs the reboot, assume all of them
+            emitRequireRestart(m_pkgs);
+        } else {
+            // Emit a foo require restart
+            pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, "apt-backend;;;");
         }
     }
 

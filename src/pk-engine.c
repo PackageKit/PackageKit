@@ -53,6 +53,7 @@
 
 static void pk_engine_finalize (GObject *object);
 static void pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
+static void pk_engine_refresh_reboot_required (PkEngine *engine);
 
 /* how long to wait when we get the StateHasChanged method */
 #define PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY 2 /* s */
@@ -90,6 +91,7 @@ struct _PkEngine
 	const gchar *backend_description;
 	const gchar *backend_author;
 	gchar *distro_id;
+	gchar **reboot_package_ids; /* NULL if no system restart is pending */
 	guint timeout_priority_id;
 	guint timeout_normal_id;
 	PolkitAuthority *authority;
@@ -169,6 +171,7 @@ pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 	/* automatically locked if the transaction cannot be cancelled */
 	pk_engine_set_locked (engine, pk_scheduler_get_locked (scheduler));
 	pk_engine_set_inhibited (engine, pk_scheduler_get_inhibited (scheduler));
+	pk_engine_refresh_reboot_required (engine);
 
 	transaction_list = pk_scheduler_get_array (scheduler);
 	g_dbus_connection_emit_signal (engine->connection,
@@ -205,6 +208,39 @@ pk_engine_emit_property_changed (PkEngine *engine,
 	    "PropertiesChanged",
 	    g_variant_new ("(sa{sv}as)", PK_DBUS_INTERFACE, &builder, &invalidated_builder),
 	    NULL);
+}
+
+static GVariant *
+pk_engine_get_reboot_required_variant (PkEngine *engine)
+{
+	GVariantBuilder builder;
+	const gchar *const *ids = (const gchar *const *) engine->reboot_package_ids;
+	PkRestartEnum restart = ids != NULL ? PK_RESTART_ENUM_SYSTEM : PK_RESTART_ENUM_NONE;
+
+	g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+	g_variant_builder_add (&builder, "{sv}", "restart", g_variant_new_uint32 (restart));
+	g_variant_builder_add (&builder,
+			       "{sv}",
+			       "package-ids",
+			       g_variant_new_strv (ids, ids != NULL ? -1 : 0));
+	return g_variant_builder_end (&builder);
+}
+
+static void
+pk_engine_refresh_reboot_required (PkEngine *engine)
+{
+	g_auto(GStrv) ids = pk_util_reboot_state_load (engine->conf);
+	const gchar *const *old_ids = (const gchar *const *) engine->reboot_package_ids;
+
+	if ((ids == NULL) == (old_ids == NULL) &&
+	    (ids == NULL || g_strv_equal ((const gchar *const *) ids, old_ids)))
+		return;
+
+	g_strfreev (engine->reboot_package_ids);
+	engine->reboot_package_ids = g_steal_pointer (&ids);
+	pk_engine_emit_property_changed (engine,
+					 "RebootRequired",
+					 pk_engine_get_reboot_required_variant (engine));
 }
 
 static void
@@ -1092,6 +1128,8 @@ pk_engine_daemon_get_property (GDBusConnection *connection_,
 		return g_variant_new_uint32 (engine->network_state);
 	if (g_strcmp0 (property_name, "DistroId") == 0)
 		return _g_variant_new_maybe_string (engine->distro_id);
+	if (g_strcmp0 (property_name, "RebootRequired") == 0)
+		return pk_engine_get_reboot_required_variant (engine);
 
 	/* return an error */
 	g_set_error (error,
@@ -2033,6 +2071,7 @@ pk_engine_finalize (GObject *object)
 	g_key_file_unref (engine->conf);
 	g_object_unref (engine->dbus);
 	g_strfreev (engine->mime_types);
+	g_strfreev (engine->reboot_package_ids);
 	g_free (engine->distro_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
@@ -2047,6 +2086,7 @@ pk_engine_new (GKeyFile *conf)
 
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->conf = g_key_file_ref (conf);
+	engine->reboot_package_ids = pk_util_reboot_state_load (conf);
 
 	/* clear the download cache */
 	root_dir = pk_util_get_root_dir (conf);

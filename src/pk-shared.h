@@ -49,6 +49,10 @@ gboolean       pk_util_load_config (GKeyFile	*conf,
 gchar	      *pk_util_get_root_dir (GKeyFile *conf);
 gchar	      *pk_util_get_runtime_dir (GKeyFile *conf,
 					GError	**error);
+gchar	     **pk_util_reboot_state_load (GKeyFile *conf);
+gboolean       pk_util_reboot_state_add (GKeyFile    *conf,
+					 const gchar *package_id,
+					 GError	    **error);
 gboolean       pk_util_set_auto_backend (GKeyFile *conf,
 					 GError	 **error);
 

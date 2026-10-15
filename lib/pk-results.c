@@ -680,7 +680,8 @@ pk_results_get_require_restart_array (PkResults *results)
  * RequireRestart(session) then pk_client_get_require_restart will return
  * system as a session restart is implied with a system restart.
  *
- * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
+ * Return value: a #PkRestartEnum value, e.g. %PK_RESTART_ENUM_SYSTEM, or
+ *   %PK_RESTART_ENUM_NONE if no restart was requested
  *
  * Since: 0.5.2
  **/
@@ -689,12 +690,12 @@ pk_results_get_require_restart_worst (PkResults *results)
 {
 	PkResultsPrivate *priv = GET_PRIVATE(results);
 	GPtrArray *array;
-	PkRestartEnum worst = 0;
+	PkRestartEnum worst = PK_RESTART_ENUM_NONE;
 	PkRestartEnum restart;
 	guint i;
 	PkRequireRestart *item;
 
-	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
+	g_return_val_if_fail (PK_IS_RESULTS (results), PK_RESTART_ENUM_NONE);
 
 	array = priv->require_restart_array;
 	for (i = 0; i < array->len; i++) {

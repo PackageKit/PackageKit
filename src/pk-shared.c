@@ -588,3 +588,88 @@ pk_get_cmdline_for_pid (guint32 pid)
 		g_warning ("failed to get cmdline: %s", error->message);
 	return cmdline;
 }
+
+#define PK_REBOOT_STATE_GROUP "RebootRequired"
+
+static gchar *
+pk_util_reboot_state_get_path (GKeyFile *conf, GError **error)
+{
+	g_autofree gchar *dir = pk_util_get_runtime_dir (conf, error);
+	if (dir == NULL)
+		return NULL;
+	return g_build_filename (dir, "reboot-required", NULL);
+}
+
+/**
+ * pk_util_reboot_state_load:
+ * @conf: the daemon configuration
+ *
+ * Loads the package IDs recorded as requiring a system restart since the
+ * system was booted.
+ *
+ * Returns: (transfer full) (nullable): the package IDs, or %NULL if no reboot is required.
+ */
+gchar **
+pk_util_reboot_state_load (GKeyFile *conf)
+{
+	gchar **ids;
+	g_autofree gchar *path = NULL;
+	g_autoptr(GKeyFile) kf = g_key_file_new ();
+	g_autoptr(GError) error = NULL;
+
+	path = pk_util_reboot_state_get_path (conf, &error);
+	if (path == NULL) {
+		g_warning ("failed to locate restart state: %s", error->message);
+		return NULL;
+	}
+	g_key_file_set_list_separator (kf, ',');
+	if (!g_key_file_load_from_file (kf, path, G_KEY_FILE_NONE, &error)) {
+		if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+			g_warning ("failed to load %s: %s", path, error->message);
+		return NULL;
+	}
+	ids = g_key_file_get_string_list (kf, PK_REBOOT_STATE_GROUP, "PackageIds", NULL, NULL);
+	if (ids == NULL)
+		ids = g_new0 (gchar *, 1);
+	return ids;
+}
+
+/**
+ * pk_util_reboot_state_add:
+ * @conf: the daemon configuration
+ * @package_id: the package that requires a system restart
+ * @error: a #GError, or %NULL
+ *
+ * Records that a system restart is required because of @package_id.
+ *
+ * Returns: %TRUE on success
+ */
+gboolean
+pk_util_reboot_state_add (GKeyFile *conf, const gchar *package_id, GError **error)
+{
+	g_autofree gchar *path = NULL;
+	g_auto(GStrv) ids = NULL;
+	g_autoptr(GPtrArray) new_ids = NULL;
+	g_autoptr(GKeyFile) kf = g_key_file_new ();
+
+	path = pk_util_reboot_state_get_path (conf, error);
+	if (path == NULL)
+		return FALSE;
+
+	ids = pk_util_reboot_state_load (conf);
+	if (ids != NULL && g_strv_contains ((const gchar *const *) ids, package_id))
+		return TRUE;
+
+	new_ids = g_ptr_array_new ();
+	for (guint i = 0; ids != NULL && ids[i] != NULL; i++)
+		g_ptr_array_add (new_ids, ids[i]);
+	g_ptr_array_add (new_ids, (gpointer) package_id);
+
+	g_key_file_set_list_separator (kf, ',');
+	g_key_file_set_string_list (kf,
+				    PK_REBOOT_STATE_GROUP,
+				    "PackageIds",
+				    (const gchar *const *) new_ids->pdata,
+				    new_ids->len);
+	return g_key_file_save_to_file (kf, path, error);
+}

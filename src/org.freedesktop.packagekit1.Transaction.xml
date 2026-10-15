@@ -1067,16 +1067,19 @@
     <!--*********************************************************************-->
     <!--
       RequireRestart:
-      @type: One of `system`, `application` or `session`.
-      @package_id: The package ID that caused the restart notifier.
+      @type: The required restart type, one of `system`, `session` or `application`.
+      @package_id: The package ID that caused the restart to be required.
 
       This signal is sent when the session program should notify the user that
-      a restart is required.
+      a restart is required to complete the transaction.
 
       This is optional, but highly recommended.
 
-      This can be sent as many times as needed by the backend script.
-      PackageKit will always choose the 'worst' method in the UI notification.
+      The backend may send this as many times as needed, usually once per
+      package. Clients should act on the most severe restart type they
+      received during a transaction. A required `system` restart is also
+      recorded in the RebootRequired property of the daemon until the next
+      boot.
     -->
     <signal name="RequireRestart">
       <arg type="u" name="type" direction="out"/>

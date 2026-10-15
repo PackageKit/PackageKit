@@ -82,6 +82,44 @@ pk_test_remove_transaction_db (void)
 	}
 }
 
+/*
+ * pk_test_reboot_state_func:
+ *
+ * The required-restart state is a key file in the runtime directory that
+ * transactions append to and the engine reads back.
+ */
+static void
+pk_test_reboot_state_func (void)
+{
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(GError) error = NULL;
+	g_auto(GStrv) ids = NULL;
+	g_autofree gchar *root_dir = g_dir_make_tmp ("pk-test-reboot-XXXXXX", &error);
+
+	g_assert_no_error (error);
+	g_key_file_set_string (conf, "Daemon", "RootDir", root_dir);
+
+	/* nothing recorded */
+	g_assert_null (pk_util_reboot_state_load (conf));
+
+	/* record a package twice, and another one */
+	g_assert_true (pk_util_reboot_state_add (conf, "kernel;1;x86_64;fedora", &error));
+	g_assert_no_error (error);
+	g_assert_true (pk_util_reboot_state_add (conf, "kernel;1;x86_64;fedora", &error));
+	g_assert_no_error (error);
+	g_assert_true (pk_util_reboot_state_add (conf, "glibc;2;x86_64;fedora", &error));
+	g_assert_no_error (error);
+
+	ids = pk_util_reboot_state_load (conf);
+	g_assert_nonnull (ids);
+	g_assert_cmpuint (g_strv_length (ids), ==, 2);
+	g_assert_cmpstr (ids[0], ==, "kernel;1;x86_64;fedora");
+	g_assert_cmpstr (ids[1], ==, "glibc;2;x86_64;fedora");
+
+	g_assert_true (pk_directory_remove_contents (root_dir));
+	g_assert_cmpint (g_rmdir (root_dir), ==, 0);
+}
+
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
 static guint _test_loop_timeout_id = 0;
@@ -2119,6 +2157,7 @@ main (int argc, char **argv)
 	g_test_init (&argc, &argv, NULL);
 
 	/* components */
+	g_test_add_func ("/packagekit/reboot-state", pk_test_reboot_state_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/backend-spawn", pk_test_backend_spawn_func);

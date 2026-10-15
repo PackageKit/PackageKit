@@ -474,6 +474,9 @@ pk_test_results_func (void)
 	g_assert_cmpint (packages->len, ==, 0);
 	g_ptr_array_unref (packages);
 
+	/* no restart was requested */
+	g_assert_cmpint (pk_results_get_require_restart_worst (results), ==, PK_RESTART_ENUM_NONE);
+
 	/* set valid exit code */
 	ret = pk_results_set_exit_code (results, PK_EXIT_ENUM_CANCELLED);
 	g_assert_true (ret);

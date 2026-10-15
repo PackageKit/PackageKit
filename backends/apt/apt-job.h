@@ -35,8 +35,6 @@
 #include "pkg-list.h"
 #include "apt-sourceslist.h"
 
-#define REBOOT_REQUIRED_FILE "/run/reboot-required"
-
 class pkgProblemResolver;
 class Matcher;
 class AptCacheFile;
@@ -310,10 +308,15 @@ private:
     PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
+    /**
+     * Append the packages of this transaction that listed themselves in
+     * one of the reboot-required flag files to output.
+     */
+    void readRebootRequiredPackages(PkgList &output);
+
     std::unique_ptr<AptCacheFile> m_cache;
     PkBackendJob *m_job;
     bool m_cancel;
-    struct stat m_restartStat;
 
     bool m_isMultiArch;
     PkgList m_pkgs;

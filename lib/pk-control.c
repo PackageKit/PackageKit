@@ -67,6 +67,8 @@ struct _PkControlPrivate
 	gboolean locked;
 	PkNetworkEnum network_state;
 	gchar *distro_id;
+	PkRestartEnum reboot_required;
+	gchar **reboot_required_package_ids;
 	guint watch_id;
 };
 
@@ -96,6 +98,8 @@ enum {
 	PROP_NETWORK_STATE,
 	PROP_CONNECTED,
 	PROP_DISTRO_ID,
+	PROP_REBOOT_REQUIRED,
+	PROP_REBOOT_REQUIRED_PACKAGE_IDS,
 	PROP_LAST
 };
 
@@ -289,6 +293,26 @@ pk_control_set_property_value (PkControl *control, const gchar *key, GVariant *v
 		g_free (priv->distro_id);
 		priv->distro_id = g_strdup (tmp_str);
 		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_DISTRO_ID]);
+		return;
+	}
+	if (g_strcmp0 (key, "RebootRequired") == 0) {
+		g_autofree const gchar **tmp_strv = NULL;
+		tmp_uint = PK_RESTART_ENUM_NONE;
+		g_variant_lookup (value, "restart", "u", &tmp_uint);
+		if (tmp_uint >= PK_RESTART_ENUM_LAST)
+			tmp_uint = PK_RESTART_ENUM_UNKNOWN;
+		g_variant_lookup (value, "package-ids", "^a&s", &tmp_strv);
+		if (priv->reboot_required != tmp_uint) {
+			priv->reboot_required = tmp_uint;
+			g_object_notify_by_pspec (G_OBJECT(control),
+							   obj_properties[PROP_REBOOT_REQUIRED]);
+		}
+		if (!_g_strvcmp0 (priv->reboot_required_package_ids, (gchar **) tmp_strv)) {
+			g_strfreev (priv->reboot_required_package_ids);
+			priv->reboot_required_package_ids = g_strdupv ((gchar **) tmp_strv);
+			g_object_notify_by_pspec (
+			    G_OBJECT(control), obj_properties[PROP_REBOOT_REQUIRED_PACKAGE_IDS]);
+		}
 		return;
 	}
 	g_warning ("unhandled property '%s'", key);
@@ -1709,6 +1733,12 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_DISTRO_ID:
 		g_value_set_string (value, priv->distro_id);
 		break;
+	case PROP_REBOOT_REQUIRED:
+		g_value_set_enum (value, priv->reboot_required);
+		break;
+	case PROP_REBOOT_REQUIRED_PACKAGE_IDS:
+		g_value_set_boxed (value, priv->reboot_required_package_ids);
+		break;
 	case PROP_CONNECTED:
 		g_value_set_boolean (value, priv->connected);
 		break;
@@ -1914,6 +1944,37 @@ pk_control_class_init (PkControlClass *klass)
 								    G_PARAM_STATIC_STRINGS);
 
 	/**
+	 * PkControl:reboot-required:
+	 *
+	 * Whether a reboot is required to complete package changes made since the
+	 * system was booted, either %PK_RESTART_ENUM_NONE or
+	 * %PK_RESTART_ENUM_SYSTEM.
+	 *
+	 * Since: 2.0
+	 */
+	obj_properties[PROP_REBOOT_REQUIRED] = g_param_spec_enum ("reboot-required",
+								  NULL,
+								  NULL,
+								  PK_TYPE_RESTART_ENUM,
+								  PK_RESTART_ENUM_NONE,
+								  G_PARAM_READWRITE |
+								      G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * PkControl:reboot-required-package-ids:
+	 *
+	 * The package IDs that caused #PkControl:reboot-required to be set.
+	 *
+	 * Since: 2.0
+	 */
+	obj_properties[PROP_REBOOT_REQUIRED_PACKAGE_IDS] = g_param_spec_boxed (
+	    "reboot-required-package-ids",
+	    NULL,
+	    NULL,
+	    G_TYPE_STRV,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+	/**
 	 * PkControl:distro-id:
 	 *
 	 * Since: 0.5.5
@@ -2096,6 +2157,7 @@ pk_control_init (PkControl *control)
 {
 	PkControlPrivate *priv = GET_PRIVATE(control);
 	priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
+	priv->reboot_required = PK_RESTART_ENUM_NONE;
 	priv->version_major = G_MAXUINT;
 	priv->version_minor = G_MAXUINT;
 	priv->version_micro = G_MAXUINT;
@@ -2132,6 +2194,7 @@ pk_control_finalize (GObject *object)
 	g_clear_pointer (&priv->backend_author, g_free);
 	g_clear_pointer (&priv->mime_types, g_strfreev);
 	g_clear_pointer (&priv->distro_id, g_free);
+	g_clear_pointer (&priv->reboot_required_package_ids, g_strfreev);
 	g_clear_object (&priv->cancellable);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);

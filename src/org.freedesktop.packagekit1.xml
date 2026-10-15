@@ -123,6 +123,23 @@
 
     <!--*********************************************************************-->
     <!--
+      RebootRequired:
+
+      Whether a system restart is required to complete package changes made
+      since the system was booted. Recognized keys are `"restart"`, the
+      restart type which is either `none` or `system` [`u`], and
+      `"package-ids"`, the packages that caused the restart to be
+      required [`as`].
+
+      Only system restarts are tracked, as the daemon cannot tell when a
+      session or an application has been restarted.
+    -->
+    <property name="RebootRequired" type="a{sv}" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"/>
+    </property>
+
+    <!--*********************************************************************-->
+    <!--
       CanAuthorize:
       @action_id: The action ID, e.g. `org.freedesktop.packagekit.system-network-proxy-configure`
 

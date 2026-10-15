@@ -1498,13 +1498,19 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 	/* get data */
 	g_object_get (item, "package-id", &package_id, "restart", &restart, NULL);
 
-	/* filter out duplicates */
+	/* filter out duplicates, unless the restart became more severe */
 	array = pk_results_get_require_restart_array (transaction->results);
 	for (i = 0; i < array->len; i++) {
 		g_autofree gchar *package_id_tmp = NULL;
+		PkRestartEnum restart_tmp;
 		item_tmp = g_ptr_array_index (array, i);
-		g_object_get (item_tmp, "package-id", &package_id_tmp, NULL);
-		if (g_strcmp0 (package_id, package_id_tmp) == 0) {
+		g_object_get (item_tmp,
+			      "package-id",
+			      &package_id_tmp,
+			      "restart",
+			      &restart_tmp,
+			      NULL);
+		if (g_strcmp0 (package_id, package_id_tmp) == 0 && restart_tmp >= restart) {
 			found = TRUE;
 			break;
 		}
@@ -1520,6 +1526,15 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 
 	/* add to results */
 	pk_results_add_require_restart (transaction->results, item);
+
+	/* remember a required system restart until the next boot */
+	if (restart == PK_RESTART_ENUM_SYSTEM &&
+	    !pk_bitfield_contain (transaction->cached_transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		g_autoptr(GError) error = NULL;
+		if (!pk_util_reboot_state_add (transaction->conf, package_id, &error))
+			g_warning ("failed to record required restart: %s", error->message);
+	}
 
 	/* emit */
 	g_debug ("emitting require-restart %s, '%s'",

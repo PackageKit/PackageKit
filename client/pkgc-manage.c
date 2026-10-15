@@ -118,6 +118,48 @@ pkgc_manage_apply_options (PkgcliContext *ctx)
 }
 
 /**
+ * pkgc_manage_print_require_restart:
+ *
+ * Tell the user if a restart is needed to complete the changes.
+ */
+static void
+pkgc_manage_print_require_restart (PkgcliContext *ctx, PkResults *results)
+{
+	PkRestartEnum restart = pk_results_get_require_restart_worst (results);
+
+	if (restart <= PK_RESTART_ENUM_NONE)
+		return;
+
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
+		g_autoptr(json_t) root = json_object ();
+		json_object_set_new (root,
+				     "restart",
+				     json_string (pk_restart_enum_to_string (restart)));
+		pkgc_print_json (root);
+		return;
+	}
+
+	switch (restart) {
+	case PK_RESTART_ENUM_SYSTEM:
+		/* TRANSLATORS: shown after a transaction when the computer needs a reboot */
+		pkgc_print_warning (ctx,
+				    _("A system restart is required to complete the changes."));
+		break;
+	case PK_RESTART_ENUM_SESSION:
+		/* TRANSLATORS: shown after a transaction when the user needs to log out and in again */
+		pkgc_print_warning (ctx,
+				    _("You need to log out and back in to complete the changes."));
+		break;
+	default:
+		/* TRANSLATORS: shown after a transaction when running applications need a restart */
+		pkgc_print_warning (
+		    ctx,
+		    _("Affected applications need to be restarted to complete the changes."));
+		break;
+	}
+}
+
+/**
  * pkgc_manage_on_task_finished_cb:
  */
 static void
@@ -175,6 +217,8 @@ pkgc_manage_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoi
 			PkRepoDetail *repo = PK_REPO_DETAIL (g_ptr_array_index (repos, i));
 			pkgc_print_repo (ctx, repo);
 		}
+
+		pkgc_manage_print_require_restart (ctx, results);
 	}
 
 out:

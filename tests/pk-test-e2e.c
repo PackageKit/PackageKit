@@ -820,6 +820,29 @@ pk_test_client_func (void)
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 
+	/* the dummy backend reported a kernel update, which the daemon must
+	 * remember as a required system restart */
+	{
+		g_autoptr(PkControl) control = pk_control_new ();
+		g_auto(GStrv) restart_ids = NULL;
+		PkRestartEnum restart;
+
+		ret = pk_control_get_properties (control, NULL, &error);
+		g_assert_no_error (error);
+		g_assert_true (ret);
+		g_object_get (control,
+			      "reboot-required",
+			      &restart,
+			      "reboot-required-package-ids",
+			      &restart_ids,
+			      NULL);
+		g_assert_cmpint (restart, ==, PK_RESTART_ENUM_SYSTEM);
+		g_assert_nonnull (restart_ids);
+		g_assert_true (
+		    g_strv_contains ((const gchar *const *) restart_ids,
+				     "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed"));
+	}
+
 	/* ensure previous files are deleted */
 	g_unlink ("/tmp/powertop-1.8-1.fc8.rpm");
 	g_unlink ("/tmp/powertop-common-1.8-1.fc8.rpm");
