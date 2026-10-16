@@ -1144,7 +1144,7 @@ pk_test_object_types_func (void)
 	PK_TEST_TYPE (PkTaskWrapper, pk_task_wrapper_new);
 	PK_TEST_TYPE (PkTransactionList, pk_transaction_list_new);
 
-	PK_TEST_TYPE (PkTransactionPast, pk_transaction_past_new);
+	PK_TEST_TYPE (PkHistoryItem, pk_history_item_new);
 	PK_TEST_TYPE (PkUpdateDetail, pk_update_detail_new);
 }
 

@@ -764,30 +764,34 @@ pk_client_get_updates (PkClient *client,
 }
 
 /**
- * pk_client_get_old_transactions:
+ * pk_client_get_history:
  * @client: a valid #PkClient instance
- * @number: the number of past transactions to return, or 0 for all
+ * @flags: a #PkBitfield of #PkHistoryFlagEnum values, e.g. %PK_HISTORY_FLAG_ENUM_SUCCEEDED
+ * @count: the maximum number of history items to return, or 0 for all
+ * @names: (array zero-terminated=1) (nullable): only return packages with these names, or %NULL for all
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Get the old transaction list, mainly used for the transaction viewer.
+ * Get the transaction history, newest first.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
  * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
- * Since: 0.5.3
+ * Since: 2.0.0
  **/
 PkResults *
-pk_client_get_old_transactions (PkClient *client,
-				guint number,
-				GCancellable *cancellable,
-				PkProgressCallback progress_callback,
-				gpointer progress_user_data,
-				GError **error)
+pk_client_get_history (PkClient *client,
+		       PkBitfield flags,
+		       guint count,
+		       gchar **names,
+		       GCancellable *cancellable,
+		       PkProgressCallback progress_callback,
+		       gpointer progress_user_data,
+		       GError **error)
 {
 	PkClientHelper helper;
 	PkResults *results;
@@ -804,13 +808,15 @@ pk_client_get_old_transactions (PkClient *client,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_get_old_transactions_async (client,
-					      number,
-					      cancellable,
-					      progress_callback,
-					      progress_user_data,
-					      (GAsyncReadyCallback) pk_client_generic_finish_sync,
-					      &helper);
+	pk_client_get_history_async (client,
+				     flags,
+				     count,
+				     names,
+				     cancellable,
+				     progress_callback,
+				     progress_user_data,
+				     (GAsyncReadyCallback) pk_client_generic_finish_sync,
+				     &helper);
 
 	g_main_loop_run (helper.loop);
 

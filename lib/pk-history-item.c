@@ -19,11 +19,11 @@
  */
 
 /**
- * PkTransactionPast:
+ * PkHistoryItem:
  *
- * TransactionPast object
+ * History item object
  *
- * This GObject represents a transaction_past from a transaction_past.
+ * This GObject represents a transaction recorded in the history database.
  * These objects represent single items of data from the transaction, and are
  * often present in lists (#PkResults) or just refcounted in client programs.
  */
@@ -32,19 +32,19 @@
 
 #include <glib-object.h>
 
-#include "pk-transaction-past.h"
+#include "pk-history-item.h"
 #include "pk-common.h"
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void pk_transaction_past_finalize (GObject *object);
+static void pk_history_item_finalize (GObject *object);
 
 /**
- * PkTransactionPastPrivate:
+ * PkHistoryItemPrivate:
  *
- * Private #PkTransactionPast data
+ * Private #PkHistoryItem data
  **/
-struct _PkTransactionPastPrivate
+struct _PkHistoryItemPrivate
 {
 	gchar *tid;
 	gchar *time_started;
@@ -70,12 +70,12 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOURCE)
-#define GET_PRIVATE(o) (pk_transaction_past_get_instance_private (o))
+G_DEFINE_TYPE_WITH_PRIVATE (PkHistoryItem, pk_history_item, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_history_item_get_instance_private (o))
 
 /**
- * pk_transaction_past_get_id:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_id:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction ID value;
  *
@@ -84,18 +84,18 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOUR
  * Since: 0.8.11
  **/
 const gchar *
-pk_transaction_past_get_id (PkTransactionPast *past)
+pk_history_item_get_id (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), NULL);
 
 	return priv->tid;
 }
 
 /**
- * pk_transaction_past_get_time_started:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_time_started:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the time the past transaction was started.
  *
@@ -104,11 +104,11 @@ pk_transaction_past_get_id (PkTransactionPast *past)
  * Since: 2.0.0
  **/
 GDateTime *
-pk_transaction_past_get_time_started (PkTransactionPast *past)
+pk_history_item_get_time_started (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), NULL);
 
 	if (priv->time_started_dt == NULL && priv->time_started != NULL)
 		priv->time_started_dt = pk_iso8601_to_datetime (priv->time_started);
@@ -116,8 +116,8 @@ pk_transaction_past_get_time_started (PkTransactionPast *past)
 }
 
 /**
- * pk_transaction_past_get_succeeded:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_succeeded:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction succeeded value;
  *
@@ -126,18 +126,18 @@ pk_transaction_past_get_time_started (PkTransactionPast *past)
  * Since: 0.8.11
  **/
 gboolean
-pk_transaction_past_get_succeeded (PkTransactionPast *past)
+pk_history_item_get_succeeded (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), FALSE);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), FALSE);
 
 	return priv->succeeded;
 }
 
 /**
- * pk_transaction_past_get_role:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_role:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction role;
  *
@@ -146,18 +146,18 @@ pk_transaction_past_get_succeeded (PkTransactionPast *past)
  * Since: 0.8.11
  **/
 PkRoleEnum
-pk_transaction_past_get_role (PkTransactionPast *past)
+pk_history_item_get_role (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), PK_ROLE_ENUM_UNKNOWN);
 
 	return priv->role;
 }
 
 /**
- * pk_transaction_past_get_duration:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_duration:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction duration;
  *
@@ -166,18 +166,18 @@ pk_transaction_past_get_role (PkTransactionPast *past)
  * Since: 0.8.11
  **/
 guint
-pk_transaction_past_get_duration (PkTransactionPast *past)
+pk_history_item_get_duration (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), 0);
 
 	return priv->duration;
 }
 
 /**
- * pk_transaction_past_get_packages:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_packages:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the packages that the past transaction acted on.
  *
@@ -186,17 +186,17 @@ pk_transaction_past_get_duration (PkTransactionPast *past)
  * Since: 2.0.0
  **/
 GPtrArray *
-pk_transaction_past_get_packages (PkTransactionPast *past)
+pk_history_item_get_packages (PkHistoryItem *item)
 {
-	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), NULL);
 	return priv->packages;
 }
 
 /**
- * pk_transaction_past_get_uid:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_uid:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction uid;
  *
@@ -205,15 +205,15 @@ pk_transaction_past_get_packages (PkTransactionPast *past)
  * Since: 0.8.11
  **/
 guint
-pk_transaction_past_get_uid (PkTransactionPast *past)
+pk_history_item_get_uid (PkHistoryItem *item)
 {
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
-	return past->priv->uid;
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), 0);
+	return item->priv->uid;
 }
 
 /**
- * pk_transaction_past_get_cmdline:
- * @past: a valid #PkTransactionPast instance
+ * pk_history_item_get_cmdline:
+ * @item: a valid #PkHistoryItem instance
  *
  * Gets the past transaction cmdline value;
  *
@@ -222,20 +222,20 @@ pk_transaction_past_get_uid (PkTransactionPast *past)
  * Since: 0.8.11
  **/
 const gchar *
-pk_transaction_past_get_cmdline (PkTransactionPast *past)
+pk_history_item_get_cmdline (PkHistoryItem *item)
 {
-	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
-	return past->priv->cmdline;
+	g_return_val_if_fail (PK_IS_HISTORY_ITEM (item), NULL);
+	return item->priv->cmdline;
 }
 
 /*
- * pk_transaction_past_get_property:
+ * pk_history_item_get_property:
  **/
 static void
-pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+pk_history_item_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	PkTransactionPast *transaction_past = PK_TRANSACTION_PAST (object);
-	PkTransactionPastPrivate *priv = transaction_past->priv;
+	PkHistoryItem *item = PK_HISTORY_ITEM (object);
+	PkHistoryItemPrivate *priv = item->priv;
 
 	switch (prop_id) {
 	case PROP_TID:
@@ -269,16 +269,16 @@ pk_transaction_past_get_property (GObject *object, guint prop_id, GValue *value,
 }
 
 /*
- * pk_transaction_past_set_property:
+ * pk_history_item_set_property:
  **/
 static void
-pk_transaction_past_set_property (GObject *object,
-				  guint prop_id,
-				  const GValue *value,
-				  GParamSpec *pspec)
+pk_history_item_set_property (GObject *object,
+			      guint prop_id,
+			      const GValue *value,
+			      GParamSpec *pspec)
 {
-	PkTransactionPast *transaction_past = PK_TRANSACTION_PAST (object);
-	PkTransactionPastPrivate *priv = GET_PRIVATE(transaction_past);
+	PkHistoryItem *item = PK_HISTORY_ITEM (object);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
 	switch (prop_id) {
 	case PROP_TID:
@@ -317,19 +317,19 @@ pk_transaction_past_set_property (GObject *object,
 }
 
 /*
- * pk_transaction_past_class_init:
+ * pk_history_item_class_init:
  **/
 static void
-pk_transaction_past_class_init (PkTransactionPastClass *klass)
+pk_history_item_class_init (PkHistoryItemClass *klass)
 {
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_transaction_past_finalize;
-	object_class->get_property = pk_transaction_past_get_property;
-	object_class->set_property = pk_transaction_past_set_property;
+	object_class->finalize = pk_history_item_finalize;
+	object_class->get_property = pk_history_item_get_property;
+	object_class->set_property = pk_history_item_set_property;
 
 	/**
-	 * PkTransactionPast:tid:
+	 * PkHistoryItem:tid:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -341,7 +341,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_TID, pspec);
 
 	/**
-	 * PkTransactionPast:time-started:
+	 * PkHistoryItem:time-started:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -353,7 +353,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_TIME_STARTED, pspec);
 
 	/**
-	 * PkTransactionPast:succeeded:
+	 * PkHistoryItem:succeeded:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -365,7 +365,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_SUCCEEDED, pspec);
 
 	/**
-	 * PkTransactionPast:role:
+	 * PkHistoryItem:role:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -378,7 +378,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
-	 * PkTransactionPast:duration:
+	 * PkHistoryItem:duration:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -392,7 +392,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_DURATION, pspec);
 
 	/**
-	 * PkTransactionPast:packages:
+	 * PkHistoryItem:packages:
 	 *
 	 * The packages the transaction acted on, as a #GPtrArray of #PkPackage.
 	 *
@@ -406,7 +406,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_PACKAGES, pspec);
 
 	/**
-	 * PkTransactionPast:uid:
+	 * PkHistoryItem:uid:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -420,7 +420,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	g_object_class_install_property (object_class, PROP_UID, pspec);
 
 	/**
-	 * PkTransactionPast:cmdline:
+	 * PkHistoryItem:cmdline:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -433,22 +433,22 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 }
 
 /*
- * pk_transaction_past_init:
+ * pk_history_item_init:
  **/
 static void
-pk_transaction_past_init (PkTransactionPast *transaction_past)
+pk_history_item_init (PkHistoryItem *item)
 {
-	transaction_past->priv = GET_PRIVATE(transaction_past);
+	item->priv = GET_PRIVATE(item);
 }
 
 /*
- * pk_transaction_past_finalize:
+ * pk_history_item_finalize:
  **/
 static void
-pk_transaction_past_finalize (GObject *object)
+pk_history_item_finalize (GObject *object)
 {
-	PkTransactionPast *transaction_past = PK_TRANSACTION_PAST (object);
-	PkTransactionPastPrivate *priv = GET_PRIVATE(transaction_past);
+	PkHistoryItem *item = PK_HISTORY_ITEM (object);
+	PkHistoryItemPrivate *priv = GET_PRIVATE(item);
 
 	g_clear_pointer (&priv->tid, g_free);
 	g_clear_pointer (&priv->time_started, g_free);
@@ -456,20 +456,20 @@ pk_transaction_past_finalize (GObject *object)
 	g_clear_pointer (&priv->packages, g_ptr_array_unref);
 	g_clear_pointer (&priv->cmdline, g_free);
 
-	G_OBJECT_CLASS (pk_transaction_past_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_history_item_parent_class)->finalize (object);
 }
 
 /**
- * pk_transaction_past_new:
+ * pk_history_item_new:
  *
- * Return value: a new #PkTransactionPast object.
+ * Return value: a new #PkHistoryItem object.
  *
  * Since: 0.5.4
  **/
-PkTransactionPast *
-pk_transaction_past_new (void)
+PkHistoryItem *
+pk_history_item_new (void)
 {
-	PkTransactionPast *transaction_past;
-	transaction_past = g_object_new (PK_TYPE_TRANSACTION_PAST, NULL);
-	return PK_TRANSACTION_PAST (transaction_past);
+	PkHistoryItem *item;
+	item = g_object_new (PK_TYPE_HISTORY_ITEM, NULL);
+	return PK_HISTORY_ITEM (item);
 }

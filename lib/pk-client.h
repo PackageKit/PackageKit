@@ -209,13 +209,15 @@ void	     pk_client_get_updates_async (PkClient	     *client,
 					  GAsyncReadyCallback callback_ready,
 					  gpointer	      user_data);
 
-void	     pk_client_get_old_transactions_async (PkClient	      *client,
-						   guint	       number,
-						   GCancellable	      *cancellable,
-						   PkProgressCallback  progress_callback,
-						   gpointer	       progress_user_data,
-						   GAsyncReadyCallback callback_ready,
-						   gpointer	       user_data);
+void	     pk_client_get_history_async (PkClient	     *client,
+					  PkBitfield	      flags,
+					  guint		      count,
+					  gchar		    **names,
+					  GCancellable	     *cancellable,
+					  PkProgressCallback  progress_callback,
+					  gpointer	      progress_user_data,
+					  GAsyncReadyCallback callback_ready,
+					  gpointer	      user_data);
 
 void	     pk_client_depends_on_async (PkClient	    *client,
 					 PkBitfield	     filters,

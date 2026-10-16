@@ -31,7 +31,7 @@ libpackagekit_pub_headers = files(
     'pk-source.h',
     'pk-task.h',
     'pk-task-sync.h',
-    'pk-transaction-past.h',
+    'pk-history-item.h',
     'pk-transaction-list.h',
     'pk-update-detail.h',
 )
@@ -72,7 +72,7 @@ libpackagekit_src = files(
     'pk-source.c',
     'pk-task.c',
     'pk-task-sync.c',
-    'pk-transaction-past.c',
+    'pk-history-item.c',
     'pk-transaction-list.c',
     'pk-update-detail.c',
     'pk-spawn-polkit-agent.c',

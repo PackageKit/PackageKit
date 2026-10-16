@@ -1001,7 +1001,7 @@ pkgc_print_repo (PkgcliContext *ctx, PkRepoDetail *repo)
  * Print transaction information based on the output mode.
  */
 void
-pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
+pkgc_print_transaction (PkgcliContext *ctx, PkHistoryItem *transaction)
 {
 	PkRoleEnum role;
 	const gchar *role_text;
@@ -1034,7 +1034,7 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		      "uid",
 		      &uid,
 		      NULL);
-	packages = pk_transaction_past_get_packages (transaction);
+	packages = pk_history_item_get_packages (transaction);
 
 	role_text = pk_role_enum_to_string (role);
 

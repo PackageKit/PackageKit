@@ -120,7 +120,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_ACCEPT_EULA,			"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,		"download-packages"},
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
-	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
+	{PK_ROLE_ENUM_GET_HISTORY,		"get-history"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
 	{0, NULL}
@@ -393,6 +393,13 @@ static const PkEnumMatch enum_transaction_flag[] = {
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL,	"allow-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,	"just-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE,	"allow-downgrade"},
+	{0, NULL}
+};
+
+static const PkEnumMatch enum_history_flag[] = {
+	{PK_HISTORY_FLAG_ENUM_NONE,			"none"},	/* fall though value */
+	{PK_HISTORY_FLAG_ENUM_SUCCEEDED,		"succeeded"},
+	{PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES,		"package-changes"},
 	{0, NULL}
 };
 /* clang-format on */
@@ -1029,6 +1036,38 @@ pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag)
 }
 
 /**
+ * pk_history_flag_enum_from_string:
+ * @history_flag: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. %PK_HISTORY_FLAG_ENUM_SUCCEEDED
+ *
+ * Since: 2.0.0
+ **/
+PkHistoryFlagEnum
+pk_history_flag_enum_from_string (const gchar *history_flag)
+{
+	return pk_enum_find_value (enum_history_flag, history_flag);
+}
+
+/**
+ * pk_history_flag_enum_to_string:
+ * @history_flag: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "succeeded"
+ *
+ * Since: 2.0.0
+ **/
+const gchar *
+pk_history_flag_enum_to_string (PkHistoryFlagEnum history_flag)
+{
+	return pk_enum_find_string (enum_history_flag, history_flag);
+}
+
+/**
  * pk_info_enum_to_localised_text:
  * @info: The enumerated type value
  *
@@ -1320,9 +1359,9 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Getting upgrades");
 		break;
-	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
+	case PK_ROLE_ENUM_GET_HISTORY:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting transactions");
+		text = dgettext ("PackageKit", "Getting transaction history");
 		break;
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */

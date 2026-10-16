@@ -859,6 +859,72 @@ pk_test_client_func (void)
 				     "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed"));
 	}
 
+	/* the update must now show up in the history, and filter correctly */
+	{
+		g_autoptr(PkResults) results = NULL;
+		g_autoptr(GPtrArray) items = NULL;
+		g_autofree gchar *name = NULL;
+		gchar *names[] = { NULL, NULL };
+		PkHistoryItem *item;
+		GPtrArray *packages;
+
+		results = pk_client_get_history (client, 0, 1, NULL, NULL, NULL, NULL, &error);
+		g_assert_no_error (error);
+		items = pk_results_get_history_array (results);
+		g_assert_cmpint (items->len, ==, 1);
+		item = g_ptr_array_index (items, 0);
+		g_assert_cmpint (pk_history_item_get_role (item), ==, PK_ROLE_ENUM_UPDATE_PACKAGES);
+		packages = pk_history_item_get_packages (item);
+		g_assert_nonnull (packages);
+		g_assert_cmpint (packages->len, >, 0);
+		name = g_strdup (pk_package_get_name (g_ptr_array_index (packages, 0)));
+		g_clear_pointer (&items, g_ptr_array_unref);
+		g_clear_object (&results);
+
+		names[0] = name;
+		results = pk_client_get_history (client, 0, 0, names, NULL, NULL, NULL, &error);
+		g_assert_no_error (error);
+		items = pk_results_get_history_array (results);
+		g_assert_cmpint (items->len, >, 0);
+		for (guint i = 0; i < items->len; i++) {
+			packages = pk_history_item_get_packages (g_ptr_array_index (items, i));
+			for (guint j = 0; j < packages->len; j++)
+				g_assert_cmpstr (
+				    pk_package_get_name (g_ptr_array_index (packages, j)),
+				    ==,
+				    name);
+		}
+		g_clear_pointer (&items, g_ptr_array_unref);
+		g_clear_object (&results);
+
+		results = pk_client_get_history (
+		    client,
+		    pk_bitfield_from_enums (PK_HISTORY_FLAG_ENUM_SUCCEEDED,
+					    PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES,
+					    -1),
+		    0,
+		    NULL,
+		    NULL,
+		    NULL,
+		    NULL,
+		    &error);
+		g_assert_no_error (error);
+		items = pk_results_get_history_array (results);
+		for (guint i = 0; i < items->len; i++) {
+			item = g_ptr_array_index (items, i);
+			g_assert_true (pk_history_item_get_succeeded (item));
+			packages = pk_history_item_get_packages (item);
+			g_assert_cmpint (packages->len, >, 0);
+			for (guint j = 0; j < packages->len; j++) {
+				PkInfoEnum info = pk_package_get_info (
+				    g_ptr_array_index (packages, j));
+				g_assert_true (info == PK_INFO_ENUM_INSTALLING ||
+					       info == PK_INFO_ENUM_REMOVING ||
+					       info == PK_INFO_ENUM_UPDATING);
+			}
+		}
+	}
+
 	/* ensure previous files are deleted */
 	g_unlink ("/tmp/powertop-1.8-1.fc8.rpm");
 	g_unlink ("/tmp/powertop-common-1.8-1.fc8.rpm");
@@ -1179,7 +1245,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 			 "search-details;search-file;search-group;search-name;update-packages;"
 			 "what-provides;download-packages;get-distro-upgrades;"
-			 "get-old-transactions;repair-system;get-details-local;"
+			 "get-history;repair-system;get-details-local;"
 			 "get-files-local;upgrade-system");
 	g_free (text);
 
@@ -1359,7 +1425,7 @@ pk_test_control_func (void)
 			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 			 "search-details;search-file;search-group;search-name;update-packages;"
 			 "what-provides;download-packages;get-distro-upgrades;"
-			 "get-old-transactions;repair-system;get-details-local;"
+			 "get-history;repair-system;get-details-local;"
 			 "get-files-local;upgrade-system");
 	g_free (text);
 

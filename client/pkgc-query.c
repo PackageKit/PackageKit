@@ -138,9 +138,9 @@ pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpo
 		g_autoptr(GPtrArray) array = NULL;
 
 		/* Process transactions */
-		array = pk_results_get_transaction_array (results);
+		array = pk_results_get_history_array (results);
 		for (guint i = 0; i < array->len; i++) {
-			PkTransactionPast *transaction = g_ptr_array_index (array, i);
+			PkHistoryItem *transaction = g_ptr_array_index (array, i);
 			pkgc_print_transaction (ctx, transaction);
 			g_print ("\n"); /* add some visual spacing */
 		}
@@ -264,13 +264,15 @@ pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	}
 
 	/* Get transaction history */
-	pk_client_get_old_transactions_async (PK_CLIENT (ctx->task),
-					      limit,
-					      ctx->cancellable,
-					      pkgc_context_on_progress_cb,
-					      ctx,
-					      pkgc_query_on_client_finished_cb,
-					      ctx);
+	pk_client_get_history_async (PK_CLIENT (ctx->task),
+				     0,
+				     limit,
+				     NULL,
+				     ctx->cancellable,
+				     pkgc_context_on_progress_cb,
+				     ctx,
+				     pkgc_query_on_client_finished_cb,
+				     ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;

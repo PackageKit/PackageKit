@@ -10,7 +10,7 @@ Client
         .get_distro_upgrades_async finish_name="pk_client_generic_finish"
         .get_files_async finish_name="pk_client_generic_finish"
         .get_files_local_async finish_name="pk_client_generic_finish"
-        .get_old_transactions_async finish_name="pk_client_generic_finish"
+        .get_history_async finish_name="pk_client_generic_finish"
         .get_packages_async finish_name="pk_client_generic_finish"
         .get_repo_list_async finish_name="pk_client_generic_finish"
         .get_update_detail_async finish_name="pk_client_generic_finish"

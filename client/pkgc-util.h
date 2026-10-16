@@ -65,8 +65,8 @@ void		pkgc_print_update_detail (PkgcliContext	 *ctx,
 					  PkUpdateDetail *update);
 void		pkgc_print_repo (PkgcliContext *ctx,
 				 PkRepoDetail  *repo);
-void		pkgc_print_transaction (PkgcliContext	  *ctx,
-					PkTransactionPast *transaction);
+void		pkgc_print_transaction (PkgcliContext *ctx,
+					PkHistoryItem *transaction);
 void		pkgc_print_error (PkgcliContext *ctx,
 				  const char	*format,
 				  ...) G_GNUC_PRINTF (2, 3);

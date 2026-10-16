@@ -204,10 +204,9 @@ pkgc_manage_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoi
 		}
 
 		/* show transactions */
-		tas = pk_results_get_transaction_array (results);
+		tas = pk_results_get_history_array (results);
 		for (guint i = 0; i < tas->len; i++) {
-			PkTransactionPast *transaction = PK_TRANSACTION_PAST (
-			    g_ptr_array_index (tas, i));
+			PkHistoryItem *transaction = PK_HISTORY_ITEM (g_ptr_array_index (tas, i));
 			pkgc_print_transaction (ctx, transaction);
 		}
 

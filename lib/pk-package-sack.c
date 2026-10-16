@@ -35,7 +35,6 @@
 #include <gio/gio.h>
 
 #include "pk-package-sack.h"
-#include "pk-package-sack.h"
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-enum.h"

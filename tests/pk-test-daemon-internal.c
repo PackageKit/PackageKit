@@ -1282,7 +1282,7 @@ pk_test_transaction_db_func (void)
 		g_free (tid);
 		list = pk_transaction_db_get_list (db, 0);
 		g_assert_cmpint (g_list_length (list), ==, 1);
-		packages = pk_transaction_past_get_packages (PK_TRANSACTION_PAST (list->data));
+		packages = pk_history_item_get_packages (PK_HISTORY_ITEM (list->data));
 		g_assert_nonnull (packages);
 		g_assert_cmpint (packages->len, ==, 2);
 		pkg = g_ptr_array_index (packages, 0);

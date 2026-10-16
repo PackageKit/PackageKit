@@ -228,30 +228,6 @@
 
     <!--*********************************************************************-->
     <!--
-      GetPackageHistory:
-      @names: The package names to return history for, e.g. `[ colord ]`.
-      @count: The maximum number of past transactions to return, or 0 for no limit.
-
-      Gets the history for a given package name. This uses the internal
-      PackageKit history database and will not return transactions done
-      outside of PackageKit using a distribution native tool.
-
-      Returns:
-
-      - `history`: The list of actions performed on this package. The array
-        may contain the following keys of types: `info[uint]`,
-        `user-id[uint]`, `version[string]`, `source[string]`,
-        `timestamp[uint64]`. Other keys and values may be added in the future.
-    -->
-    <method name="GetPackageHistory">
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariant"/>
-      <arg type="as" name="names" direction="in"/>
-      <arg type="u" name="count" direction="in"/>
-      <arg type="a{saa{sv}}" name="history" direction="out"/>
-    </method>
-
-    <!--*********************************************************************-->
-    <!--
       GetDaemonState:
 
       Gets the debugging state from the daemon. No secure state will be shown,

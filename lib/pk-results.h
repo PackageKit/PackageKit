@@ -37,7 +37,7 @@
 #include "pk-repo-detail.h"
 #include "pk-repo-signature-required.h"
 #include "pk-require-restart.h"
-#include "pk-transaction-past.h"
+#include "pk-history-item.h"
 #include "pk-update-detail.h"
 
 G_BEGIN_DECLS
@@ -96,8 +96,8 @@ gboolean       pk_results_add_distro_upgrade (PkResults	      *results,
 					      PkDistroUpgrade *item);
 gboolean       pk_results_add_require_restart (PkResults	*results,
 					       PkRequireRestart *item);
-gboolean       pk_results_add_transaction (PkResults	     *results,
-					   PkTransactionPast *item);
+gboolean       pk_results_add_history_item (PkResults	  *results,
+					    PkHistoryItem *item);
 gboolean       pk_results_add_files (PkResults *results,
 				     PkFiles   *item);
 gboolean       pk_results_add_repo_signature_required (PkResults	       *results,
@@ -121,7 +121,7 @@ GPtrArray     *pk_results_get_details_array (PkResults *results);
 GPtrArray     *pk_results_get_update_detail_array (PkResults *results);
 GPtrArray     *pk_results_get_distro_upgrade_array (PkResults *results);
 GPtrArray     *pk_results_get_require_restart_array (PkResults *results);
-GPtrArray     *pk_results_get_transaction_array (PkResults *results);
+GPtrArray     *pk_results_get_history_array (PkResults *results);
 GPtrArray     *pk_results_get_files_array (PkResults *results);
 GPtrArray     *pk_results_get_repo_signature_required_array (PkResults *results);
 GPtrArray     *pk_results_get_eula_required_array (PkResults *results);

@@ -90,14 +90,14 @@ pk_transaction_db_parse_packages (const gchar *data)
 static gint
 pk_transaction_db_add_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
-	PkTransactionPast *item;
+	PkHistoryItem *item;
 	GList **list = (GList **) data;
 	gint i;
 	gchar *col;
 	gchar *value;
 	guint temp;
 
-	item = pk_transaction_past_new ();
+	item = pk_history_item_new ();
 	for (i = 0; i < argc; i++) {
 		col = col_name[i];
 		value = argv[i];

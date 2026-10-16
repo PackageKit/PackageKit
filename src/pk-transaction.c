@@ -1188,9 +1188,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
  * than for packages. */
 #define PK_TRANSACTION_UPDATE_DETAILS_BATCH_SIZE 100
 
-/* Maximum number of past transactions to put into a single Transaction signal
+/* Maximum number of past transactions to put into a single History signal
  * emission; each may carry a long package list. */
-#define PK_TRANSACTION_TRANSACTIONS_BATCH_SIZE 20
+#define PK_HISTORY_BATCH_SIZE 50
 
 static void
 pk_transaction_emit_packages_batch (PkTransaction *transaction, GVariantBuilder *builder)
@@ -2086,7 +2086,7 @@ pk_transaction_run (PkTransaction *transaction)
 		break;
 	/* handled in the engine without a transaction */
 	case PK_ROLE_ENUM_CANCEL:
-	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
+	case PK_ROLE_ENUM_GET_HISTORY:
 	case PK_ROLE_ENUM_ACCEPT_EULA:
 		g_warning ("role %s should be handled by engine",
 			   pk_role_enum_to_string (transaction->role));
@@ -3296,7 +3296,7 @@ out:
 }
 
 static void
-pk_transaction_emit_transactions_batch (PkTransaction *transaction, GVariantBuilder *builder)
+pk_transaction_emit_history_batch (PkTransaction *transaction, GVariantBuilder *builder)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -3305,20 +3305,20 @@ pk_transaction_emit_transactions_batch (PkTransaction *transaction, GVariantBuil
 					    NULL,
 					    transaction->tid,
 					    PK_DBUS_INTERFACE_TRANSACTION,
-					    "Transactions",
+					    "History",
 					    g_variant_new ("(a(oa{sv}))", builder),
 					    &error))
-		g_warning ("Failed to emit Transactions signal: %s", error->message);
+		g_warning ("Failed to emit History signal: %s", error->message);
 }
 
 /*
- * pk_transaction_past_packages_to_variant:
+ * pk_transaction_history_packages_to_variant:
  * @packages: (element-type PkPackage): a #GPtrArray of #PkPackage
  *
  * Build the `packages` value of a past transaction as `a(uss)`
  */
 static GVariant *
-pk_transaction_past_packages_to_variant (GPtrArray *packages)
+pk_transaction_history_packages_to_variant (GPtrArray *packages)
 {
 	GVariantBuilder builder;
 
@@ -3335,94 +3335,143 @@ pk_transaction_past_packages_to_variant (GPtrArray *packages)
 	return g_variant_builder_end (&builder);
 }
 
+static gboolean
+pk_transaction_history_package_matches (PkPackage *pkg, PkBitfield flags, gchar **names)
+{
+	if (names[0] != NULL &&
+	    !g_strv_contains ((const gchar *const *) names, pk_package_get_name (pkg)))
+		return FALSE;
+	if (!pk_bitfield_contain (flags, PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES))
+		return TRUE;
+	switch (pk_package_get_info (pkg)) {
+	case PK_INFO_ENUM_INSTALLING:
+	case PK_INFO_ENUM_REMOVING:
+	case PK_INFO_ENUM_UPDATING:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 static void
-pk_transaction_get_old_transactions (PkTransaction *transaction,
-				     GVariant *params,
-				     GDBusMethodInvocation *context)
+pk_transaction_get_history (PkTransaction *transaction,
+			    GVariant *params,
+			    GDBusMethodInvocation *context)
 {
 	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(oa{sv})"));
 	GList *l;
 	GList *transactions = NULL;
 	GPtrArray *packages;
+	gboolean filter_packages;
+	guint count;
+	guint db_limit;
 	guint idle_id;
 	guint n_in_batch = 0;
-	guint number;
-	PkTransactionPast *item;
+	guint n_items = 0;
+	PkBitfield flags;
+	PkHistoryItem *item;
+	g_autofree gchar **names = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	g_variant_get (params, "(u)", &number);
+	g_variant_get (params, "(tu^a&s)", &flags, &count, &names);
 
-	g_debug ("GetOldTransactions method called");
+	g_debug ("GetHistory method called");
 
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
-	transactions = pk_transaction_db_get_list (transaction->transaction_db, number);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_HISTORY);
+
+	/* filters skip rows, so the database cannot apply @count for us */
+	filter_packages = names[0] != NULL ||
+			  pk_bitfield_contain (flags, PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES);
+	if (filter_packages || pk_bitfield_contain (flags, PK_HISTORY_FLAG_ENUM_SUCCEEDED))
+		db_limit = 0;
+	else
+		db_limit = count;
+	transactions = pk_transaction_db_get_list (transaction->transaction_db, db_limit);
 	for (l = transactions; l != NULL; l = l->next) {
 		GVariantBuilder dict;
-		item = PK_TRANSACTION_PAST (l->data);
+		item = PK_HISTORY_ITEM (l->data);
+
+		if (count > 0 && n_items >= count)
+			break;
+		if (pk_bitfield_contain (flags, PK_HISTORY_FLAG_ENUM_SUCCEEDED) &&
+		    !pk_history_item_get_succeeded (item))
+			continue;
+		if (filter_packages) {
+			g_autoptr(GPtrArray) filtered = NULL;
+
+			filtered = g_ptr_array_new_with_free_func (g_object_unref);
+			packages = pk_history_item_get_packages (item);
+			for (guint i = 0; packages != NULL && i < packages->len; i++) {
+				PkPackage *pkg = g_ptr_array_index (packages, i);
+				if (pk_transaction_history_package_matches (pkg, flags, names))
+					g_ptr_array_add (filtered, g_object_ref (pkg));
+			}
+			if (filtered->len == 0)
+				continue;
+			g_object_set (item, "packages", filtered, NULL);
+		}
+		n_items++;
 
 		/* add to results */
-		pk_results_add_transaction (transaction->results, item);
+		pk_results_add_history_item (transaction->results, item);
 
 		/* emit */
-		g_debug ("adding transaction %s", pk_transaction_past_get_id (item));
+		g_debug ("adding transaction %s", pk_history_item_get_id (item));
 		g_variant_builder_init (&dict, G_VARIANT_TYPE ("a{sv}"));
-		if (pk_transaction_past_get_time_started (item) != NULL) {
+		if (pk_history_item_get_time_started (item) != NULL) {
 			g_autofree gchar *time_started = g_date_time_format_iso8601 (
-			    pk_transaction_past_get_time_started (item));
+			    pk_history_item_get_time_started (item));
 			pk_transaction_dict_add_string (&dict, "time-started", time_started);
 		}
 		g_variant_builder_add (
 		    &dict,
 		    "{sv}",
 		    "succeeded",
-		    g_variant_new_boolean (pk_transaction_past_get_succeeded (item)));
-		if (pk_transaction_past_get_role (item) != PK_ROLE_ENUM_UNKNOWN)
+		    g_variant_new_boolean (pk_history_item_get_succeeded (item)));
+		if (pk_history_item_get_role (item) != PK_ROLE_ENUM_UNKNOWN)
 			g_variant_builder_add (
 			    &dict,
 			    "{sv}",
 			    "role",
-			    g_variant_new_uint32 (pk_transaction_past_get_role (item)));
-		g_variant_builder_add (
-		    &dict,
-		    "{sv}",
-		    "duration",
-		    g_variant_new_uint32 (pk_transaction_past_get_duration (item)));
-		packages = pk_transaction_past_get_packages (item);
+			    g_variant_new_uint32 (pk_history_item_get_role (item)));
+		g_variant_builder_add (&dict,
+				       "{sv}",
+				       "duration",
+				       g_variant_new_uint32 (pk_history_item_get_duration (item)));
+		packages = pk_history_item_get_packages (item);
 		if (packages != NULL && packages->len > 0)
-			g_variant_builder_add (&dict,
-					       "{sv}",
-					       "packages",
-					       pk_transaction_past_packages_to_variant (packages));
-		if (pk_transaction_past_get_uid (item) != G_MAXUINT)
+			g_variant_builder_add (
+			    &dict,
+			    "{sv}",
+			    "packages",
+			    pk_transaction_history_packages_to_variant (packages));
+		if (pk_history_item_get_uid (item) != G_MAXUINT)
 			g_variant_builder_add (
 			    &dict,
 			    "{sv}",
 			    "uid",
-			    g_variant_new_uint32 (pk_transaction_past_get_uid (item)));
+			    g_variant_new_uint32 (pk_history_item_get_uid (item)));
 		pk_transaction_dict_add_string (&dict,
 						"cmdline",
-						pk_transaction_past_get_cmdline (item));
-		g_variant_builder_add (&builder,
-				       "(oa{sv})",
-				       pk_transaction_past_get_id (item),
-				       &dict);
+						pk_history_item_get_cmdline (item));
+		g_variant_builder_add (&builder, "(oa{sv})", pk_history_item_get_id (item), &dict);
 		n_in_batch++;
 
 		/* emit a full batch and start a new one */
-		if (n_in_batch >= PK_TRANSACTION_TRANSACTIONS_BATCH_SIZE) {
-			pk_transaction_emit_transactions_batch (transaction, &builder);
+		if (n_in_batch >= PK_HISTORY_BATCH_SIZE) {
+			pk_transaction_emit_history_batch (transaction, &builder);
 			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(oa{sv})"));
 			n_in_batch = 0;
 		}
 	}
 	if (n_in_batch > 0)
-		pk_transaction_emit_transactions_batch (transaction, &builder);
+		pk_transaction_emit_history_batch (transaction, &builder);
 	g_list_free_full (transactions, (GDestroyNotify) g_object_unref);
 
 	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-old-transactions");
+	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from get-history");
 
 	pk_transaction_dbus_return (context, NULL);
 }
@@ -4959,8 +5008,8 @@ pk_transaction_method_call (GDBusConnection *connection_,
 		pk_transaction_get_files (transaction, parameters, invocation);
 		return;
 	}
-	if (g_strcmp0 (method_name, "GetOldTransactions") == 0) {
-		pk_transaction_get_old_transactions (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "GetHistory") == 0) {
+		pk_transaction_get_history (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "GetPackages") == 0) {

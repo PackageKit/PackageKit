@@ -304,13 +304,28 @@
 
     <!--*********************************************************************-->
     <!--
-      GetOldTransactions:
-      @number: The number of past transactions, or 0 for all known transactions.
+      GetHistory:
+      @flags: A history flag bitfield, e.g. `succeeded;package-changes`.
+        `succeeded` skips transactions that failed. `package-changes` only
+        returns packages that were installed, removed or updated.
+      @count: The maximum number of history items to return, or 0 for all.
+      @names: Only return packages with these names, e.g. `[ colord ]`,
+        or an empty array for all packages.
 
-      This method allows a client to view details for old transactions.
+      This method returns the transaction history recorded by PackageKit,
+      newest first. Transactions done outside of PackageKit, e.g. using a
+      distribution native tool, are not included.
+
+      If @names is not empty or `package-changes` is set, each history item
+      only contains the matching packages, and items without any matching
+      package are skipped.
+
+      This method typically emits `History`, `Error` and `Finished`.
     -->
-    <method name="GetOldTransactions">
-      <arg type="u" name="number" direction="in"/>
+    <method name="GetHistory">
+      <arg type="t" name="flags" direction="in"/>
+      <arg type="u" name="count" direction="in"/>
+      <arg type="as" name="names" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
@@ -1114,13 +1129,12 @@
 
     <!--*********************************************************************-->
     <!--
-      Transactions:
-      @transactions: An array of past transactions, each array element is one transaction.
+      History:
+      @items: An array of history items, each array element is one past transaction.
 
-      This signal is sent when more details are required about a specific
-      transaction.
+      This signal is sent in response to `GetHistory`.
 
-      The daemon may split the transactions into multiple emissions of this
+      The daemon may split the history into multiple emissions of this
       signal to stay within the D-Bus message size limits. The content of one
       signal will never duplicate the content of another, and a single
       emission may contain only one transaction.
@@ -1144,8 +1158,8 @@
       - `cmdline`: The command line of the tool that scheduled the action, e.g.
         `/usr/bin/gpk-application`. [`s`]
     -->
-    <signal name="Transactions">
-      <arg type="a(oa{sv})" name="transactions" direction="out"/>
+    <signal name="History">
+      <arg type="a(oa{sv})" name="items" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 

@@ -115,12 +115,14 @@ PkResults  *pk_client_get_updates (PkClient	     *client,
 				   gpointer	      progress_user_data,
 				   GError	    **error);
 
-PkResults  *pk_client_get_old_transactions (PkClient	      *client,
-					    guint	       number,
-					    GCancellable      *cancellable,
-					    PkProgressCallback progress_callback,
-					    gpointer	       progress_user_data,
-					    GError	     **error);
+PkResults  *pk_client_get_history (PkClient	     *client,
+				   PkBitfield	      flags,
+				   guint	      count,
+				   gchar	    **names,
+				   GCancellable	     *cancellable,
+				   PkProgressCallback progress_callback,
+				   gpointer	      progress_user_data,
+				   GError	    **error);
 
 PkResults  *pk_client_depends_on (PkClient	    *client,
 				  PkBitfield	     filters,

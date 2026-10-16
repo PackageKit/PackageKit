@@ -50,7 +50,7 @@
 #include "pk-results.h"
 #include "pk-task.h"
 #include "pk-task-sync.h"
-#include "pk-transaction-past.h"
+#include "pk-history-item.h"
 #include "pk-transaction-list.h"
 #include "pk-update-detail.h"
 #include "pk-version.h"

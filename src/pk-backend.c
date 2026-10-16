@@ -206,7 +206,7 @@ pk_backend_get_roles (PkBackend *backend)
 	g_return_val_if_fail (pk_is_thread_default (), PK_ROLE_ENUM_UNKNOWN);
 
 	backend->roles = backend->desc->get_roles (backend);
-	pk_bitfield_add (backend->roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
+	pk_bitfield_add (backend->roles, PK_ROLE_ENUM_GET_HISTORY);
 	return backend->roles;
 }
 

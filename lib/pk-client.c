@@ -1370,7 +1370,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Transactions") == 0) {
+	if (g_strcmp0 (signal_name, "History") == 0) {
 		GVariantIter *iter;
 		GVariantIter *dict;
 		const gchar *tid;
@@ -1379,7 +1379,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 
 		g_variant_get (parameters, "(a(oa{sv}))", &iter);
 		while (g_variant_iter_loop (iter, "(&oa{sv})", &tid, &dict)) {
-			g_autoptr(PkTransactionPast) item = pk_transaction_past_new ();
+			g_autoptr(PkHistoryItem) item = pk_history_item_new ();
 			g_object_set (item,
 				      "tid",
 				      tid,
@@ -1413,7 +1413,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 					g_object_set (item, "packages", packages, NULL);
 				}
 			}
-			pk_results_add_transaction (state->results, item);
+			pk_results_add_history_item (state->results, item);
 		}
 		g_variant_iter_free (iter);
 		return;
@@ -1955,15 +1955,16 @@ pk_client_call_role_method (PkClientState *state)
 				   pk_client_method_cb,
 				   g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
-	} else if (state->role == PK_ROLE_ENUM_GET_OLD_TRANSACTIONS) {
-		g_dbus_proxy_call (state->proxy,
-				   "GetOldTransactions",
-				   g_variant_new ("(u)", state->number),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   g_object_ref (state));
+	} else if (state->role == PK_ROLE_ENUM_GET_HISTORY) {
+		g_dbus_proxy_call (
+		    state->proxy,
+		    "GetHistory",
+		    g_variant_new ("(tu^a&s)", state->filters, state->number, state->search),
+		    G_DBUS_CALL_FLAGS_NONE,
+		    PK_CLIENT_DBUS_METHOD_TIMEOUT,
+		    state->cancellable,
+		    pk_client_method_cb,
+		    g_object_ref (state));
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 		g_dbus_proxy_call (
 		    state->proxy,
@@ -3050,27 +3051,34 @@ pk_client_get_updates_async (PkClient *client,
 }
 
 /**
- * pk_client_get_old_transactions_async: (finish-func pk_client_generic_finish):
+ * pk_client_get_history_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @number: the number of past transactions to return, or 0 for all
+ * @flags: a #PkBitfield of #PkHistoryFlagEnum values, e.g. %PK_HISTORY_FLAG_ENUM_SUCCEEDED
+ * @count: the maximum number of history items to return, or 0 for all
+ * @names: (array zero-terminated=1) (nullable): only return packages with these names, or %NULL for all
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * Get the old transaction list, mainly used for the transaction viewer.
+ * Get the transaction history, newest first.
  *
- * Since: 0.5.2
+ * If @names is set, each history item only contains the packages with one
+ * of these names, and items without any of them are skipped.
+ *
+ * Since: 2.0.0
  **/
 void
-pk_client_get_old_transactions_async (PkClient *client,
-				      guint number,
-				      GCancellable *cancellable,
-				      PkProgressCallback progress_callback,
-				      gpointer progress_user_data,
-				      GAsyncReadyCallback callback_ready,
-				      gpointer user_data)
+pk_client_get_history_async (PkClient *client,
+			     PkBitfield flags,
+			     guint count,
+			     gchar **names,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
@@ -3084,10 +3092,12 @@ pk_client_get_old_transactions_async (PkClient *client,
 	state = pk_client_state_new (client,
 				     callback_ready,
 				     user_data,
-				     pk_client_get_old_transactions_async,
-				     PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
+				     pk_client_get_history_async,
+				     PK_ROLE_ENUM_GET_HISTORY,
 				     cancellable);
-	state->number = number;
+	state->filters = flags;
+	state->number = count;
+	state->search = names != NULL ? g_strdupv (names) : g_new0 (gchar *, 1);
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */

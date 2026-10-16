@@ -72,7 +72,7 @@ typedef struct
  * @PK_ROLE_ENUM_ACCEPT_EULA: Accept an EULA
  * @PK_ROLE_ENUM_DOWNLOAD_PACKAGES: Download packages
  * @PK_ROLE_ENUM_GET_DISTRO_UPGRADES: Get available distribution upgrades
- * @PK_ROLE_ENUM_GET_OLD_TRANSACTIONS: Get old transation information
+ * @PK_ROLE_ENUM_GET_HISTORY: Get the transaction history
  * @PK_ROLE_ENUM_REPAIR_SYSTEM: Repair system
  * @PK_ROLE_ENUM_GET_DETAILS_LOCAL: Get details on local package
  * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
@@ -112,7 +112,7 @@ typedef enum {
 	PK_ROLE_ENUM_ACCEPT_EULA,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
 	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
-	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
+	PK_ROLE_ENUM_GET_HISTORY,
 	PK_ROLE_ENUM_REPAIR_SYSTEM,	/* Since: 0.7.2 */
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL, /* Since: 0.8.17 */
 	PK_ROLE_ENUM_GET_FILES_LOCAL,	/* Since: 0.9.1 */
@@ -835,6 +835,25 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_LAST /* Since: 0.8.1 */
 } PkTransactionFlagEnum;
 
+/**
+ * PkHistoryFlagEnum:
+ * @PK_HISTORY_FLAG_ENUM_NONE: No history flag
+ * @PK_HISTORY_FLAG_ENUM_SUCCEEDED: Only return transactions that succeeded
+ * @PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES: Only return packages that were installed,
+ *   removed or updated, and skip transactions without any
+ *
+ * The flags that filter the transaction history.
+ *
+ * Since: 2.0.0
+ **/
+typedef enum {
+	PK_HISTORY_FLAG_ENUM_NONE,
+	PK_HISTORY_FLAG_ENUM_SUCCEEDED,
+	PK_HISTORY_FLAG_ENUM_PACKAGE_CHANGES,
+	/*< private >*/
+	PK_HISTORY_FLAG_ENUM_LAST
+} PkHistoryFlagEnum;
+
 /* general */
 guint		      pk_enum_find_value (const PkEnumMatch *table,
 					  const gchar	    *string) G_GNUC_WARN_UNUSED_RESULT;
@@ -892,6 +911,9 @@ const gchar	     *pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind
 
 PkTransactionFlagEnum pk_transaction_flag_enum_from_string (const gchar *transaction_flag);
 const gchar	     *pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag);
+
+PkHistoryFlagEnum     pk_history_flag_enum_from_string (const gchar *history_flag);
+const gchar	     *pk_history_flag_enum_to_string (PkHistoryFlagEnum history_flag);
 
 const gchar	     *pk_status_enum_to_localised_text (PkStatusEnum status);
 const gchar	     *pk_info_enum_to_localised_past (PkInfoEnum info);
