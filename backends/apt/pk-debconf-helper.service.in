@@ -1,7 +1,0 @@
-[Unit]
-Description=debconf communication service
-Requires=pk-debconf-helper.socket
-RefuseManualStart=true
-
-[Service]
-ExecStart=@libexecdir@/pk-debconf-helper

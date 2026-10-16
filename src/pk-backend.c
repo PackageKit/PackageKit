@@ -57,6 +57,7 @@ typedef struct
 	PkBitfield (*get_provides) (PkBackend *backend);
 	gchar **(*get_mime_types) (PkBackend *backend);
 	gboolean (*supports_parallelization) (PkBackend *backend);
+	gboolean (*supports_frontend_socket) (PkBackend *backend);
 	void (*job_start) (PkBackend *backend, PkBackendJob *job);
 	void (*job_stop) (PkBackend *backend, PkBackendJob *job);
 	void (*run_job) (PkBackend *backend, PkBackendJob *job);
@@ -134,6 +135,23 @@ pk_backend_supports_parallelization (PkBackend *backend)
 	if (backend->desc->supports_parallelization == NULL)
 		return FALSE;
 	return backend->desc->supports_parallelization (backend);
+}
+
+/**
+ * pk_backend_supports_frontend_socket:
+ *
+ * Whether the backend asks the user questions through the frontend socket
+ * of a job, e.g. for debconf.
+ **/
+gboolean
+pk_backend_supports_frontend_socket (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* not compulsory */
+	if (backend->desc->supports_frontend_socket == NULL)
+		return FALSE;
+	return backend->desc->supports_frontend_socket (backend);
 }
 
 void
@@ -320,6 +338,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_get_groups", (gpointer *) &desc->get_groups);
 		g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *) &desc->get_mime_types);
 		g_module_symbol (handle, "pk_backend_supports_parallelization", (gpointer *) &desc->supports_parallelization);
+		g_module_symbol (handle, "pk_backend_supports_frontend_socket", (gpointer *) &desc->supports_frontend_socket);
 		g_module_symbol (handle, "pk_backend_get_roles", (gpointer *) &desc->get_roles);
 		g_module_symbol (handle, "pk_backend_get_provides", (gpointer *) &desc->get_provides);
 		g_module_symbol (handle, "pk_backend_initialize", (gpointer *) &desc->initialize);

@@ -136,14 +136,31 @@
         clients will set this to the maximum value, which means "never download
         new metadata, unless required to return results". Zero is rejected.
         Most transactions will not have this value set. [`u`]
-      - `frontend-socket`: The absolute path of a Unix socket the backend may
-        use to talk to a frontend helper, e.g. for debconf. It has to exist and
-        be a socket. [`s`]
     -->
     <method name="SetHints">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QVariantMap"/>
       <arg type="a{sv}" name="hints" direction="in"/>
+    </method>
+
+    <!--*********************************************************************-->
+    <!--
+      GetFrontendSocket:
+      @socket: A listening Unix stream socket
+
+      Creates a socket the backend may use to reach a helper in the calling
+      session, e.g. to let maintainer scripts on dpkg-based distributions
+      ask debconf questions. The caller accepts connections on it and answers
+      each one. The same socket is handed back on repeated calls, and the
+      socket is removed when the transaction is destroyed.
+
+      This is only useful for interactive transactions. Backends that never
+      ask questions this way reject the call with `not-supported`. It has to
+      be called before the transaction has been run.
+    -->
+    <method name="GetFrontendSocket">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="h" name="socket" direction="out"/>
     </method>
 
     <!--*********************************************************************-->

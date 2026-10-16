@@ -83,7 +83,6 @@ static json_t *
 pk_backend_protocol_build_ctx (PkBackendJob *job)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
-	const gchar *frontend_socket = pk_backend_job_get_frontend_socket (job);
 	guint cache_age = pk_backend_job_get_cache_age (job);
 	g_autofree gchar *eulas = NULL;
 	json_t *ctx = json_object ();
@@ -113,11 +112,6 @@ pk_backend_protocol_build_ctx (PkBackendJob *job)
 	json_object_set_new (ctx,
 			     "cache_age",
 			     cache_age == G_MAXUINT ? json_null () : json_integer (cache_age));
-	json_object_set_new (ctx,
-			     "frontend_socket",
-			     frontend_socket != NULL && frontend_socket[0] != '\0'
-				 ? json_string (frontend_socket)
-				 : json_null ());
 	for (guint i = 0; i < G_N_ELEMENTS (proxies); i++) {
 		if (proxies[i].value != NULL && proxies[i].value[0] != '\0')
 			json_object_set_new (proxy, proxies[i].key, json_string (proxies[i].value));

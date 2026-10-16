@@ -124,8 +124,8 @@ install_data(
 
 if get_option('systemd')
     executable(
-        'pk-debconf-helper',
-        'pk-debconf-helper.c',
+        'pk-debconf-agent',
+        'pk-debconf-agent.c',
         dependencies: [
             libpackagekit_dep,
             libsystemd
@@ -138,15 +138,15 @@ if get_option('systemd')
     sd_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('libexecdir')))
 
     configure_file(
-        input: 'pk-debconf-helper.service.in',
-        output: 'pk-debconf-helper.service',
+        input: 'pk-debconf-agent@.service.in',
+        output: 'pk-debconf-agent@.service',
         configuration: sd_config_data,
         install: true,
         install_dir: systemd_user_unit_dir,
     )
     configure_file(
-        input: 'pk-debconf-helper.socket.in',
-        output: 'pk-debconf-helper.socket',
+        input: 'pk-debconf-agent.socket.in',
+        output: 'pk-debconf-agent.socket',
         configuration: sd_config_data,
         install: true,
         install_dir: systemd_user_unit_dir,

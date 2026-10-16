@@ -26,7 +26,7 @@
 #include <gio/gunixsocketaddress.h>
 
 #include "pk-client.h"
-#include "pk-client-helper.h"
+#include "pk-client-helper-private.h"
 #include "pk-control.h"
 #include "pk-console-private.h"
 #include "pk-offline.h"
@@ -282,6 +282,7 @@ pk_test_client_helper_func (void)
 	GSocketAddress *address = NULL;
 	gsize wrote;
 	GSource *source;
+	g_autoptr(GSocket) listen_socket = NULL;
 
 	client_helper = pk_client_helper_new ();
 	g_assert (client_helper != NULL);
@@ -299,15 +300,25 @@ pk_test_client_helper_func (void)
 	/* ensure previous sockets are deleted */
 	g_unlink (filename);
 
+	/* listen like the daemon does */
+	address = g_unix_socket_address_new (filename);
+	listen_socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				      G_SOCKET_TYPE_STREAM,
+				      G_SOCKET_PROTOCOL_DEFAULT,
+				      &error);
+	g_assert_no_error (error);
+	g_assert (g_socket_bind (listen_socket, address, TRUE, &error));
+	g_assert (g_socket_listen (listen_socket, &error));
+	g_assert_no_error (error);
+
 	/* start a demo program */
 	ret = pk_client_helper_start (client_helper,
-				      filename,
+				      listen_socket,
 				      (gchar **) argv,
 				      (gchar **) envp,
 				      &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
 
 	/* create socket */
 	socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
@@ -320,7 +331,6 @@ pk_test_client_helper_func (void)
 	g_socket_set_keepalive (socket, TRUE);
 
 	/* connect to it */
-	address = g_unix_socket_address_new (filename);
 	ret = g_socket_connect (socket, address, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
@@ -954,8 +964,9 @@ pk_test_client_local_files_func (void)
 	split = pk_package_id_split (pk_files_get_package_id (item));
 	g_assert_nonnull (split);
 	g_assert_true (g_str_has_suffix (split[PK_PACKAGE_ID_DATA], "/0/powertop-1.8-1.fc8.rpm"));
-	g_assert_nonnull (
-	    g_strstr_len (split[PK_PACKAGE_ID_DATA], -1, LOCALSTATEDIR "/cache/packagekit/staging/"));
+	g_assert_nonnull (g_strstr_len (split[PK_PACKAGE_ID_DATA],
+					-1,
+					LOCALSTATEDIR "/cache/packagekit/staging/"));
 	g_assert_cmpstr (split[PK_PACKAGE_ID_DATA], !=, rpm);
 	g_clear_pointer (&array, g_ptr_array_unref);
 	g_clear_object (&results);

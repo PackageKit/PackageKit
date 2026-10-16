@@ -25,7 +25,7 @@
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "pk-client-helper.h"
+#include "pk-client-helper-private.h"
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-debug.h"
@@ -974,6 +974,7 @@ pk_test_client_helper_func (void)
 	PkClientHelper *helper;
 	g_autoptr(GMainContext) context = NULL;
 	g_autoptr(GSource) timeout_source = NULL;
+	g_autoptr(GSocket) listen_socket = NULL;
 	g_autoptr(GSocket) client_socket = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
 	g_autoptr(GError) error = NULL;
@@ -998,8 +999,19 @@ pk_test_client_helper_func (void)
 	context = g_main_context_new ();
 	g_main_context_push_thread_default (context);
 
+	/* the daemon creates and listens on the socket, the helper only accepts */
+	listen_socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				      G_SOCKET_TYPE_STREAM,
+				      G_SOCKET_PROTOCOL_DEFAULT,
+				      &error);
+	g_assert_no_error (error);
+	address = g_unix_socket_address_new (socket_filename);
+	g_assert_true (g_socket_bind (listen_socket, address, TRUE, &error));
+	g_assert_true (g_socket_listen (listen_socket, &error));
+	g_assert_no_error (error);
+
 	helper = pk_client_helper_new ();
-	ret = pk_client_helper_start (helper, socket_filename, argv, NULL, &error);
+	ret = pk_client_helper_start (helper, listen_socket, argv, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -1011,7 +1023,6 @@ pk_test_client_helper_func (void)
 				      G_SOCKET_PROTOCOL_DEFAULT,
 				      &error);
 	g_assert_no_error (error);
-	address = g_unix_socket_address_new (socket_filename);
 	ret = g_socket_connect (client_socket, address, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -1038,6 +1049,7 @@ pk_test_client_helper_func (void)
 
 	g_object_unref (helper);
 	g_main_context_pop_thread_default (context);
+	g_unlink (socket_filename);
 	g_rmdir (tmp_dir);
 }
 

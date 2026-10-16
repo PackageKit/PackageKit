@@ -96,6 +96,8 @@ struct _PkClientClass
 
 	/* signals */
 	void (*changed) (PkClient *client);
+	gboolean (*frontend_socket) (PkClient *client,
+				     GSocket  *socket);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -403,9 +405,6 @@ void	     pk_client_get_progress_async (PkClient	      *client,
 					   GCancellable	      *cancellable,
 					   GAsyncReadyCallback callback_ready,
 					   gpointer	       user_data);
-
-gboolean     pk_client_create_helper_argv_envp (gchar ***argv,
-						gchar ***envp_out);
 
 /* getters and setters */
 void	     pk_client_set_locale (PkClient    *client,

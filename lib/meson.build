@@ -5,7 +5,6 @@ libpackagekit_pub_headers = files(
     'packagekit.h',
     'pk-bitfield.h',
     'pk-client.h',
-    'pk-client-helper.h',
     'pk-client-sync.h',
     'pk-common.h',
     'pk-control.h',
@@ -41,6 +40,7 @@ libpackagekit_src = files(
     'pk-bitfield.c',
     'pk-client.c',
     'pk-client-helper.c',
+    'pk-client-helper-private.h',
     'pk-client-sync.c',
     'pk-common.c',
     'pk-control.c',
@@ -231,17 +231,4 @@ pkg.generate(
         gio_unix_dep,
     ],
     subdirs: 'packagekit'
-)
-
-executable(
-    'pk-socket-example',
-    'pk-socket-example.c',
-    dependencies: [
-        glib_dep,
-        gobject_dep,
-        gio_dep,
-        gio_unix_dep,
-    ],
-    build_by_default: true,
-    install: false,
 )

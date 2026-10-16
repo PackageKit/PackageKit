@@ -18,12 +18,8 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
-#error "Only <packagekit/packagekit.h> can be included directly."
-#endif
-
-#ifndef __PK_CLIENT_HELPER_H
-#define __PK_CLIENT_HELPER_H
+#ifndef __PK_CLIENT_HELPER_PRIVATE_H
+#define __PK_CLIENT_HELPER_PRIVATE_H
 
 #include <glib-object.h>
 #include <gio/gio.h>
@@ -70,18 +66,15 @@ PkClientHelper *pk_client_helper_new (void);
 gboolean	pk_client_helper_stop (PkClientHelper *client_helper,
 				       GError	     **error);
 gboolean	pk_client_helper_start (PkClientHelper *client_helper,
-					const gchar    *socket_filename,
+					GSocket	       *socket,
 					gchar	      **argv,
 					gchar	      **envp,
 					GError	      **error);
-gboolean	pk_client_helper_start_with_socket (PkClientHelper *client_helper,
-						    GSocket	   *socket,
-						    gchar	  **argv,
-						    gchar	  **envp,
-						    GError	  **error);
 
 gboolean	pk_client_helper_is_active (PkClientHelper *client_helper);
+gboolean	pk_client_helper_create_argv_envp (gchar ***argv,
+						   gchar ***envp_out);
 
 G_END_DECLS
 
-#endif /* __PK_CLIENT_HELPER_H */
+#endif /* __PK_CLIENT_HELPER_PRIVATE_H */

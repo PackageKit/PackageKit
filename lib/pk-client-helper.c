@@ -34,9 +34,9 @@
  *
  *   client ----> libpackagekit ---> dbus ---> packagekitd ---> apt
  *          .------------^                                         ^
- *   debconf ___________________               (SetHints)          |
+ *   debconf ___________________          (GetFrontendSocket)      |
  *    | \___|  PkClientHelper   \__.____.____.______/_.____.____.__/
- *    ^-----|___________________/         (socket in tmp)
+ *    ^-----|___________________/      (socket in /run/packagekit)
  *   (stdin & stdout )
  *
  *  \------------.------------------/          \------------.---------/
@@ -50,9 +50,11 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <glib-object.h>
+#include <gio/gunixconnection.h>
 #include <gio/gunixsocketaddress.h>
 
-#include "pk-client-helper.h"
+#include "pk-client-helper-private.h"
+#include "pk-debug.h"
 
 static void pk_client_helper_finalize (GObject *object);
 
@@ -65,12 +67,10 @@ struct _PkClientHelperPrivate
 {
 	gchar **argv;
 	gchar **envp;
-	GFile *socket_file;
 	GSocket *socket;
 	GIOChannel *socket_channel;
 	GSource *socket_channel_source;
 	GPtrArray *children;
-	GPid kde_helper_pid;
 };
 
 typedef struct
@@ -166,8 +166,7 @@ pk_client_helper_child_free (PkClientHelperChild *child)
  * @client_helper: a valid #PkClientHelper instance
  * @error: A #GError or %NULL
  *
- * Stops the helper process, by killing the helper process and deleting
- * the socket.
+ * Stops the helper process, by killing it and closing the socket.
  *
  * Return value: %TRUE for success
  *
@@ -181,10 +180,7 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* make sure started */
-	g_return_val_if_fail (priv->socket_file != NULL, FALSE);
-
-	/* close the socket */
+	/* close the socket - there is none if the session's agent took over */
 	if (priv->socket_channel_source != NULL)
 		g_source_destroy (priv->socket_channel_source);
 	if (priv->socket != NULL) {
@@ -196,12 +192,6 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 	for (guint i = 0; i < priv->children->len; i++) {
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
 		pk_client_helper_kill_child (child->pid);
-	}
-
-	/* remove any socket file */
-	if (g_file_query_exists (priv->socket_file, NULL)) {
-		if (!g_file_delete (priv->socket_file, NULL, error))
-			return FALSE;
 	}
 
 	return TRUE;
@@ -482,16 +472,77 @@ pk_client_helper_accept_connection_cb (GIOChannel *source,
 	return G_SOURCE_CONTINUE;
 }
 
+static void
+pk_client_helper_listen (PkClientHelper *client_helper, GSocket *socket)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	g_set_object (&priv->socket, socket);
+	priv->socket_channel = g_io_channel_unix_new (g_socket_get_fd (socket));
+	priv->socket_channel_source = make_input_source (
+	    priv->socket_channel,
+	    G_IO_IN,
+	    G_SOURCE_FUNC (pk_client_helper_accept_connection_cb),
+	    client_helper);
+}
+
+/*
+ * pk_client_helper_session_agent:
+ *
+ * The socket of a helper the session runs itself, such as the
+ * socket-activated pk-debconf-agent, or %NULL to spawn one per connection.
+ **/
+static gchar *
+pk_client_helper_session_agent (gchar **envp)
+{
+	g_autofree gchar *path = NULL;
+
+	/* only we can reach the current terminal */
+	if (envp != NULL && g_strv_contains ((const gchar *const *) envp, "DEBIAN_FRONTEND=dialog"))
+		return NULL;
+	path = g_build_filename (g_get_user_runtime_dir (), "pk-debconf-agent.socket", NULL);
+	if (!g_file_test (path, G_FILE_TEST_EXISTS))
+		return NULL;
+
+	return g_steal_pointer (&path);
+}
+
+/*
+ * pk_client_helper_hand_over:
+ *
+ * Gives the listening socket to the helper of the session, so that questions
+ * are answered even after this process is gone.
+ **/
+static gboolean
+pk_client_helper_hand_over (GSocket *socket, const gchar *path, GError **error)
+{
+	g_autoptr(GSocketClient) client = g_socket_client_new ();
+	g_autoptr(GSocketAddress) address = g_unix_socket_address_new (path);
+	g_autoptr(GSocketConnection) conn = NULL;
+
+	conn = g_socket_client_connect (client, G_SOCKET_CONNECTABLE (address), NULL, error);
+	if (conn == NULL)
+		return FALSE;
+	return g_unix_connection_send_fd (G_UNIX_CONNECTION (conn),
+					  g_socket_get_fd (socket),
+					  NULL,
+					  error);
+}
+
 /**
  * pk_client_helper_start:
  * @client_helper: a valid #PkClientHelper instance
- * @socket_filename: a socket filename that does not already exist
- * @argv: the executable, along with any arguments
- * @envp: the environment
+ * @socket: the (bound and listening) #GSocket instance to use
+ * @argv: (nullable): the frontend to run for every connection, with the
+ *   connection on its stdin and stdout, or %NULL if the caller does not
+ *   handle the questions itself
+ * @envp: (nullable): the environment of @argv
  * @error: A #GError or %NULL
  *
- * Starts the helper process, by running the helper process and setting
- * up the socket for use.
+ * Gets the questions asked on @socket answered. A caller that passes a
+ * frontend handles them itself. Otherwise they go to the agent of the
+ * session if it runs one, which outlives this process, and failing that
+ * to the default frontend spawned for each connection.
  *
  * Return value: %TRUE for success
  *
@@ -499,148 +550,49 @@ pk_client_helper_accept_connection_cb (GIOChannel *source,
  **/
 gboolean
 pk_client_helper_start (PkClientHelper *client_helper,
-			const gchar *socket_filename,
+			GSocket *socket,
 			gchar **argv,
 			gchar **envp,
 			GError **error)
 {
-	gboolean use_kde_helper = FALSE;
 	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GSocketAddress) address = NULL;
-	const gchar *kde_helper_path = "/usr/libexec/debconf-kde-helper";
-
-	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
-	g_return_val_if_fail (socket_filename != NULL, FALSE);
-	g_return_val_if_fail (argv != NULL, FALSE);
-	g_return_val_if_fail (socket_filename != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	/* make sure not been started before */
-	g_return_val_if_fail (priv->argv == NULL, FALSE);
-	g_return_val_if_fail (priv->socket_file == NULL, FALSE);
-
-	/* already exists? */
-	if (g_file_test (socket_filename, G_FILE_TEST_EXISTS)) {
-		g_set_error (error, 1, 0, "socket %s already exists", socket_filename);
-		return FALSE;
-	}
-
-	g_debug ("using socket in %s", socket_filename);
-	priv->socket_file = g_file_new_for_path (socket_filename);
-
-	/* preconfigure KDE frontend, if requested */
-	if (envp != NULL) {
-		for (guint i = 0; envp[i] != NULL; i++) {
-			if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0) {
-				if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS)) {
-					use_kde_helper = TRUE;
-				} else {
-					/* try alternative path */
-					kde_helper_path = "/usr/bin/debconf-kde-helper";
-					if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS))
-						use_kde_helper = TRUE;
-				}
-
-				break;
-			}
-		}
-	}
-
-	/* create socket */
-	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
-				     G_SOCKET_TYPE_STREAM,
-				     G_SOCKET_PROTOCOL_DEFAULT,
-				     error);
-	if (priv->socket == NULL)
-		return FALSE;
-
-	/* bind to the socket */
-	address = g_unix_socket_address_new (socket_filename);
-	if (!g_socket_bind (priv->socket, address, TRUE, error))
-		return FALSE;
-
-	/* spawn KDE debconf communicator */
-	if (use_kde_helper) {
-		g_debug ("Using KDE debconf communicator: %s", kde_helper_path);
-
-		priv->envp = g_strdupv (envp);
-		priv->argv = g_new0 (gchar *, 2);
-		priv->argv[0] = g_strdup (kde_helper_path);
-		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
-
-		if (!g_spawn_async (NULL,
-				    priv->argv,
-				    priv->envp,
-				    G_SPAWN_STDOUT_TO_DEV_NULL,
-				    NULL,
-				    NULL,
-				    &priv->kde_helper_pid,
-				    &error_local)) {
-			g_warning ("failed to spawn: %s", error_local->message);
-			return FALSE;
-		}
-		g_debug ("started process %s with pid %i", priv->argv[0], priv->kde_helper_pid);
-		return TRUE;
-	}
-
-	/* listen to the socket */
-	if (!g_socket_listen (priv->socket, error))
-		return FALSE;
-
-	return pk_client_helper_start_with_socket (client_helper, priv->socket, argv, envp, error);
-}
-
-/**
- * pk_client_helper_start_with_socket:
- * @client_helper: a valid #PkClientHelper instance
- * @socket: the (bound and listening) #GSocket instance to use
- * @argv: the executable, along with any arguments
- * @envp: the environment
- * @error: A #GError or %NULL
- *
- * Starts the helper process, by running the helper process and setting
- * up the socket for use.
- *
- * Return value: %TRUE for success
- *
- * Since: 1.1.13
- **/
-gboolean
-pk_client_helper_start_with_socket (PkClientHelper *client_helper,
-				    GSocket *socket,
-				    gchar **argv,
-				    gchar **envp,
-				    GError **error)
-{
-	gint fd;
-	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GSocketAddress) address = NULL;
+	g_auto(GStrv) default_argv = NULL;
+	g_auto(GStrv) default_envp = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (socket != NULL, FALSE);
-	g_return_val_if_fail (argv != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* make sure not been started before */
-	g_return_val_if_fail (priv->argv == NULL, FALSE);
+	g_return_val_if_fail (priv->socket == NULL, FALSE);
+
+	if (argv == NULL) {
+		g_autofree gchar *agent = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		if (!pk_client_helper_create_argv_envp (&default_argv, &default_envp)) {
+			g_set_error_literal (error,
+					     G_IO_ERROR,
+					     G_IO_ERROR_NOT_FOUND,
+					     "no frontend available");
+			return FALSE;
+		}
+		argv = default_argv;
+		envp = default_envp;
+
+		/* the agent cannot use our terminal, everything else it does better */
+		agent = pk_client_helper_session_agent (envp);
+		if (agent != NULL) {
+			if (pk_client_helper_hand_over (socket, agent, &error_local))
+				return TRUE;
+			g_warning ("failed to hand over to %s: %s", agent, error_local->message);
+		}
+	}
 
 	/* cache for actual start */
 	priv->argv = g_strdupv (argv);
 	priv->envp = g_strdupv (envp);
-
-	/* Set the socket */
-	g_set_object (&priv->socket, socket);
-
-	/* socket has data */
-	fd = g_socket_get_fd (priv->socket);
-	priv->socket_channel = g_io_channel_unix_new (fd);
-	priv->socket_channel_source = make_input_source (
-	    priv->socket_channel,
-	    G_IO_IN,
-	    G_SOURCE_FUNC (pk_client_helper_accept_connection_cb),
-	    client_helper);
+	pk_client_helper_listen (client_helper, socket);
 	return TRUE;
 }
 
@@ -713,20 +665,123 @@ pk_client_helper_finalize (GObject *object)
 
 	g_clear_pointer (&priv->argv, g_strfreev);
 	g_clear_pointer (&priv->envp, g_strfreev);
-	if (priv->socket_file != NULL) {
-		g_file_delete (priv->socket_file, NULL, NULL);
-		g_clear_object (&priv->socket_file);
-	}
 	if (priv->socket != NULL) {
 		g_socket_close (priv->socket, NULL);
 		g_clear_object (&priv->socket);
 	}
 	g_clear_pointer (&priv->socket_channel, g_io_channel_unref);
 	g_clear_pointer (&priv->children, g_ptr_array_unref);
-	if (priv->kde_helper_pid > 0)
-		kill (priv->kde_helper_pid, SIGTERM);
 
 	G_OBJECT_CLASS (pk_client_helper_parent_class)->finalize (object);
+}
+
+/*
+ * pk_client_helper_create_argv_envp_test:
+ *
+ * The self tests use a tiny script instead of a debconf frontend.
+ **/
+static gboolean
+pk_client_helper_create_argv_envp_test (gchar ***argv, gchar ***envp)
+{
+	const gchar *datadir;
+	g_autofree gchar *helper = NULL;
+
+	/* the test data directory is provided at runtime by the test harness */
+	datadir = g_getenv ("PK_TEST_DATA_DIR");
+	if (datadir == NULL)
+		return FALSE;
+
+	/* check we have the right file */
+	helper = g_build_filename (datadir, "pk-client-helper-test.py", NULL);
+	if (!g_file_test (helper, G_FILE_TEST_EXISTS)) {
+		g_warning ("could not find the socket helper!");
+		return FALSE;
+	}
+
+	/* setup simple test socket */
+	*argv = g_new0 (gchar *, 2);
+	(*argv)[0] = g_steal_pointer (&helper);
+	return TRUE;
+}
+
+/**
+ * pk_client_helper_create_argv_envp:
+ * @argv: (out) (transfer full): the program to run for every connection
+ * @envp_out: (out) (transfer full): its environment
+ *
+ * Picks the debconf frontend to spawn for the session: the KDE helper or
+ * debconf-communicate, with the environment that lets it reach the
+ * display or terminal.
+ *
+ * Return value: %FALSE if no frontend is available
+ *
+ * Since: 2.0.0
+ **/
+gboolean
+pk_client_helper_create_argv_envp (gchar ***argv, gchar ***envp_out)
+{
+	const gchar *dialog = NULL;
+	const gchar *desktop;
+	gchar **envp;
+
+	/* use the test helper */
+	if (g_getenv ("PK_SELF_TEST") != NULL &&
+	    pk_client_helper_create_argv_envp_test (argv, envp_out))
+		return TRUE;
+
+	/* check we have the right file */
+	if (!g_file_test ("/usr/bin/debconf-communicate", G_FILE_TEST_EXISTS))
+		return FALSE;
+
+	/* the frontend runs in our session with everything it needs to look
+	 * and behave like one of its programs; only the debconf setup is ours,
+	 * so a passthrough setup of a script that started us does not leak in */
+	envp = g_get_environ ();
+	envp = g_environ_setenv (envp, "DEBCONF_DB_REPLACE", "configdb", TRUE);
+	envp = g_environ_setenv (envp, "DEBCONF_DB_OVERRIDE", "Pipe{infd:none outfd:none}", TRUE);
+	envp = g_environ_unsetenv (envp, "DEBCONF_PIPE");
+	envp = g_environ_unsetenv (envp, "DEBCONF_READFD");
+	envp = g_environ_unsetenv (envp, "DEBCONF_WRITEFD");
+	if (pk_debug_is_verbose ())
+		envp = g_environ_setenv (envp, "DEBCONF_DEBUG", ".", TRUE);
+
+	/* do we have an available terminal to use */
+	if (g_getenv ("TERM") != NULL)
+		dialog = "dialog";
+
+	/* do we have access to the display */
+	desktop = g_getenv ("XDG_SESSION_DESKTOP");
+	if (g_getenv ("DISPLAY") != NULL || g_getenv ("WAYLAND_DISPLAY") != NULL) {
+		if (g_strcmp0 (desktop, "KDE") == 0 ||
+		    g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
+			dialog = "kde";
+		else
+			dialog = "gnome";
+	}
+
+	/* indicate a prefered frontend */
+	if (dialog != NULL) {
+		envp = g_environ_setenv (envp, "DEBIAN_FRONTEND", dialog, TRUE);
+		g_debug ("using frontend %s", dialog);
+	}
+	*envp_out = envp;
+
+	/* the KDE helper talks debconf itself, on the fds we give it */
+	*argv = g_new0 (gchar *, 3);
+	if (g_strcmp0 (dialog, "kde") == 0) {
+		const gchar *kde_helpers[] = { "/usr/libexec/debconf-kde-helper",
+					       "/usr/bin/debconf-kde-helper" };
+		for (guint i = 0; i < G_N_ELEMENTS (kde_helpers); i++) {
+			if (g_file_test (kde_helpers[i], G_FILE_TEST_EXISTS)) {
+				(*argv)[0] = g_strdup (kde_helpers[i]);
+				(*argv)[1] = g_strdup ("--fifo-fds=0,1");
+				break;
+			}
+		}
+	}
+	if ((*argv)[0] == NULL)
+		(*argv)[0] = g_strdup ("/usr/bin/debconf-communicate");
+	return TRUE;
 }
 
 /**

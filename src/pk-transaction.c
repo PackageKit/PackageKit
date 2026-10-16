@@ -40,6 +40,7 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 #include <gio/gunixfdlist.h>
+#include <gio/gunixsocketaddress.h>
 #include <pk-common.h>
 #include <pk-common-private.h>
 #include <pk-enum.h>
@@ -125,6 +126,8 @@ struct _PkTransaction
 	gchar **cached_package_ids;
 	gchar *cached_transaction_id;
 	GUnixFDList *cached_fds;
+	GSocket *frontend_socket;
+	gchar *frontend_socket_path;
 	PkBitfield cached_filters;
 	gchar **cached_values;
 	gchar *cached_repo_id;
@@ -4464,55 +4467,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		return TRUE;
 	}
 
-	if (g_strcmp0 (key, "frontend-socket") == 0) {
-		GStatBuf st;
-		const gchar *path;
-
-		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_STRING, error))
-			return FALSE;
-		path = g_variant_get_string (value, NULL);
-
-		/* nothing provided */
-		if (path[0] == '\0') {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "Could not set frontend-socket to nothing");
-			return FALSE;
-		}
-
-		if (path[0] != '/') {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "frontend-socket has to be an absolute path");
-			return FALSE;
-		}
-
-		/* must be an actual socket and must not be a symlink:
-		 * lstat() doesn't follow symlinks (which would let callers
-		 * probe arbitrary paths as root), and allows us to reject
-		 * anything that is not a Unix socket */
-		if (g_lstat (path, &st) != 0) {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-					     "frontend-socket does not exist");
-			return FALSE;
-		}
-		if (!S_ISSOCK (st.st_mode)) {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     "frontend-socket is not a socket");
-			return FALSE;
-		}
-
-		/* success */
-		pk_backend_job_set_frontend_socket (transaction->job, path);
-		return TRUE;
-	}
-
 	if (g_strcmp0 (key, "background") == 0) {
 		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_BOOLEAN, error))
 			return FALSE;
@@ -4548,6 +4502,74 @@ pk_transaction_set_hint (PkTransaction *transaction,
 	 * extra options here */
 	g_warning ("unknown hint: %s", key);
 	return TRUE;
+}
+
+static void
+pk_transaction_get_frontend_socket (PkTransaction *transaction,
+				    GVariant *params,
+				    GDBusMethodInvocation *context)
+{
+	gint handle;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUnixFDList) fds = g_unix_fd_list_new ();
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->tid != NULL);
+
+	g_debug ("GetFrontendSocket method called");
+
+	if (!pk_backend_supports_frontend_socket (transaction->backend)) {
+		g_set_error_literal (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "GetFrontendSocket not supported by backend");
+		pk_transaction_dbus_return (context, error);
+		return;
+	}
+
+	if (transaction->frontend_socket == NULL) {
+		g_autofree gchar *runtime_dir = NULL;
+		g_autofree gchar *name = NULL;
+		g_autofree gchar *path = NULL;
+		g_autoptr(GSocketAddress) address = NULL;
+		g_autoptr(GSocket) socket = NULL;
+
+		/* the runtime dir is private to root, as are the backend processes
+		 * that connect to the socket */
+		runtime_dir = pk_util_get_runtime_dir (transaction->conf, &error);
+		if (runtime_dir == NULL)
+			goto out;
+		name = g_path_get_basename (transaction->tid);
+		path = g_strdup_printf ("%s/frontend-%s.sock", runtime_dir, name);
+		socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				       G_SOCKET_TYPE_STREAM,
+				       G_SOCKET_PROTOCOL_DEFAULT,
+				       &error);
+		if (socket == NULL)
+			goto out;
+		address = g_unix_socket_address_new (path);
+		if (!g_socket_bind (socket, address, TRUE, &error) ||
+		    !g_socket_listen (socket, &error))
+			goto out;
+		transaction->frontend_socket = g_steal_pointer (&socket);
+		transaction->frontend_socket_path = g_steal_pointer (&path);
+		pk_backend_job_set_frontend_socket (transaction->job,
+						    transaction->frontend_socket_path);
+	}
+
+	handle = g_unix_fd_list_append (fds,
+					g_socket_get_fd (transaction->frontend_socket),
+					&error);
+	if (handle < 0)
+		goto out;
+	g_dbus_method_invocation_return_value_with_unix_fd_list (context,
+								 g_variant_new ("(h)", handle),
+								 fds);
+	return;
+
+out:
+	g_prefix_error (&error, "cannot create frontend socket: ");
+	pk_transaction_dbus_return (context, error);
 }
 
 static void
@@ -4905,6 +4927,10 @@ pk_transaction_method_call (GDBusConnection *connection_,
 		return;
 	}
 
+	if (g_strcmp0 (method_name, "GetFrontendSocket") == 0) {
+		pk_transaction_get_frontend_socket (transaction, parameters, invocation);
+		return;
+	}
 	if (g_strcmp0 (method_name, "AcceptEula") == 0) {
 		pk_transaction_accept_eula (transaction, parameters, invocation);
 		return;
@@ -5209,6 +5235,12 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->cached_transaction_id);
 	g_free (transaction->cached_directory);
 	g_clear_object (&transaction->cached_fds);
+	if (transaction->frontend_socket != NULL) {
+		g_socket_close (transaction->frontend_socket, NULL);
+		g_unlink (transaction->frontend_socket_path);
+	}
+	g_clear_object (&transaction->frontend_socket);
+	g_free (transaction->frontend_socket_path);
 	g_strfreev (transaction->cached_values);
 	g_free (transaction->cached_repo_id);
 	g_free (transaction->cached_parameter);

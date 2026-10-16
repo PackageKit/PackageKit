@@ -62,7 +62,6 @@ _CTX_DEFAULTS = {
     'background': False,
     'interactive': False,
     'cache_age': None,
-    'frontend_socket': None,
     'proxy': {},
     'accepted_eulas': [],
 }

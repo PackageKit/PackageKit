@@ -57,6 +57,12 @@ gboolean pk_backend_supports_parallelization(PkBackend *backend)
     return FALSE;
 }
 
+gboolean pk_backend_supports_frontend_socket(PkBackend *backend)
+{
+    // debconf questions of maintainer scripts
+    return TRUE;
+}
+
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
     /* use logging */

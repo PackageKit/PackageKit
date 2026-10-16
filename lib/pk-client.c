@@ -42,11 +42,10 @@
 #include <unistd.h>
 
 #include "pk-client.h"
-#include "pk-client-helper.h"
+#include "pk-client-helper-private.h"
 #include "pk-common.h"
 #include "pk-common-private.h"
 #include "pk-control.h"
-#include "pk-debug.h"
 #include "pk-enum.h"
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
@@ -81,6 +80,13 @@ enum {
 	PROP_CACHE_AGE,
 	PROP_LAST
 };
+
+enum {
+	SIGNAL_FRONTEND_SOCKET,
+	SIGNAL_LAST
+};
+
+static guint signals[SIGNAL_LAST] = { 0 };
 
 static GParamSpec *obj_properties[PROP_LAST] = {
 	NULL,
@@ -1728,6 +1734,19 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
 	pk_progress_set_role (state->progress, role);
 }
 
+static void pk_client_call_role_method (PkClientState *state);
+static void
+pk_client_frontend_socket_cb (GObject *source_object, GAsyncResult *res, gpointer user_data);
+static gboolean pk_client_frontend_helper_available (PkClientState *state);
+static void pk_client_start_frontend_helper (PkClientState *state, GUnixFDList *fds, GVariant *value);
+
+static gboolean
+pk_client_role_needs_frontend (PkRoleEnum role)
+{
+	return role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	       role == PK_ROLE_ENUM_REMOVE_PACKAGES || role == PK_ROLE_ENUM_UPDATE_PACKAGES;
+}
+
 /*
  * pk_client_set_hints_cb:
  **/
@@ -1736,6 +1755,7 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	g_autoptr(PkClientState) state = PK_CLIENT_STATE (g_steal_pointer (&user_data));
+	PkClientPrivate *priv = GET_PRIVATE(state->client);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
@@ -1757,6 +1777,66 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 	}
 
 	g_assert (!pk_client_state_is_finished (state));
+
+	/* the backend may need a session helper to ask the user questions */
+	if (pk_client_role_needs_frontend (state->role) && priv->interactive &&
+	    !pk_bitfield_contain (state->transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) &&
+	    !pk_bitfield_contain (state->transaction_flags,
+				  PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD) &&
+	    pk_client_frontend_helper_available (state)) {
+		g_dbus_proxy_call_with_unix_fd_list (state->proxy,
+						     "GetFrontendSocket",
+						     NULL,
+						     G_DBUS_CALL_FLAGS_NONE,
+						     PK_CLIENT_DBUS_METHOD_TIMEOUT,
+						     NULL,
+						     state->cancellable,
+						     pk_client_frontend_socket_cb,
+						     g_object_ref (state));
+		return;
+	}
+	pk_client_call_role_method (state);
+}
+
+/*
+ * pk_client_frontend_socket_cb:
+ **/
+static void
+pk_client_frontend_socket_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
+	g_autoptr(PkClientState) state = PK_CLIENT_STATE (g_steal_pointer (&user_data));
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
+	g_autoptr(GUnixFDList) fds = NULL;
+
+	/* a transaction without a helper still works, questions just use defaults */
+	value = g_dbus_proxy_call_with_unix_fd_list_finish (proxy, &fds, res, &error);
+	if (value == NULL) {
+		pk_client_fixup_dbus_error (error);
+		if (g_error_matches (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED))
+			g_debug ("backend does not use a frontend socket");
+		else
+			g_warning ("failed to get frontend socket: %s", error->message);
+		g_clear_error (&error);
+	} else {
+		pk_client_start_frontend_helper (state, fds, value);
+	}
+
+	if (g_cancellable_set_error_if_cancelled (state->cancellable_client, &error)) {
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
+	pk_client_call_role_method (state);
+}
+
+/*
+ * pk_client_call_method:
+ **/
+static void
+pk_client_call_role_method (PkClientState *state)
+{
+	g_autoptr(GError) error = NULL;
 
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
@@ -2115,176 +2195,53 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 }
 
 /*
- * pk_client_create_helper_argv_envp_test:
+ * pk_client_frontend_available:
  **/
 static gboolean
-pk_client_create_helper_argv_envp_test (PkClientState *state, gchar ***argv, gchar ***envp)
+pk_client_frontend_helper_available (PkClientState *state)
 {
-	const gchar *datadir;
-	g_autofree gchar *helper = NULL;
-
-	/* the test data directory is provided at runtime by the test harness */
-	datadir = g_getenv ("PK_TEST_DATA_DIR");
-	if (datadir == NULL)
-		return FALSE;
-
-	/* check we have the right file */
-	helper = g_build_filename (datadir, "pk-client-helper-test.py", NULL);
-	if (!g_file_test (helper, G_FILE_TEST_EXISTS)) {
-		g_warning ("could not find the socket helper!");
-		return FALSE;
-	}
-
-	/* setup simple test socket */
-	*argv = g_new0 (gchar *, 2);
-	(*argv)[0] = g_steal_pointer (&helper);
-	return TRUE;
-}
-
-/*
- * pk_client_create_helper_argv_envp:
- **/
-gboolean
-pk_client_create_helper_argv_envp (gchar ***argv, gchar ***envp_out)
-{
-	const gchar *dialog = NULL;
-	const gchar *display;
-	const gchar *wayland_display;
-	const gchar *xauthority;
-	const gchar *term;
-	const gchar *desktop;
-	const gchar *lang;
-	const gchar *language;
-	gboolean ret;
-	guint envpi = 0;
-	gchar **envp;
-
-	/* check we have the right file */
-	ret = g_file_test ("/usr/bin/debconf-communicate", G_FILE_TEST_EXISTS);
-	if (!ret)
-		return FALSE;
-
-	/* setup simple test socket */
-	*argv = g_new0 (gchar *, 2);
-	*argv[0] = g_strdup ("/usr/bin/debconf-communicate");
-
-	*envp_out = g_new0 (gchar *, 16);
-	envp = *envp_out;
-	envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
-	envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
-	if (pk_debug_is_verbose ())
-		envp[envpi++] = g_strdup ("DEBCONF_DEBUG=.");
-
-	/* do we have an available terminal to use */
-	term = g_getenv ("TERM");
-	if (term != NULL) {
-		envp[envpi++] = g_strdup_printf ("TERM=%s", term);
-		dialog = "dialog";
-	}
-
-	/* do we have access to the display */
-	display = g_getenv ("DISPLAY");
-	if (display != NULL) {
-		envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
-	}
-	xauthority = g_getenv ("XAUTHORITY");
-	if (xauthority != NULL) {
-		envp[envpi++] = g_strdup_printf ("XAUTHORITY=%s", xauthority);
-	}
-	wayland_display = g_getenv ("WAYLAND_DISPLAY");
-	if (wayland_display != NULL) {
-		envp[envpi++] = g_strdup_printf ("WAYLAND_DISPLAY=%s", wayland_display);
-		envp[envpi++] = g_strdup_printf ("XDG_RUNTIME_DIR=%s", g_get_user_runtime_dir ());
-	}
-
-	desktop = g_getenv ("XDG_SESSION_DESKTOP");
-	if (display != NULL || wayland_display != NULL) {
-		if (g_strcmp0 (desktop, "KDE") == 0 ||
-		    g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
-			dialog = "kde";
-		else
-			dialog = "gnome";
-	}
-
-	if (desktop != NULL)
-		envp[envpi++] = g_strdup_printf ("XDG_SESSION_DESKTOP=%s", desktop);
-
-	/* some Qt-based helpers need a config directory */
-	envp[envpi++] = g_strdup_printf ("XDG_CONFIG_HOME=%s/config", g_get_user_runtime_dir ());
-
-	/* forward locale */
-	lang = g_getenv ("LANG");
-	if (lang != NULL)
-		envp[envpi++] = g_strdup_printf ("LANG=%s", lang);
-	language = g_getenv ("LANGUAGE");
-	;
-	if (language != NULL)
-		envp[envpi++] = g_strdup_printf ("LANGUAGE=%s", language);
-
-	/* indicate a prefered frontend */
-	if (dialog != NULL) {
-		envp[envpi++] = g_strdup_printf ("DEBIAN_FRONTEND=%s", dialog);
-		g_debug ("using frontend %s", dialog);
-	}
-	return TRUE;
-}
-
-/*
- * pk_client_create_helper_socket:
- **/
-static gchar *
-pk_client_create_helper_socket (PkClientState *state)
-{
-	gboolean ret = FALSE;
-	g_autoptr(GError) error = NULL;
-	g_autofree gchar *socket_filename = NULL;
-	g_autofree gchar *socket_id = NULL;
 	g_auto(GStrv) argv = NULL;
 	g_auto(GStrv) envp = NULL;
 
-	/* use the test socket */
-	if (g_getenv ("PK_SELF_TEST") != NULL) {
-		ret = pk_client_create_helper_argv_envp_test (state, &argv, &envp);
+	return pk_client_helper_create_argv_envp (&argv, &envp);
+}
+
+/*
+ * pk_client_start_frontend:
+ *
+ * Gets the questions on the socket the daemon returned from
+ * GetFrontendSocket answered, by the application if it wants to.
+ **/
+static void
+pk_client_start_frontend_helper (PkClientState *state, GUnixFDList *fds, GVariant *value)
+{
+	gint handle;
+	gint fd;
+	gboolean handled = FALSE;
+	g_autoptr(GSocket) socket = NULL;
+	g_autoptr(GError) error = NULL;
+
+	g_variant_get (value, "(h)", &handle);
+	fd = fds != NULL ? g_unix_fd_list_get (fds, handle, &error) : -1;
+	if (fd < 0) {
+		g_warning ("no frontend socket received: %s",
+			   error != NULL ? error->message : "no fds");
+		return;
+	}
+	socket = g_socket_new_from_fd (fd, &error);
+	if (socket == NULL) {
+		g_warning ("invalid frontend socket: %s", error->message);
+		close (fd);
+		return;
 	}
 
-	/* either the self test failed, or we're not in self test */
-	if (!ret) {
-		ret = pk_client_create_helper_argv_envp (&argv, &envp);
-	}
+	g_signal_emit (state->client, signals[SIGNAL_FRONTEND_SOCKET], 0, socket, &handled);
+	if (handled)
+		return;
 
-	/* no supported frontends available */
-	if (!ret)
-		return NULL;
-
-	/* This is not a specially handled debian frontend (current terminal or
-	 * the debconf-kde stuff, use a systemd-activated helper if available)
-	 */
-	if (envp != NULL && !g_strv_contains ((const gchar *const *) envp, "DEBIAN_FRONTEND=kde") &&
-	    !g_strv_contains ((const gchar *const *) envp, "DEBIAN_FRONTEND=dialog")) {
-		g_autofree gchar *existing_socket_filename = g_build_filename (
-		    g_get_user_runtime_dir (),
-		    "pk-debconf-socket",
-		    NULL);
-		if (g_file_test (existing_socket_filename, G_FILE_TEST_EXISTS))
-			return g_steal_pointer (&existing_socket_filename);
-	}
-
-	/* create object */
 	state->client_helper = pk_client_helper_new ();
-
-	/* create socket to read from /tmp */
-	socket_id = g_strdup_printf ("gpk-%s.socket", strrchr (state->tid, '/') + 1);
-	socket_filename = g_build_filename (g_get_tmp_dir (), socket_id, NULL);
-
-	/* start the helper process */
-	ret = pk_client_helper_start (state->client_helper, socket_filename, argv, envp, &error);
-	if (!ret) {
-		g_warning ("failed to open debconf socket: %s", error->message);
-		return NULL;
-	}
-
-	/* success */
-	return g_steal_pointer (&socket_filename);
+	if (!pk_client_helper_start (state->client_helper, socket, NULL, NULL, &error))
+		g_warning ("failed to start frontend helper: %s", error->message);
 }
 
 /*
@@ -2337,19 +2294,6 @@ pk_client_get_proxy_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 				       "{sv}",
 				       "cache-age",
 				       g_variant_new_uint32 (priv->cache_age));
-
-	/* create socket for roles that need interaction */
-	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
-	    state->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		g_autofree gchar *socket_path = pk_client_create_helper_socket (state);
-		if (socket_path != NULL)
-			g_variant_builder_add (&hints,
-					       "{sv}",
-					       "frontend-socket",
-					       g_variant_new_string (socket_path));
-	}
 
 	/* set hints */
 	g_dbus_proxy_call (state->proxy,
@@ -4816,6 +4760,37 @@ pk_client_class_init (PkClientClass *klass)
 								G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
+
+	/**
+	 * PkClient::frontend-socket:
+	 * @client: the #PkClient
+	 * @socket: a listening Unix stream socket
+	 *
+	 * Emitted when the daemon offers a socket on which the backend asks the
+	 * user questions during an interactive transaction, e.g. debconf
+	 * questions of maintainer scripts. Each connection is one question
+	 * session in the debconf passthrough protocol.
+	 *
+	 * A handler that returns %TRUE takes over @socket and answers the
+	 * questions itself, or closes it to leave them unanswered. Otherwise
+	 * they are answered by the session's agent if one is running, or by a
+	 * frontend program spawned for each connection.
+	 *
+	 * Returns: %TRUE if the handler took over the socket
+	 *
+	 * Since: 2.0.0
+	 */
+	signals[SIGNAL_FRONTEND_SOCKET] = g_signal_new (
+	    "frontend-socket",
+	    G_TYPE_FROM_CLASS (object_class),
+	    G_SIGNAL_RUN_LAST,
+	    G_STRUCT_OFFSET (PkClientClass, frontend_socket),
+	    g_signal_accumulator_true_handled,
+	    NULL,
+	    NULL,
+	    G_TYPE_BOOLEAN,
+	    1,
+	    G_TYPE_SOCKET);
 }
 
 /*

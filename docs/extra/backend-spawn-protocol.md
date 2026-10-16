@@ -104,7 +104,6 @@ is a failure that should never happen:
  "filters":["installed","~devel"],"values":["power manager"],
  "ctx":{"locale":"de_DE.UTF-8","uid":1000,"network":true,"background":false,
         "interactive":true,"cache_age":86400,
-        "frontend_socket":null,
         "proxy":{"http":"http://proxy.example.org:3128","no_proxy":"localhost"},
         "accepted_eulas":["vendor-eula-1"]}}
 ```
@@ -125,7 +124,6 @@ is a failure that should never happen:
 | `background`             | boolean         | Low-priority transaction. The daemon already lowered the helper's priority if it started it for a background job. |
 | `interactive`            | boolean         | A user can answer questions.                                                                                      |
 | `cache_age`              | integer or null | Maximum metadata age in seconds, `null` for no limit.                                                             |
-| `frontend_socket`        | string or null  | Path of the client's frontend socket (debconf), if any.                                                           |
 | `proxy`                  | object          | Keys `http`, `https`, `ftp`, `socks`, `no_proxy`, `pac`; absent means unset.                                      |
 | `accepted_eulas`         | array of string | EULA ids the user has accepted.                                                                                   |
 
@@ -344,7 +342,7 @@ Ends the job; later events for the same id are ignored.
 ```
 → {"op":"hello","protocol":1,"daemon_version":"2.0.0"}
 ← {"ev":"hello","protocol":1,"name":"example","roles":["search-name","install-packages"],"filters":["installed"],"groups":[],"mime_types":[],"parallel":false}
-→ {"op":"run","job":"1","role":"search-name","filters":["~installed"],"values":["foo"],"ctx":{"locale":"C","uid":1000,"network":true,"background":false,"interactive":true,"cache_age":null,"frontend_socket":null,"proxy":{},"accepted_eulas":[]}}
+→ {"op":"run","job":"1","role":"search-name","filters":["~installed"],"values":["foo"],"ctx":{"locale":"C","uid":1000,"network":true,"background":false,"interactive":true,"cache_age":null,"proxy":{},"accepted_eulas":[]}}
 ← {"ev":"status","job":"1","status":"query"}
 ← {"ev":"packages","job":"1","items":[{"package_id":"foo;1.0;x86_64;main;","info":"available","summary":"A foo"}]}
 ← {"ev":"finished","job":"1"}

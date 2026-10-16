@@ -2238,6 +2238,12 @@ pk_backend_supports_parallelization (PkBackend *backend)
 	return TRUE;
 }
 
+gboolean
+pk_backend_supports_frontend_socket (PkBackend *backend)
+{
+	return TRUE;
+}
+
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {

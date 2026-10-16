@@ -1,0 +1,7 @@
+[Unit]
+Description=Debconf frontend agent for package transactions
+Requires=pk-debconf-agent.socket
+RefuseManualStart=true
+
+[Service]
+ExecStart=@libexecdir@/pk-debconf-agent
