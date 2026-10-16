@@ -151,8 +151,12 @@
       Creates a socket the backend may use to reach a helper in the calling
       session, e.g. to let maintainer scripts on dpkg-based distributions
       ask debconf questions. The caller accepts connections on it and answers
-      each one. The same socket is handed back on repeated calls, and the
-      socket is removed when the transaction is destroyed.
+      each one. The same socket is handed back on repeated calls. When the
+      transaction is destroyed, the socket is shut down and removed.
+
+      A caller that stops answering questions has to shut the socket down
+      rather than only close it, otherwise the backend waits for an answer
+      that never comes.
 
       This is only useful for interactive transactions. Backends that never
       ask questions this way reject the call with `not-supported`. It has to

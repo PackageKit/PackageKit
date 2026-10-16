@@ -8,27 +8,25 @@
 #include "config.h"
 #include <stdio.h>
 #include <gio/gunixconnection.h>
-#include <gio/gunixsocketaddress.h>
 #include <pk-client.h>
 #include <pk-client-helper-private.h>
 #include <systemd/sd-daemon.h>
 
-/* systemd runs one instance of this program client connection (Accept=yes).
+/* systemd runs one instance of this program per client connection (Accept=yes).
  * The client hands us the listening socket of its (debconf) transaction, created
- * by the daemon, and we answer the debconf questions on it for as long as the
- * transaction lives */
+ * by the daemon, and we answer the debconf questions on it until the daemon
+ * shuts it down with the transaction */
 
 static GMainLoop *main_loop = NULL;
 static PkClientHelper *helper = NULL;
-static gchar *transaction_path = NULL;
 
 static gboolean
 exit_loop (gpointer user_data)
 {
     g_debug ("Checking for active connections");
 
-    /* the daemon removes the socket when the transaction is destroyed */
-    if (!pk_client_helper_is_active (helper) && !g_file_test (transaction_path, G_FILE_TEST_EXISTS)) {
+    /* the daemon shuts the socket down when the transaction is destroyed */
+    if (!pk_client_helper_is_active (helper) && !pk_client_helper_is_listening (helper)) {
         g_message ("Transaction is gone, exiting");
         g_main_loop_quit (main_loop);
     }
@@ -44,7 +42,6 @@ main (void)
     g_autoptr(GSocket) client = NULL;
     g_autoptr(GSocketConnection) conn = NULL;
     g_autoptr(GSocket) socket = NULL;
-    g_autoptr(GSocketAddress) address = NULL;
     g_autoptr(GError) error = NULL;
 
     main_loop = g_main_loop_new (NULL, FALSE);
@@ -69,27 +66,23 @@ main (void)
         return 1;
     }
     socket = g_socket_new_from_fd (fd, &error);
-    if (socket != NULL)
-        address = g_socket_get_local_address (socket, &error);
-    if (address == NULL || !G_IS_UNIX_SOCKET_ADDRESS (address)) {
-        g_error ("Invalid transaction socket: %s", error != NULL ? error->message : "not a Unix socket");
+    if (socket == NULL) {
+        g_error ("Invalid transaction socket: %s", error->message);
         return 1;
     }
-    transaction_path = g_strdup (g_unix_socket_address_get_path (G_UNIX_SOCKET_ADDRESS (address)));
 
     helper = pk_client_helper_new ();
     if (!pk_client_helper_start (helper, socket, argv, envp, &error)) {
         g_error ("%s", error->message);
         return 1;
     }
-    g_debug ("answering questions for %s", transaction_path);
+    g_debug ("answering questions on transaction socket");
 
     g_timeout_add_seconds (60, exit_loop, NULL);
 
     g_main_loop_run (main_loop);
 
     g_object_unref (helper);
-    g_free (transaction_path);
     g_main_loop_unref (main_loop);
 
     return 0;

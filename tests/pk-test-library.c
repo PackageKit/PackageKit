@@ -1043,6 +1043,25 @@ pk_test_client_helper_func (void)
 	/* the helper has to consider the connection finished */
 	g_assert_false (pk_client_helper_is_active (helper));
 
+	/* the daemon shuts the socket down with the transaction: the helper has
+	 * to stop listening instead of spinning on failed accepts, and the
+	 * backend's connects are refused */
+	g_assert_true (pk_client_helper_is_listening (helper));
+	g_assert_true (g_socket_shutdown (listen_socket, TRUE, TRUE, &error));
+	g_assert_no_error (error);
+	for (guint i = 0; i < 10 && pk_client_helper_is_listening (helper); i++)
+		g_main_context_iteration (context, FALSE);
+	g_assert_false (pk_client_helper_is_listening (helper));
+	g_clear_object (&client_socket);
+	client_socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				      G_SOCKET_TYPE_STREAM,
+				      G_SOCKET_PROTOCOL_DEFAULT,
+				      &error);
+	g_assert_no_error (error);
+	g_assert_false (g_socket_connect (client_socket, address, NULL, &error));
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_CONNECTION_REFUSED);
+	g_clear_error (&error);
+
 	ret = pk_client_helper_stop (helper, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);

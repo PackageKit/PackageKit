@@ -5236,6 +5236,9 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->cached_directory);
 	g_clear_object (&transaction->cached_fds);
 	if (transaction->frontend_socket != NULL) {
+		/* the client and its agent hold copies of the socket: shutting
+		 * it down tells them the transaction is gone */
+		g_socket_shutdown (transaction->frontend_socket, TRUE, TRUE, NULL);
 		g_socket_close (transaction->frontend_socket, NULL);
 		g_unlink (transaction->frontend_socket_path);
 	}

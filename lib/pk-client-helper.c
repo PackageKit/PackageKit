@@ -666,6 +666,7 @@ pk_client_helper_finalize (GObject *object)
 	g_clear_pointer (&priv->argv, g_strfreev);
 	g_clear_pointer (&priv->envp, g_strfreev);
 	if (priv->socket != NULL) {
+		g_socket_shutdown (priv->socket, TRUE, TRUE, NULL);
 		g_socket_close (priv->socket, NULL);
 		g_clear_object (&priv->socket);
 	}

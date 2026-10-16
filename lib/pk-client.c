@@ -2240,8 +2240,11 @@ pk_client_start_frontend_helper (PkClientState *state, GUnixFDList *fds, GVarian
 		return;
 
 	state->client_helper = pk_client_helper_new ();
-	if (!pk_client_helper_start (state->client_helper, socket, NULL, NULL, &error))
+	if (!pk_client_helper_start (state->client_helper, socket, NULL, NULL, &error)) {
 		g_warning ("failed to start frontend helper: %s", error->message);
+		/* nobody answers, so the backend must not wait for it */
+		g_socket_shutdown (socket, TRUE, TRUE, NULL);
+	}
 }
 
 /*
