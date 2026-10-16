@@ -41,6 +41,12 @@
 #include <sys/syscall.h>
 #endif
 
+#ifdef __FreeBSD__
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/user.h>
+#endif
+
 #ifdef PK_BUILD_DAEMON
 #include "pk-resources.h"
 #endif
@@ -699,6 +705,16 @@ pk_fd_get_basename (gint fd)
 {
 	g_autofree gchar *link = g_strdup_printf ("/proc/self/fd/%d", fd);
 	g_autofree gchar *target = g_file_read_link (link, NULL);
+
+#ifdef F_KINFO
+	/* no procfs on FreeBSD; kf_path is empty if the name cache misses */
+	if (target == NULL) {
+		struct kinfo_file kif = { .kf_structsize = KINFO_FILE_SIZE };
+
+		if (fcntl (fd, F_KINFO, &kif) == 0)
+			target = g_strdup (kif.kf_path);
+	}
+#endif
 
 	if (target == NULL || target[0] != '/')
 		return g_strdup ("file");
