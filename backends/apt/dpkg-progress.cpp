@@ -34,35 +34,21 @@ DpkgProgress::DpkgProgress(AptJob &job, pid_t childPid)
     : m_job(job),
       m_childPid(childPid),
       m_lastTermAction(time(nullptr)),
-      m_lastSubProgress(0),
       m_startCounting(false),
       m_terminalTimeout(120)
 {
 }
 
-void DpkgProgress::handleStatusLine(const std::string &line, int writeFd, bool *errorEmitted)
+void DpkgProgress::handleAptLine(const std::string &line, int writeFd, bool *errorEmitted)
 {
-    g_auto(GStrv) split = g_strsplit(line.c_str(), ":", 5);
+    // pmstatus:<pkg>:<percent>:<translated message>, we only use the overall percentage
+    g_auto(GStrv) split = g_strsplit(line.c_str(), ":", 4);
+    if (g_strv_length(split) < 4)
+        return;
     const gchar *status = g_strstrip(split[0]);
-    const gchar *pkg = g_strstrip(split[1]);
     const gchar *percent = g_strstrip(split[2]);
     const std::string str = g_strstrip(split[3]);
 
-    // major problem here, we got unexpected input. should _never_ happen
-    if (pkg == nullptr && status == nullptr)
-        return;
-
-    // emit finished here if we have a kast package, as at this point dpkg
-    // should be done with the previous package
-    if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
-        const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
-        if (!ver.end()) {
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
-        }
-        m_lastSubProgress = 0;
-    }
-
-    // first check for errors and conf-file prompts
     if (strstr(status, "pmerror") != nullptr) {
         // error from dpkg
         pk_backend_job_error_code(
@@ -166,159 +152,105 @@ void DpkgProgress::handleStatusLine(const std::string &line, int writeFd, bool *
                 g_debug("Failed to write");
             }
         }
-    } else if (strstr(status, "pmstatus") != nullptr) {
-        // INSTALL & UPDATE
-        // - Running dpkg
-        // loops ALL
-        // -  0 Installing pkg (sometimes this is skiped)
-        // - 25 Preparing pkg
-        // - 50 Unpacking pkg
-        // - 75 Preparing to configure pkg
-        //   ** Some pkgs have
-        //   - Running post-installation
-        //   - Running dpkg
-        // reloops all
-        // -   0 Configuring pkg
-        // - +25 Configuring pkg (SOMETIMES)
-        // - 100 Installed pkg
-        // after all
-        // - Running post-installation
-
-        // REMOVE
-        // - Running dpkg
-        // loops
-        // - 25  Removing pkg
-        // - 50  Preparing for removal of pkg
-        // - 75  Removing pkg
-        // - 100 Removed pkg
-        // after all
-        // - Running post-installation
-
-        // Let's start parsing the status:
-        if (starts_with(str, "Preparing to configure")) {
-            // Preparing to Install/configure
-            // The next item might be Configuring so better it be 100
-            m_lastSubProgress = 100;
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_PREPARING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, 75);
-            }
-        } else if (starts_with(str, "Preparing for removal")) {
-            // Preparing to Install/configure
-            m_lastSubProgress = 50;
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_REMOVING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, m_lastSubProgress);
-            }
-        } else if (starts_with(str, "Preparing")) {
-            // Preparing to Install/configure
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_PREPARING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, 25);
-            }
-        } else if (starts_with(str, "Unpacking")) {
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_INSTALLING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 50);
-            }
-        } else if (starts_with(str, "Configuring")) {
-            // Installing Package
-            if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
-                const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
-                if (!ver.end()) {
-                    m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
-                }
-                m_lastSubProgress = 0;
-            }
-
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_INSTALLING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, m_lastSubProgress);
-            }
-            m_lastSubProgress += 25;
-        } else if (starts_with(str, "Running dpkg")) {
-        } else if (starts_with(str, "Running")) {
-            pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_COMMIT);
-        } else if (starts_with(str, "Installing")) {
-            // FINISH the last package
-            if (!m_lastPackage.empty()) {
-                const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
-                if (!ver.end()) {
-                    m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
-                }
-            }
-            m_lastSubProgress = 0;
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_INSTALLING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, m_lastSubProgress);
-            }
-        } else if (starts_with(str, "Removing")) {
-            if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
-                const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
-                if (!ver.end()) {
-                    m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
-                }
-            }
-            m_lastSubProgress += 25;
-
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackage(ver, PK_INFO_ENUM_REMOVING);
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, m_lastSubProgress);
-            }
-        } else if (starts_with(str, "Installed") || starts_with(str, "Removed")) {
-            m_lastSubProgress = 100;
-            const pkgCache::VerIterator &ver = m_job.findTransactionPackage(pkg);
-            if (!ver.end()) {
-                m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
-            }
-        } else {
-            g_warning("Unmaped dpkg status value: %s", line.c_str());
-        }
-
-        if (!starts_with(str, "Running")) {
-            m_lastPackage = pkg;
-        }
-        m_startCounting = true;
-    } else {
-        m_startCounting = true;
     }
+    m_startCounting = true;
 
-    int val = atoi(percent);
-    pk_backend_job_set_percentage(m_job.pkJob(), val);
+    pk_backend_job_set_percentage(m_job.pkJob(), atoi(percent));
 }
 
-void DpkgProgress::update(int fd, int writeFd, bool *errorEmitted)
+void DpkgProgress::handleDpkgLine(const std::string &line)
 {
-    char buf[2];
-    std::string line;
+    // "processing: <stage>: <pkg>" or "status: <pkg>: <state>", see dpkg(1) --status-fd.
+    // Package names may be arch-qualified, so only split at ": ".
+    g_auto(GStrv) split = g_strsplit(line.c_str(), ": ", 3);
+    if (g_strv_length(split) < 3)
+        return;
+    const std::string kind = g_strstrip(split[0]);
+    const std::string field1 = g_strstrip(split[1]);
+    const std::string field2 = g_strstrip(split[2]);
 
-    while (1) {
-        // This algorithm should be improved (it's the same as the rpm one ;)
-        int len = read(fd, buf, 1);
+    if (kind == "processing") {
+        m_stage = field1;
+        m_lastPackage = field2;
+        if (m_stage == "trigproc") {
+            pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_COMMIT);
+            return;
+        }
 
-        // nothing was read
+        const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
+        if (ver.end())
+            return;
+        if (m_stage == "install" || m_stage == "upgrade") {
+            m_job.emitPackage(ver, PK_INFO_ENUM_PREPARING);
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, 0);
+        } else if (m_stage == "remove" || m_stage == "purge") {
+            m_job.emitPackage(ver, PK_INFO_ENUM_REMOVING);
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 0);
+        }
+        return;
+    }
+
+    // errors and conffile prompts are handled via APT's pmerror and pmconffile
+    if (kind != "status")
+        return;
+    const pkgCache::VerIterator &ver = m_job.findTransactionPackage(field1);
+    if (ver.end())
+        return;
+    const std::string &state = field2;
+    const bool removing = m_stage == "remove" || m_stage == "purge";
+
+    if (state == "half-installed") {
+        if (removing) {
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 50);
+        } else {
+            m_job.emitPackage(ver, m_stage == "upgrade" ? PK_INFO_ENUM_UPDATING : PK_INFO_ENUM_INSTALLING);
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 25);
+        }
+    } else if (state == "unpacked") {
+        m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 50);
+    } else if (state == "half-configured") {
+        if (removing)
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 25);
+        else
+            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 75);
+    } else if (
+        state == "installed" || state == "triggers-pending" || state == "triggers-awaited" || state == "config-files"
+        || state == "not-installed") {
+        m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
+    }
+}
+
+void DpkgProgress::readLines(int fd, std::string &buffer, const std::function<void(const std::string &)> &handler)
+{
+    char buf[1024];
+    while (true) {
+        const ssize_t len = read(fd, buf, sizeof(buf));
         if (len < 1)
             break;
 
         // update the time we last saw some action
         m_lastTermAction = time(nullptr);
 
-        if (buf[0] == '\n') {
+        buffer.append(buf, len);
+        size_t pos;
+        while ((pos = buffer.find('\n')) != std::string::npos) {
             if (m_job.cancelled())
                 kill(m_childPid, SIGTERM);
-            handleStatusLine(line, writeFd, errorEmitted);
-            line.clear();
-        } else {
-            line.push_back(buf[0]);
+            handler(buffer.substr(0, pos));
+            buffer.erase(0, pos + 1);
         }
     }
+}
+
+void DpkgProgress::update(int aptFd, int dpkgFd, int writeFd, bool *errorEmitted)
+{
+    // read dpkg first, so we know the current package before APT forwards a conffile prompt for it
+    readLines(dpkgFd, m_dpkgBuffer, [this](const std::string &line) {
+        handleDpkgLine(line);
+    });
+    readLines(aptFd, m_aptBuffer, [this, writeFd, errorEmitted](const std::string &line) {
+        handleAptLine(line, writeFd, errorEmitted);
+    });
 
     time_t now = time(nullptr);
 

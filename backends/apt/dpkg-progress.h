@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <sys/types.h>
 #include <time.h>
@@ -25,8 +26,8 @@
 class AptJob;
 
 /**
- * Turns the dpkg --status-fd stream of dpkg into PackageKit package progress,
- * and answers its conffile prompts.
+ * Turns dpkg's --status-fd stream into PackageKit package progress, and uses APT's
+ * progress stream for the overall percentage, errors and conffile prompts.
  */
 class DpkgProgress
 {
@@ -34,22 +35,28 @@ public:
     DpkgProgress(AptJob &job, pid_t childPid);
 
     /**
-     * Handle everything currently readable from the status fd.
-     * @param readFd the read end of dpkg's status fd
+     * Handle everything currently readable from the status fds.
+     * @param aptFd the read end of APT's progress fd
+     * @param dpkgFd the read end of dpkg's own status fd
      * @param writeFd the pty of the child, used to answer conffile prompts
      * @param errorEmitted set to true if an error was reported to the job
      */
-    void update(int readFd, int writeFd, bool *errorEmitted = nullptr);
+    void update(int aptFd, int dpkgFd, int writeFd, bool *errorEmitted = nullptr);
 
 private:
-    void handleStatusLine(const std::string &line, int writeFd, bool *errorEmitted);
+    void handleAptLine(const std::string &line, int writeFd, bool *errorEmitted);
+    void handleDpkgLine(const std::string &line);
+    void readLines(int fd, std::string &buffer, const std::function<void(const std::string &)> &handler);
 
     AptJob &m_job;
     pid_t m_childPid;
 
     time_t m_lastTermAction;
+    std::string m_aptBuffer;
+    std::string m_dpkgBuffer;
+    // the dpkg processing stage and package we are currently at
+    std::string m_stage;
     std::string m_lastPackage;
-    uint m_lastSubProgress;
     bool m_startCounting;
     // when the internal terminal timesout after no activity
     int m_terminalTimeout;

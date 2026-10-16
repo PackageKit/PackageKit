@@ -1752,7 +1752,8 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
 pkgCache::VerIterator AptJob::findTransactionPackage(const std::string &name)
 {
     for (const PkgInfo &pkInfo : m_pkgs) {
-        if (pkInfo.ver.ParentPkg().Name() == name) {
+        // dpkg arch-qualifies Multi-Arch: same packages
+        if (pkInfo.ver.ParentPkg().Name() == name || pkInfo.ver.ParentPkg().FullName() == name) {
             return pkInfo.ver;
         }
     }
@@ -2300,10 +2301,17 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
         return false;
     }
 
-    // File descriptors for reading dpkg --status-fd
+    // File descriptors for reading APT's progress, and dpkg's own untranslated --status-fd
     int readFromChildFD[2];
     if (pipe(readFromChildFD) < 0) {
         g_warning("Failed to create a pipe");
+        return false;
+    }
+    int dpkgStatusFD[2];
+    if (pipe(dpkgStatusFD) < 0) {
+        g_warning("Failed to create a pipe");
+        close(readFromChildFD[0]);
+        close(readFromChildFD[1]);
         return false;
     }
 
@@ -2320,22 +2328,23 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
 
         // close pipe we don't need
         close(readFromChildFD[0]);
+        close(dpkgStatusFD[0]);
 
-        // Change the locale to not get libapt localization
+        // Have dpkg send its untranslated status to us as well
+        _config->Set("APT::Keep-Fds::", dpkgStatusFD[1]);
+        _config->Set("Dpkg::Options::", "--status-fd=" + std::to_string(dpkgStatusFD[1]));
+
+        // Localize APT, dpkg and maintainer scripts, with C as fallback if the job has no locale
         setlocale(LC_ALL, "C.UTF-8");
         g_setenv("LANG", "C.UTF-8", TRUE);
         g_setenv("LANGUAGE", "C.UTF-8", TRUE);
+        setEnvLocaleFromJob();
 
         // Debconf handling
         const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
         if ((m_interactive) && (socket != nullptr)) {
             g_setenv("DEBIAN_FRONTEND", "passthrough", TRUE);
             g_setenv("DEBCONF_PIPE", socket, TRUE);
-
-            // Set the LANGUAGE so debconf messages get localization
-            // NOTE: This will cause dpkg messages to be localized and the APT backend's string matching
-            // to fail, so progress information may no longer be accurate in these cases.
-            setEnvLocaleFromJob();
         } else {
             // we don't have a socket set or are not interactive, let's fallback to noninteractive
             g_setenv("DEBIAN_FRONTEND", "noninteractive", TRUE);
@@ -2372,6 +2381,7 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
     // make it nonblocking, very important otherwise
     // when the child finish we stay stuck.
     fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
+    fcntl(dpkgStatusFD[0], F_SETFL, O_NONBLOCK);
     fcntl(pty_master, F_SETFL, O_NONBLOCK);
 
     DpkgProgress dpkgProgress(*this, m_child_pid);
@@ -2398,7 +2408,7 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
             break;
 
         // try to parse dpkg status
-        dpkgProgress.update(readFromChildFD[0], pty_master, &errorEmitted);
+        dpkgProgress.update(readFromChildFD[0], dpkgStatusFD[0], pty_master, &errorEmitted);
 
         // Check if the child died
         if (waitpid(m_child_pid, &ret, WNOHANG) != 0)
@@ -2407,6 +2417,8 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
 
     close(readFromChildFD[0]);
     close(readFromChildFD[1]);
+    close(dpkgStatusFD[0]);
+    close(dpkgStatusFD[1]);
     close(pty_master);
     _system->LockInner();
 
