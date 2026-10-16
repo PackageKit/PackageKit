@@ -1047,8 +1047,18 @@ pk_test_client_helper_func (void)
 	 * to stop listening instead of spinning on failed accepts, and the
 	 * backend's connects are refused */
 	g_assert_true (pk_client_helper_is_listening (helper));
+#ifdef __linux__
 	g_assert_true (g_socket_shutdown (listen_socket, TRUE, TRUE, &error));
 	g_assert_no_error (error);
+#else
+	/* the BSDs refuse to shut down a listening socket */
+	if (!g_socket_shutdown (listen_socket, TRUE, TRUE, &error)) {
+		g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_CONNECTED);
+		g_test_message ("cannot shut down a listening socket: %s", error->message);
+		g_clear_error (&error);
+		goto out;
+	}
+#endif
 	for (guint i = 0; i < 10 && pk_client_helper_is_listening (helper); i++)
 		g_main_context_iteration (context, FALSE);
 	g_assert_false (pk_client_helper_is_listening (helper));
@@ -1062,6 +1072,9 @@ pk_test_client_helper_func (void)
 	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_CONNECTION_REFUSED);
 	g_clear_error (&error);
 
+#ifndef __linux__
+out:
+#endif
 	ret = pk_client_helper_stop (helper, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
