@@ -538,6 +538,27 @@ pk_test_results_func (void)
 	g_free (package_id);
 	g_free (summary);
 
+	/* a later state of the same package replaces the earlier one in place */
+	item = pk_package_new ();
+	ret = pk_package_set_id (item, "powertop;1.8-1;i386;fedora;", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	pk_results_add_package (results, item);
+	g_object_unref (item);
+	item = pk_package_new ();
+	pk_package_set_info (item, PK_INFO_ENUM_INSTALLING);
+	ret = pk_package_set_id (item, "gnome-power-manager;0.1.2;i386;fedora;", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	pk_results_add_package (results, item);
+	g_object_unref (item);
+	packages = pk_results_get_package_array (results);
+	g_assert_cmpint (packages->len, ==, 2);
+	item = g_ptr_array_index (packages, 0);
+	g_assert_cmpstr (pk_package_get_id (item), ==, "gnome-power-manager;0.1.2;i386;fedora;");
+	g_assert_cmpint (pk_package_get_info (item), ==, PK_INFO_ENUM_INSTALLING);
+	g_ptr_array_unref (packages);
+
 	g_object_unref (results);
 }
 

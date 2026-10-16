@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -118,6 +119,8 @@ gboolean       pk_package_sack_add_package_by_id (PkPackageSack *sack,
 gboolean       pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 						       GFile	     *file,
 						       GError	    **error);
+gboolean       pk_package_sack_replace_package (PkPackageSack *sack,
+						PkPackage     *package);
 gboolean       pk_package_sack_to_file (PkPackageSack *sack,
 					GFile	      *file,
 					GError	     **error);

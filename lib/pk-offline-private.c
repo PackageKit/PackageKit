@@ -475,31 +475,25 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
-		g_autoptr(GHashTable) known_pkgids = g_hash_table_new (g_str_hash, g_str_equal);
-		g_autoptr(GPtrArray) deduped_pkgids = NULL;
+		g_autoptr(GPtrArray) pkgids = g_ptr_array_new ();
 
 		for (guint i = 0; i < packages->len; i++) {
-			const gchar *pkgid;
 			package = g_ptr_array_index (packages, i);
 			switch (pk_package_get_info (package)) {
 			case PK_INFO_ENUM_UPDATING:
 			case PK_INFO_ENUM_INSTALLING:
-				pkgid = pk_package_get_id (package);
-
-				/* deduplicate entries in case the backend has emitted them multiple times */
-				g_hash_table_add (known_pkgids, (gpointer) pkgid);
+				g_ptr_array_add (pkgids, (gpointer) pk_package_get_id (package));
 				break;
 			default:
 				break;
 			}
 		}
 
-		deduped_pkgids = g_hash_table_steal_all_keys (known_pkgids);
 		g_key_file_set_string_list (key_file,
 					    PK_OFFLINE_RESULTS_GROUP,
 					    "Packages",
-					    (const gchar **) deduped_pkgids->pdata,
-					    deduped_pkgids->len);
+					    (const gchar **) pkgids->pdata,
+					    pkgids->len);
 	}
 
 	/* write file */

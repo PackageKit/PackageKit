@@ -34,6 +34,7 @@
 #include <glib-object.h>
 
 #include "pk-results.h"
+#include "pk-package-sack.h"
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
@@ -191,7 +192,9 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
  * @results: a valid #PkResults instance
  * @item: the object to add to the array
  *
- * Adds a package to the results set.
+ * Adds a package to the results set. If a package with the same ID is
+ * already part of the results, it is replaced, so the results only hold
+ * the latest state of each package.
  *
  * Return value: %TRUE if the value was set
  *
@@ -205,7 +208,7 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
-	pk_package_sack_add_package (priv->package_sack, item);
+	pk_package_sack_replace_package (priv->package_sack, item);
 	return TRUE;
 }
 

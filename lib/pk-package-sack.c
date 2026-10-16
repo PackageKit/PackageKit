@@ -35,6 +35,7 @@
 #include <gio/gio.h>
 
 #include "pk-package-sack.h"
+#include "pk-package-sack.h"
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-enum.h"
@@ -249,6 +250,39 @@ pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
 	g_hash_table_insert (priv->table,
 			     (gpointer) pk_package_get_id (package),
 			     (gpointer) package);
+
+	return TRUE;
+}
+
+/**
+ * pk_package_sack_replace_package:
+ * @sack: a valid #PkPackageSack instance
+ * @package: a valid #PkPackage instance
+ *
+ * Adds a package to the sack, replacing a package with the same ID in place.
+ *
+ * Return value: %TRUE if the package was added to the sack
+ *
+ * Since: 2.0.0
+ **/
+gboolean
+pk_package_sack_replace_package (PkPackageSack *sack, PkPackage *package)
+{
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
+	PkPackage *old;
+	guint idx;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
+
+	old = g_hash_table_lookup (priv->table, pk_package_get_id (package));
+	if (old == NULL || !g_ptr_array_find (priv->array, old, &idx))
+		return pk_package_sack_add_package (sack, package);
+
+	/* replace the key as well, it points into the old package */
+	g_hash_table_replace (priv->table, (gpointer) pk_package_get_id (package), package);
+	g_object_unref (g_ptr_array_index (priv->array, idx));
+	g_ptr_array_index (priv->array, idx) = g_object_ref (package);
 
 	return TRUE;
 }

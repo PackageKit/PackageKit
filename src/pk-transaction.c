@@ -1273,7 +1273,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 			}
 		}
 
-		/* add to results even if we already got a result */
+		/* replaces an earlier result for the same package */
 		pk_results_add_package (transaction->results, item);
 
 		/* emit */
