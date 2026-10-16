@@ -1737,8 +1737,9 @@ pk_client_set_role (PkClientState *state, PkRoleEnum role)
 static void pk_client_call_role_method (PkClientState *state);
 static void
 pk_client_frontend_socket_cb (GObject *source_object, GAsyncResult *res, gpointer user_data);
-static gboolean pk_client_frontend_helper_available (PkClientState *state);
-static void pk_client_start_frontend_helper (PkClientState *state, GUnixFDList *fds, GVariant *value);
+static gboolean pk_client_frontend_wanted (PkClientState *state);
+static void
+pk_client_start_frontend_helper (PkClientState *state, GUnixFDList *fds, GVariant *value);
 
 static gboolean
 pk_client_role_needs_frontend (PkRoleEnum role)
@@ -1783,7 +1784,7 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 	    !pk_bitfield_contain (state->transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) &&
 	    !pk_bitfield_contain (state->transaction_flags,
 				  PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD) &&
-	    pk_client_frontend_helper_available (state)) {
+	    pk_client_frontend_wanted (state)) {
 		g_dbus_proxy_call_with_unix_fd_list (state->proxy,
 						     "GetFrontendSocket",
 						     NULL,
@@ -1813,6 +1814,10 @@ pk_client_frontend_socket_cb (GObject *source_object, GAsyncResult *res, gpointe
 	/* a transaction without a helper still works, questions just use defaults */
 	value = g_dbus_proxy_call_with_unix_fd_list_finish (proxy, &fds, res, &error);
 	if (value == NULL) {
+		if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+			pk_client_state_finish (state, g_steal_pointer (&error));
+			return;
+		}
 		pk_client_fixup_dbus_error (error);
 		if (g_error_matches (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED))
 			g_debug ("backend does not use a frontend socket");
@@ -1831,7 +1836,7 @@ pk_client_frontend_socket_cb (GObject *source_object, GAsyncResult *res, gpointe
 }
 
 /*
- * pk_client_call_method:
+ * pk_client_call_role_method:
  **/
 static void
 pk_client_call_role_method (PkClientState *state)
@@ -2195,19 +2200,24 @@ pk_client_call_role_method (PkClientState *state)
 }
 
 /*
- * pk_client_frontend_available:
+ * pk_client_frontend_wanted:
+ *
+ * Whether the application or a frontend of the session can answer questions.
  **/
 static gboolean
-pk_client_frontend_helper_available (PkClientState *state)
+pk_client_frontend_wanted (PkClientState *state)
 {
 	g_auto(GStrv) argv = NULL;
 	g_auto(GStrv) envp = NULL;
 
+	if (PK_CLIENT_GET_CLASS (state->client)->frontend_socket != NULL ||
+	    g_signal_has_handler_pending (state->client, signals[SIGNAL_FRONTEND_SOCKET], 0, TRUE))
+		return TRUE;
 	return pk_client_helper_create_argv_envp (&argv, &envp);
 }
 
 /*
- * pk_client_start_frontend:
+ * pk_client_start_frontend_helper:
  *
  * Gets the questions on the socket the daemon returned from
  * GetFrontendSocket answered, by the application if it wants to.
@@ -4775,7 +4785,8 @@ pk_client_class_init (PkClientClass *klass)
 	 * session in the debconf passthrough protocol.
 	 *
 	 * A handler that returns %TRUE takes over @socket and answers the
-	 * questions itself, or closes it to leave them unanswered. Otherwise
+	 * questions itself, or shuts it down with g_socket_shutdown() to leave
+	 * them unanswered; only closing it makes the backend wait. Otherwise
 	 * they are answered by the session's agent if one is running, or by a
 	 * frontend program spawned for each connection.
 	 *

@@ -72,6 +72,7 @@ gboolean	pk_client_helper_start (PkClientHelper *client_helper,
 					GError	      **error);
 
 gboolean	pk_client_helper_is_active (PkClientHelper *client_helper);
+gboolean	pk_client_helper_is_listening (PkClientHelper *client_helper);
 gboolean	pk_client_helper_create_argv_envp (gchar ***argv,
 						   gchar ***envp_out);
 

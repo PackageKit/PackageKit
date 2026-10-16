@@ -180,10 +180,13 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* close the socket - there is none if the session's agent took over */
+	/* close the socket - there is none if the session's agent took over.
+	 * Shutting it down affects every copy, so the backend's connects are
+	 * refused instead of waiting forever for us to accept them */
 	if (priv->socket_channel_source != NULL)
 		g_source_destroy (priv->socket_channel_source);
 	if (priv->socket != NULL) {
+		g_socket_shutdown (priv->socket, TRUE, TRUE, NULL);
 		if (!g_socket_close (priv->socket, error))
 			return FALSE;
 	}
@@ -381,6 +384,14 @@ pk_client_helper_accept_connection_cb (GIOChannel *source,
 	PkClientHelperChild *child;
 	g_autoptr(GError) error = NULL;
 
+	/* the daemon shut the socket down, its transaction is gone; accepting
+	 * would only fail over and over */
+	if ((condition & (G_IO_HUP | G_IO_ERR)) > 0) {
+		g_debug ("frontend socket was shut down");
+		g_clear_pointer (&priv->socket_channel_source, g_source_unref);
+		return G_SOURCE_REMOVE;
+	}
+
 	/* accept the connection request */
 	socket = g_socket_accept (priv->socket, NULL, &error);
 	if (socket == NULL) {
@@ -481,7 +492,7 @@ pk_client_helper_listen (PkClientHelper *client_helper, GSocket *socket)
 	priv->socket_channel = g_io_channel_unix_new (g_socket_get_fd (socket));
 	priv->socket_channel_source = make_input_source (
 	    priv->socket_channel,
-	    G_IO_IN,
+	    G_IO_IN | G_IO_HUP | G_IO_ERR,
 	    G_SOURCE_FUNC (pk_client_helper_accept_connection_cb),
 	    client_helper);
 }
@@ -497,8 +508,11 @@ pk_client_helper_session_agent (gchar **envp)
 {
 	g_autofree gchar *path = NULL;
 
-	/* only we can reach the current terminal */
+	/* only we can reach the current terminal, and the self tests need
+	 * their own frontend */
 	if (envp != NULL && g_strv_contains ((const gchar *const *) envp, "DEBIAN_FRONTEND=dialog"))
+		return NULL;
+	if (g_getenv ("PK_SELF_TEST") != NULL)
 		return NULL;
 	path = g_build_filename (g_get_user_runtime_dir (), "pk-debconf-agent.socket", NULL);
 	if (!g_file_test (path, G_FILE_TEST_EXISTS))
@@ -624,6 +638,24 @@ pk_client_helper_is_active (PkClientHelper *client_helper)
 	}
 
 	return FALSE;
+}
+
+/**
+ * pk_client_helper_is_listening:
+ * @client_helper: a valid #PkClientHelper instance
+ *
+ * Return value: TRUE if new connections can still arrive, FALSE once the
+ *               socket was shut down or the helper stopped.
+ */
+gboolean
+pk_client_helper_is_listening (PkClientHelper *client_helper)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+
+	return priv->socket_channel_source != NULL &&
+	       !g_source_is_destroyed (priv->socket_channel_source);
 }
 
 /*
