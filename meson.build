@@ -87,6 +87,7 @@ conf = configuration_data()
 conf.set_quoted('DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
 conf.set_quoted('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 conf.set_quoted('SYSCONFDIR', join_paths(get_option('prefix'), get_option('sysconfdir')))
+conf.set_quoted('LOCALSTATEDIR', local_state_dir)
 conf.set_quoted('PK_BACKENDS_DIR', pk_backends_dir)
 conf.set_quoted('PK_PYTHON_DIR', pk_python_dir)
 

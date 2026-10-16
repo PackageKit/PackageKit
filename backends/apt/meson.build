@@ -25,7 +25,8 @@ if cpp_compiler.compiles(
     ddtp_flag = ['-DHAVE_DDTP']
 endif
 
-c_args = ['-DG_LOG_DOMAIN="PackageKit-APT"',
+c_args = [
+    '-DG_LOG_DOMAIN="PackageKit-APT"',
     '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
 ]
 

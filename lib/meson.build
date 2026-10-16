@@ -135,7 +135,6 @@ pkprivate_library = static_library(
         '-DPACKAGE_LOCALE_DIR="@0@"'.format(package_locale_dir),
         '-DPACKAGE_DATA_DIR="@0@"'.format(package_data_dir),
         '-DPK_DB_DIR="@0@"'.format(pk_db_dir),
-        '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
     ],
 )
 
@@ -161,7 +160,6 @@ libpackagekit_library = shared_library(
         '-DPACKAGE_LOCALE_DIR="@0@"'.format (package_locale_dir),
         '-DPACKAGE_DATA_DIR="@0@"'.format (package_data_dir),
         '-DPK_DB_DIR="@0@"'.format(pk_db_dir),
-        '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
     ],
     install: true,
 )

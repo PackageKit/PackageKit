@@ -2261,7 +2261,7 @@ pk_test_backend_job_staged_files_func (void)
 	g_assert_no_error (error);
 	g_assert_nonnull (path);
 	g_assert_true (g_str_has_prefix (path, root));
-	g_assert_nonnull (g_strstr_len (path, -1, "/var/cache/packagekit/staging/job-"));
+	g_assert_nonnull (g_strstr_len (path, -1, LOCALSTATEDIR "/cache/packagekit/staging/job-"));
 	g_assert_true (g_str_has_suffix (path, "/0/powertop-1.8-1.fc8.rpm"));
 	g_assert_true (g_file_get_contents (path, &contents, NULL, NULL));
 	g_assert_cmpstr (contents, ==, "not really an rpm");

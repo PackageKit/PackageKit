@@ -92,12 +92,9 @@ pk_test_daemon_priv_exe = executable(
     c_args: [
         '-DPK_BUILD_DAEMON=1',
         '-DPK_DB_DIR="@0@"'.format(pk_db_dir),
-        '-DLIBDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libdir'))),
-        '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
         '-DLIBEXECDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libexecdir'))),
         '-DTESTDATADIR="@0@"'.format(test_data_dir),
         '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
-        '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
         '-DSOURCEROOTDIR="@0@"'.format(source_root),
         '-DPK_TEST_CONF_FILE="@0@"'.format(pk_test_conf_file),
     ]

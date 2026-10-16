@@ -955,7 +955,7 @@ pk_test_client_local_files_func (void)
 	g_assert_nonnull (split);
 	g_assert_true (g_str_has_suffix (split[PK_PACKAGE_ID_DATA], "/0/powertop-1.8-1.fc8.rpm"));
 	g_assert_nonnull (
-	    g_strstr_len (split[PK_PACKAGE_ID_DATA], -1, "/var/cache/packagekit/staging/"));
+	    g_strstr_len (split[PK_PACKAGE_ID_DATA], -1, LOCALSTATEDIR "/cache/packagekit/staging/"));
 	g_assert_cmpstr (split[PK_PACKAGE_ID_DATA], !=, rpm);
 	g_clear_pointer (&array, g_ptr_array_unref);
 	g_clear_object (&results);
