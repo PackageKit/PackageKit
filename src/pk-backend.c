@@ -32,6 +32,7 @@
 #include <pk-package-id.h>
 #include <pk-results.h>
 #include <pk-common.h>
+#include <pk-common-private.h>
 
 #include "pk-backend.h"
 #include "pk-shared.h"
@@ -1009,7 +1010,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 }
 
 void
-pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, GUnixFDList *fds)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());
@@ -1018,12 +1019,14 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
-	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", files));
+	pk_backend_job_set_file_fds (job, fds);
+	pk_backend_job_set_parameters (job,
+				       g_variant_new ("(@ah)", pk_unix_fd_list_get_handles (fds)));
 	backend->desc->run_job (backend, job);
 }
 
 void
-pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, GUnixFDList *fds)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());
@@ -1032,7 +1035,9 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_FILES_LOCAL);
-	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", files));
+	pk_backend_job_set_file_fds (job, fds);
+	pk_backend_job_set_parameters (job,
+				       g_variant_new ("(@ah)", pk_unix_fd_list_get_handles (fds)));
 	backend->desc->run_job (backend, job);
 }
 
@@ -1151,7 +1156,7 @@ void
 pk_backend_install_files (PkBackend *backend,
 			  PkBackendJob *job,
 			  PkBitfield transaction_flags,
-			  gchar **full_paths)
+			  GUnixFDList *fds)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());
@@ -1161,8 +1166,10 @@ pk_backend_install_files (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_FILES);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
-	pk_backend_job_set_parameters (job,
-				       g_variant_new ("(t^as)", transaction_flags, full_paths));
+	pk_backend_job_set_file_fds (job, fds);
+	pk_backend_job_set_parameters (
+	    job,
+	    g_variant_new ("(t@ah)", transaction_flags, pk_unix_fd_list_get_handles (fds)));
 	backend->desc->run_job (backend, job);
 }
 

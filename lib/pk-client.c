@@ -34,12 +34,17 @@
 
 #include <gio/gio.h>
 #include <glib-object.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <gio/gunixfdlist.h>
 #include <locale.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "pk-client.h"
 #include "pk-client-helper.h"
 #include "pk-common.h"
+#include "pk-common-private.h"
 #include "pk-control.h"
 #include "pk-debug.h"
 #include "pk-enum.h"
@@ -654,56 +659,6 @@ pk_client_convert_real_paths (gchar **paths, GError **error)
 		}
 	}
 	return g_strdupv (res);
-}
-
-/*
- * pk_client_get_user_temp:
- *
- * Return (and create if does not exist) a temporary directory
- * that is writable only by the user, and readable by root.
- *
- * Return value: the temp directory, or %NULL for create error
- **/
-static gchar *
-pk_client_get_user_temp (const gchar *subfolder, GError **error)
-{
-	gchar *path = NULL;
-	g_autoptr(GFile) file = NULL;
-
-	/* build path in home folder */
-	path = g_build_filename (g_get_user_cache_dir (), "PackageKit", subfolder, NULL);
-
-	/* find if exists */
-	file = g_file_new_for_path (path);
-	if (g_file_query_exists (file, NULL))
-		return path;
-
-	/* create as does not exist */
-	if (!g_file_make_directory_with_parents (file, NULL, error)) {
-		/* return nothing.. */
-		g_free (path);
-		return NULL;
-	}
-	return path;
-}
-
-/*
- * pk_client_is_file_native:
- **/
-static gboolean
-pk_client_is_file_native (const gchar *filename)
-{
-	g_autoptr(GFile) source = NULL;
-
-	/* does gvfs think the file is on a remote filesystem? */
-	source = g_file_new_for_path (filename);
-	if (!g_file_is_native (source))
-		return FALSE;
-
-	/* are we FUSE mounted */
-	if (g_strstr_len (filename, -1, "/.gvfs/") != NULL)
-		return FALSE;
-	return TRUE;
 }
 
 /*
@@ -1732,6 +1687,38 @@ pk_client_method_cb (GObject *source_object, GAsyncResult *res, gpointer user_da
 }
 
 /*
+ * pk_client_open_files:
+ *
+ * The daemon takes package files as fds, so it never has to resolve a path
+ * as root that the caller may not be allowed to read.
+ */
+static GUnixFDList *
+pk_client_open_files (gchar **files, GError **error)
+{
+	g_autoptr(GUnixFDList) fd_list = g_unix_fd_list_new ();
+
+	for (guint i = 0; files[i] != NULL; i++) {
+		gint fd = open (files[i], O_RDONLY | O_CLOEXEC);
+		gint ret;
+
+		if (fd < 0) {
+			g_set_error (error,
+				     PK_CLIENT_ERROR,
+				     PK_CLIENT_ERROR_INVALID_INPUT,
+				     "could not open %s: %s",
+				     files[i],
+				     g_strerror (errno));
+			return NULL;
+		}
+		ret = g_unix_fd_list_append (fd_list, fd, error);
+		close (fd);
+		if (ret < 0)
+			return NULL;
+	}
+	return g_steal_pointer (&fd_list);
+}
+
+/*
  * pk_client_set_role:
  **/
 static void
@@ -1840,24 +1827,38 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 				   g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_DETAILS_LOCAL) {
-		g_dbus_proxy_call (state->proxy,
-				   "GetDetailsLocal",
-				   g_variant_new ("(^a&s)", state->files),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   g_object_ref (state));
+		g_autoptr(GUnixFDList) fd_list = pk_client_open_files (state->files, &error);
+		if (fd_list == NULL) {
+			pk_client_state_finish (state, g_steal_pointer (&error));
+			return;
+		}
+		g_dbus_proxy_call_with_unix_fd_list (
+		    state->proxy,
+		    "GetDetailsLocal",
+		    g_variant_new ("(@ah)", pk_unix_fd_list_get_handles (fd_list)),
+		    G_DBUS_CALL_FLAGS_NONE,
+		    PK_CLIENT_DBUS_METHOD_TIMEOUT,
+		    fd_list,
+		    state->cancellable,
+		    pk_client_method_cb,
+		    g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_FILES_LOCAL) {
-		g_dbus_proxy_call (state->proxy,
-				   "GetFilesLocal",
-				   g_variant_new ("(^a&s)", state->files),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   g_object_ref (state));
+		g_autoptr(GUnixFDList) fd_list = pk_client_open_files (state->files, &error);
+		if (fd_list == NULL) {
+			pk_client_state_finish (state, g_steal_pointer (&error));
+			return;
+		}
+		g_dbus_proxy_call_with_unix_fd_list (
+		    state->proxy,
+		    "GetFilesLocal",
+		    g_variant_new ("(@ah)", pk_unix_fd_list_get_handles (fd_list)),
+		    G_DBUS_CALL_FLAGS_NONE,
+		    PK_CLIENT_DBUS_METHOD_TIMEOUT,
+		    fd_list,
+		    state->cancellable,
+		    pk_client_method_cb,
+		    g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->files), NULL);
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		g_dbus_proxy_call (state->proxy,
@@ -2018,12 +2019,20 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 		    g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
-		g_dbus_proxy_call (
+		g_autoptr(GUnixFDList) fd_list = pk_client_open_files (state->files, &error);
+		if (fd_list == NULL) {
+			pk_client_state_finish (state, g_steal_pointer (&error));
+			return;
+		}
+		g_dbus_proxy_call_with_unix_fd_list (
 		    state->proxy,
 		    "InstallFiles",
-		    g_variant_new ("(t^a&s)", state->transaction_flags, state->files),
+		    g_variant_new ("(t@ah)",
+				   state->transaction_flags,
+				   pk_unix_fd_list_get_handles (fd_list)),
 		    G_DBUS_CALL_FLAGS_NONE,
 		    PK_CLIENT_DBUS_METHOD_TIMEOUT,
+		    fd_list,
 		    state->cancellable,
 		    pk_client_method_cb,
 		    g_object_ref (state));
@@ -3814,84 +3823,6 @@ pk_client_update_packages_async (PkClient *client,
 				  g_steal_pointer (&state));
 }
 
-/*
- * pk_client_copy_native_finished_cb:
- */
-static void
-pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, gpointer user_data)
-{
-	g_autoptr(PkClientState) state = PK_CLIENT_STATE (g_steal_pointer (&user_data));
-	g_autoptr(GError) error = NULL;
-
-	/* get the result */
-	if (!g_file_copy_finish (file, res, &error)) {
-		pk_client_state_finish (state, g_steal_pointer (&error));
-		return;
-	}
-
-	/* no more copies pending? */
-	if (g_atomic_int_dec_and_test (&state->remaining_files_to_copy)) {
-		PkClientPrivate *client_priv = pk_client_get_instance_private (state->client);
-		/* now get tid and continue on our merry way */
-		pk_control_get_tid_async (client_priv->control,
-					  state->cancellable,
-					  (GAsyncReadyCallback) pk_client_get_tid_cb,
-					  g_object_ref (state));
-	}
-}
-
-/*
- * pk_client_copy_non_native_then_get_tid:
- **/
-static void
-pk_client_copy_non_native_then_get_tid (PkClientState *state)
-{
-	gchar *path;
-	gboolean ret;
-	guint i;
-	g_autofree gchar *user_temp = NULL;
-	g_autoptr(GError) error = NULL;
-
-	/* get a temp dir accessible by the daemon */
-	user_temp = pk_client_get_user_temp ("native-cache", &error);
-	g_debug ("using temp dir %s", user_temp);
-
-	/* save percentage */
-	ret = pk_progress_set_percentage (state->progress, -1);
-
-	/* copy each file that is non-native */
-	for (i = 0; state->files[i] != NULL; i++) {
-		ret = pk_client_is_file_native (state->files[i]);
-		g_debug ("%s native=%i", state->files[i], ret);
-		if (!ret) {
-			/* generate the destination location */
-			g_autofree gchar *basename = NULL;
-			g_autoptr(GFile) destination = NULL;
-			g_autoptr(GFile) source = NULL;
-			basename = g_path_get_basename (state->files[i]);
-			path = g_build_filename (user_temp, basename, NULL);
-			g_debug ("copy from %s to %s", state->files[i], path);
-			source = g_file_new_for_path (state->files[i]);
-			destination = g_file_new_for_path (path);
-
-			/* copy the file async */
-			g_file_copy_async (source,
-					   destination,
-					   G_FILE_COPY_OVERWRITE,
-					   G_PRIORITY_DEFAULT,
-					   state->cancellable,
-					   (GFileProgressCallback) pk_client_copy_progress_cb,
-					   state,
-					   (GAsyncReadyCallback) pk_client_copy_native_finished_cb,
-					   g_object_ref (state));
-
-			/* pass the new path to PackageKit */
-			g_free (state->files[i]);
-			state->files[i] = path;
-		}
-	}
-}
-
 /**
  * pk_client_install_files_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
@@ -3920,8 +3851,6 @@ pk_client_install_files_async (PkClient *client,
 {
 	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
-	gboolean ret;
-	guint i;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -3955,26 +3884,11 @@ pk_client_install_files_async (PkClient *client,
 		return;
 	}
 
-	/* how many non-native */
-	for (i = 0; state->files[i] != NULL; i++) {
-		ret = pk_client_is_file_native (state->files[i]);
-		/* on a FUSE mount (probably created by gvfs) and not readable by packagekitd */
-		if (!ret)
-			g_atomic_int_inc (&state->remaining_files_to_copy);
-	}
-
-	/* nothing to copy, common case */
-	if (g_atomic_int_get (&state->remaining_files_to_copy) == 0) {
-		/* just get tid */
-		pk_control_get_tid_async (priv->control,
-					  cancellable,
-					  (GAsyncReadyCallback) pk_client_get_tid_cb,
-					  g_object_ref (state));
-		return;
-	}
-
-	/* copy the files first */
-	pk_client_copy_non_native_then_get_tid (state);
+	/* get tid */
+	pk_control_get_tid_async (priv->control,
+				  cancellable,
+				  (GAsyncReadyCallback) pk_client_get_tid_cb,
+				  g_steal_pointer (&state));
 }
 
 /**

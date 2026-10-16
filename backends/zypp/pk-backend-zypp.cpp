@@ -2363,8 +2363,16 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
-	gchar **full_paths;
-	g_variant_get (params, "(^a&s)", &full_paths);
+	g_autoptr(GVariant) handles = NULL;
+	g_auto(GStrv) full_paths = NULL;
+	g_variant_get (params, "(@ah)", &handles);
+	g_autoptr(GError) file_error = NULL;
+	full_paths = pk_backend_job_get_file_paths (job, handles, &file_error);
+	if (full_paths == NULL) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", file_error->message);
+		return;
+	}
 
 	if (zypp == NULL){
 		return;
@@ -2420,8 +2428,16 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	if (zypp == NULL)
 		return;
 
-	gchar **full_paths;
-	g_variant_get (params, "(^a&s)", &full_paths);
+	g_autoptr(GVariant) handles = NULL;
+	g_auto(GStrv) full_paths = NULL;
+	g_variant_get (params, "(@ah)", &handles);
+	g_autoptr(GError) file_error = NULL;
+	full_paths = pk_backend_job_get_file_paths (job, handles, &file_error);
+	if (full_paths == NULL) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", file_error->message);
+		return;
+	}
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
@@ -2623,10 +2639,16 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	PkBitfield transaction_flags;
-	gchar **full_paths;
-	g_variant_get (params, "(t^a&s)",
-		       &transaction_flags,
-		       &full_paths);
+	g_autoptr(GVariant) handles = NULL;
+	g_auto(GStrv) full_paths = NULL;
+	g_variant_get (params, "(t@ah)", &transaction_flags, &handles);
+	g_autoptr(GError) file_error = NULL;
+	full_paths = pk_backend_job_get_file_paths (job, handles, &file_error);
+	if (full_paths == NULL) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", file_error->message);
+		return;
+	}
 
 	if (zypp == NULL){
 		return;

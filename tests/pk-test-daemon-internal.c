@@ -21,6 +21,9 @@
 
 #include <config.h>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <gio/gunixfdlist.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gstdio.h>
@@ -2202,6 +2205,110 @@ pk_test_scheduler_parallel_func (void)
 	g_object_unref (db);
 }
 
+static void
+pk_test_backend_job_staged_files_func (void)
+{
+	const gchar *path;
+	gchar buf[4] = { 0 };
+	gint fd;
+	gint pipefd[2];
+	g_autofree gchar *root = NULL;
+	g_autofree gchar *rpm = NULL;
+	g_autofree gchar *txt = NULL;
+	g_autofree gchar *contents = NULL;
+	g_autofree gchar *handle_dir = NULL;
+	g_autofree gchar *staging_dir = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(GUnixFDList) fds = g_unix_fd_list_new ();
+	g_autoptr(PkBackend) backend = NULL;
+	PkBackendJob *job;
+
+	/* the backend module lives below the test root, the staging dir below ours */
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
+	g_assert_true (pk_backend_load (backend, &error));
+	g_assert_no_error (error);
+	root = g_dir_make_tmp ("pk-test-root-XXXXXX", &error);
+	g_assert_no_error (error);
+	g_key_file_set_string (conf, "Daemon", "RootDir", root);
+	rpm = g_build_filename (root, "powertop-1.8-1.fc8.rpm", NULL);
+	txt = g_build_filename (root, "notes.txt", NULL);
+	g_assert_true (g_file_set_contents (rpm, "not really an rpm", -1, NULL));
+	g_assert_true (g_file_set_contents (txt, "hello", -1, NULL));
+
+	/* handles: 0 and 3 a package file, 1 something else, 2 not a regular file */
+	fd = open (rpm, O_RDONLY | O_CLOEXEC);
+	g_assert_cmpint (g_unix_fd_list_append (fds, fd, NULL), ==, 0);
+	close (fd);
+	fd = open (txt, O_RDONLY | O_CLOEXEC);
+	g_assert_cmpint (g_unix_fd_list_append (fds, fd, NULL), ==, 1);
+	close (fd);
+	g_assert_cmpint (pipe (pipefd), ==, 0);
+	g_assert_cmpint (g_unix_fd_list_append (fds, pipefd[0], NULL), ==, 2);
+	close (pipefd[0]);
+	close (pipefd[1]);
+	fd = open (rpm, O_RDONLY | O_CLOEXEC);
+	g_assert_cmpint (g_unix_fd_list_append (fds, fd, NULL), ==, 3);
+	close (fd);
+
+	job = pk_backend_job_new (conf);
+	pk_backend_job_set_backend (job, backend);
+	pk_backend_job_set_file_fds (job, fds);
+
+	/* a package file is copied below the root, keeping its name */
+	path = pk_backend_job_get_file_path (job, 0, &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (path);
+	g_assert_true (g_str_has_prefix (path, root));
+	g_assert_nonnull (g_strstr_len (path, -1, "/var/cache/packagekit/staging/job-"));
+	g_assert_true (g_str_has_suffix (path, "/0/powertop-1.8-1.fc8.rpm"));
+	g_assert_true (g_file_get_contents (path, &contents, NULL, NULL));
+	g_assert_cmpstr (contents, ==, "not really an rpm");
+
+	/* a second lookup hits the copy again */
+	g_assert_cmpstr (pk_backend_job_get_file_path (job, 0, NULL), ==, path);
+
+	/* a backend that wants an fd gets the client's own, checked but not copied */
+	fd = pk_backend_job_get_file_fd (job, 3, &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (fd, >=, 0);
+	g_assert_cmpint (read (fd, buf, 3), ==, 3);
+	g_assert_cmpstr (buf, ==, "not");
+	handle_dir = g_path_get_dirname (path);
+	staging_dir = g_path_get_dirname (handle_dir);
+	g_clear_pointer (&handle_dir, g_free);
+	handle_dir = g_build_filename (staging_dir, "3", NULL);
+	g_assert_false (g_file_test (handle_dir, G_FILE_TEST_EXISTS));
+
+	/* wrong content type, whichever way it is asked for */
+	g_assert_null (pk_backend_job_get_file_path (job, 1, &error));
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA);
+	g_assert_nonnull (g_strstr_len (error->message, -1, "notes.txt"));
+	g_clear_error (&error);
+	g_assert_cmpint (pk_backend_job_get_file_fd (job, 1, &error), ==, -1);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA);
+	g_clear_error (&error);
+
+	/* a pipe is never read */
+	g_assert_cmpint (pk_backend_job_get_file_fd (job, 2, &error), ==, -1);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_REGULAR_FILE);
+	g_clear_error (&error);
+
+	/* unknown handle */
+	g_assert_null (pk_backend_job_get_file_path (job, 4, &error));
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND);
+	g_clear_error (&error);
+
+	/* the copies go away with the job */
+	g_assert_true (g_file_test (staging_dir, G_FILE_TEST_IS_DIR));
+	g_object_unref (job);
+	g_assert_false (g_file_test (staging_dir, G_FILE_TEST_EXISTS));
+
+	pk_directory_remove_contents (root);
+	g_rmdir (root);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -2222,6 +2329,8 @@ main (int argc, char **argv)
 
 	/* backend stuff */
 	g_test_add_func ("/packagekit/backend", pk_test_backend_func);
+	g_test_add_func ("/packagekit/backend-job-staged-files",
+			 pk_test_backend_job_staged_files_func);
 
 	return g_test_run ();
 }

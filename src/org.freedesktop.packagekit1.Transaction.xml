@@ -239,7 +239,7 @@
     <!--*********************************************************************-->
     <!--
       GetDetailsLocal:
-      @files: An array of filenames.
+      @files: An array of file descriptors, each open for reading on a package file.
 
       This method should return all the details about a specific local file.
 
@@ -248,13 +248,13 @@
     -->
     <method name="GetDetailsLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="files" direction="in"/>
+      <arg type="ah" name="files" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
     <!--
       GetFilesLocal:
-      @files: An array of filenames.
+      @files: An array of file descriptors, each open for reading on a package file.
 
       This method should return all the file lists for a specific local file.
 
@@ -263,7 +263,7 @@
     -->
     <method name="GetFilesLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="as" name="files" direction="in"/>
+      <arg type="ah" name="files" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
@@ -443,7 +443,7 @@
     <method name="InstallFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="t" name="transaction_flags" direction="in"/>
-      <arg type="as" name="full_paths" direction="in"/>
+      <arg type="ah" name="files" direction="in"/>
     </method>
 
     <!--*********************************************************************-->

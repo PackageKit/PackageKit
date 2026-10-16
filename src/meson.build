@@ -58,6 +58,7 @@ packagekit_direct_exe = executable(
         '-DVERSION="@0@"'.format(meson.project_version()),
         '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
         '-DPACKAGE_LOCALE_DIR="@0@"'.format(package_locale_dir),
+        '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
     ],
     install: true,
     install_dir: get_option('libexecdir'),

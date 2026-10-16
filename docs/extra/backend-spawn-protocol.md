@@ -137,7 +137,7 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 | `get-packages`, `get-updates`, `get-repo-list`                                             | `filters`                                                              |
 | `depends-on`, `required-by`                                                                | `filters`, `package_ids`, `recursive` (boolean)                        |
 | `get-details`, `get-files`, `get-update-detail`                                            | `package_ids`                                                          |
-| `get-details-local`, `get-files-local`                                                     | `files` (array of absolute paths)                                      |
+| `get-details-local`, `get-files-local`                                                     | `files` (array of absolute paths, see below)                           |
 | `get-distro-upgrades`                                                                      | none                                                                   |
 | `download-packages`                                                                        | `package_ids`, `directory`                                             |
 | `install-packages`, `update-packages`                                                      | `flags`, `package_ids`                                                 |
@@ -150,6 +150,11 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 | `repo-remove`                                                                              | `flags`, `repo_id`, `autoremove` (boolean)                             |
 | `upgrade-system`                                                                           | `flags`, `distro_id`, `upgrade_kind` (`enum_upgrade_kind`)             |
 | `repair-system`                                                                            | `flags`                                                                |
+
+`files` names private copies the daemon made of the files the client sent
+over D-Bus as file descriptors, in a directory only root can read. They are
+removed when the transaction is destroyed, so a helper must not rely on them
+staying around after the job.
 
 A role the helper did not list in `hello` is answered with `error`
 `not-supported`; the daemon does not send such requests normally.

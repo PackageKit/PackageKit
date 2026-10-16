@@ -418,6 +418,20 @@ pk_util_get_root_dir (GKeyFile *conf)
 }
 
 /**
+ * pk_util_get_cache_dir:
+ *
+ * The daemon's cache directory below the configured root, where downloads
+ * and staged package files live.
+ **/
+gchar *
+pk_util_get_cache_dir (GKeyFile *conf)
+{
+	g_autofree gchar *root_dir = pk_util_get_root_dir (conf);
+
+	return g_build_filename (root_dir, LOCALSTATEDIR, "cache", "packagekit", NULL);
+}
+
+/**
  * pk_util_get_runtime_dir:
  * @conf: the daemon configuration
  * @error: a #GError, or %NULL
@@ -672,4 +686,23 @@ pk_util_reboot_state_add (GKeyFile *conf, const gchar *package_id, GError **erro
 				    (const gchar *const *) new_ids->pdata,
 				    new_ids->len);
 	return g_key_file_save_to_file (kf, path, error);
+}
+
+/**
+ * pk_fd_get_basename:
+ *
+ * The basename of the file @fd was opened on, or "file" if the kernel
+ * will not tell us.
+ **/
+gchar *
+pk_fd_get_basename (gint fd)
+{
+	g_autofree gchar *link = g_strdup_printf ("/proc/self/fd/%d", fd);
+	g_autofree gchar *target = g_file_read_link (link, NULL);
+
+	if (target == NULL || target[0] != '/')
+		return g_strdup ("file");
+	if (g_str_has_suffix (target, " (deleted)"))
+		target[strlen (target) - strlen (" (deleted)")] = '\0';
+	return g_path_get_basename (target);
 }

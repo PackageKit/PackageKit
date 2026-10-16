@@ -35,6 +35,7 @@
 #include <sys/utsname.h>
 
 #include <glib.h>
+#include <gio/gunixfdlist.h>
 #include "pk-common.h"
 #include "pk-common-private.h"
 #include "pk-enum.h"
@@ -365,4 +366,23 @@ pk_get_distro_version_id (GError **error)
 		return NULL;
 
 	return version_id;
+}
+
+/**
+ * pk_unix_fd_list_get_handles:
+ * @fd_list: a #GUnixFDList
+ *
+ * Builds the `ah` array that refers to every fd in @fd_list, in order.
+ *
+ * Return value: (transfer floating): a new `ah` #GVariant
+ **/
+GVariant *
+pk_unix_fd_list_get_handles (GUnixFDList *fd_list)
+{
+	gint n = g_unix_fd_list_get_length (fd_list);
+	g_autofree gint32 *handles = g_new0 (gint32, n + 1);
+
+	for (gint i = 0; i < n; i++)
+		handles[i] = i;
+	return g_variant_new_fixed_array (G_VARIANT_TYPE_HANDLE, handles, n, sizeof (gint32));
 }

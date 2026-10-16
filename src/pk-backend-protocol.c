@@ -146,6 +146,7 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 	GVariant *params = pk_backend_job_get_parameters (job);
 	g_autoptr(json_t) root = json_object ();
 	g_auto(GStrv) strv = NULL;
+	g_autoptr(GVariant) handles = NULL;
 	const gchar *s1 = NULL;
 	const gchar *s2 = NULL;
 	const gchar *s3 = NULL;
@@ -202,7 +203,10 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
 	case PK_ROLE_ENUM_GET_FILES_LOCAL:
-		g_variant_get (params, "(^as)", &strv);
+		g_variant_get (params, "(@ah)", &handles);
+		strv = pk_backend_job_get_file_paths (job, handles, error);
+		if (strv == NULL)
+			return NULL;
 		STRV ("files", strv);
 		break;
 	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
@@ -219,8 +223,11 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 		STRV ("package_ids", strv);
 		break;
 	case PK_ROLE_ENUM_INSTALL_FILES:
-		g_variant_get (params, "(t^as)", &bits, &strv);
+		g_variant_get (params, "(t@ah)", &bits, &handles);
 		FLAGS (bits);
+		strv = pk_backend_job_get_file_paths (job, handles, error);
+		if (strv == NULL)
+			return NULL;
 		STRV ("files", strv);
 		break;
 	case PK_ROLE_ENUM_REMOVE_PACKAGES:

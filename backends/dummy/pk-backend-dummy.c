@@ -171,8 +171,18 @@ backend_depends_on (PkBackend *backend,
 }
 
 static void
-backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+backend_get_details_local (PkBackend *backend, PkBackendJob *job)
 {
+	g_autoptr(GError) error = NULL;
+
+	if (pk_backend_job_get_file_path (job, 0, &error) == NULL) {
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
+					   "%s",
+					   error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 	pk_backend_job_details (
@@ -191,9 +201,24 @@ backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 }
 
 static void
-backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
+backend_get_files_local (PkBackend *backend, PkBackendJob *job)
 {
+	const gchar *path;
+	g_autofree gchar *package_id = NULL;
+	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_file_free);
+
+	/* report the staged file as the package data, so tests can see what the backend was given */
+	path = pk_backend_job_get_file_path (job, 0, &error);
+	if (path == NULL) {
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
+					   "%s",
+					   error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	package_id = pk_package_id_build ("test", "0.01", "i386", "local", path);
 	g_ptr_array_add (files, pk_file_new ("/usr/share/man/man1", PK_FILE_KIND_ENUM_DIRECTORY));
 	g_ptr_array_add (
 	    files,
@@ -202,7 +227,7 @@ backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
 			 pk_file_new ("/etc/yum.repos.d/dave.repo", PK_FILE_KIND_ENUM_REGULAR));
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	pk_backend_job_files (job, "test;0.01;i386;local;", files);
+	pk_backend_job_files (job, package_id, files);
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
 }
@@ -881,12 +906,19 @@ pk_backend_install_files_timeout (gpointer data)
 }
 
 static void
-backend_install_files (PkBackend *backend,
-		       PkBackendJob *job,
-		       PkBitfield transaction_flags,
-		       gchar **full_paths)
+backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_job_stage_files (job, &error)) {
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
+					   "%s",
+					   error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 	pk_backend_job_set_percentage (job, 101);
 	job_data->signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, job);
@@ -1916,20 +1948,12 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 		backend_depends_on (backend, job, filters, package_ids, recursive);
 		break;
 	}
-	case PK_ROLE_ENUM_GET_DETAILS_LOCAL: {
-		g_autofree gchar **files = NULL;
-
-		g_variant_get (params, "(^a&s)", &files);
-		backend_get_details_local (backend, job, files);
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+		backend_get_details_local (backend, job);
 		break;
-	}
-	case PK_ROLE_ENUM_GET_FILES_LOCAL: {
-		g_autofree gchar **files = NULL;
-
-		g_variant_get (params, "(^a&s)", &files);
-		backend_get_files_local (backend, job, files);
+	case PK_ROLE_ENUM_GET_FILES_LOCAL:
+		backend_get_files_local (backend, job);
 		break;
-	}
 	case PK_ROLE_ENUM_GET_DETAILS: {
 		g_autofree gchar **package_ids = NULL;
 
@@ -1986,10 +2010,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	}
 	case PK_ROLE_ENUM_INSTALL_FILES: {
 		PkBitfield transaction_flags;
-		g_autofree gchar **full_paths = NULL;
-
-		g_variant_get (params, "(t^a&s)", &transaction_flags, &full_paths);
-		backend_install_files (backend, job, transaction_flags, full_paths);
+		g_variant_get (params, "(t*)", &transaction_flags, NULL);
+		backend_install_files (backend, job, transaction_flags);
 		break;
 	}
 	case PK_ROLE_ENUM_REFRESH_CACHE: {

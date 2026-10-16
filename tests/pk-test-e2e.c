@@ -31,6 +31,7 @@
 #include "pk-console-private.h"
 #include "pk-offline.h"
 #include "pk-offline-private.h"
+#include "pk-package-id.h"
 #include "pk-package-ids.h"
 #include "pk-results.h"
 #include "pk-task.h"
@@ -907,6 +908,87 @@ cancellation_progress_cb (PkProgress *progress, PkProgressType type, void *user_
 	**tid_out = g_strdup (pk_progress_get_transaction_id (progress));
 
 	g_main_context_wakeup (g_main_context_get_thread_default ());
+}
+
+static void
+pk_test_client_local_files_func (void)
+{
+	PkFiles *item;
+	gchar *files[2] = { NULL, NULL };
+	g_autofree gchar *dir = NULL;
+	g_autofree gchar *rpm = NULL;
+	g_autofree gchar *txt = NULL;
+	g_auto(GStrv) split = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) array = NULL;
+	g_autoptr(PkClient) client = pk_client_new ();
+	g_autoptr(PkResults) results = NULL;
+
+	/* the daemon only sees these through the fds we send, so they can live anywhere */
+	dir = g_dir_make_tmp ("pk-test-local-XXXXXX", &error);
+	g_assert_no_error (error);
+	rpm = g_build_filename (dir, "powertop-1.8-1.fc8.rpm", NULL);
+	txt = g_build_filename (dir, "notes.txt", NULL);
+	g_assert_true (g_file_set_contents (rpm, "not really an rpm", -1, &error));
+	g_assert_no_error (error);
+	g_assert_true (g_file_set_contents (txt, "hello", -1, &error));
+	g_assert_no_error (error);
+
+	/* details of a local package file */
+	files[0] = rpm;
+	results = pk_client_get_details_local (client, files, NULL, NULL, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_SUCCESS);
+	array = pk_results_get_details_array (results);
+	g_assert_cmpint (array->len, ==, 1);
+	g_clear_pointer (&array, g_ptr_array_unref);
+	g_clear_object (&results);
+
+	/* file list: the dummy backend reports the private copy the daemon handed it */
+	results = pk_client_get_files_local (client, files, NULL, NULL, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_SUCCESS);
+	array = pk_results_get_files_array (results);
+	g_assert_cmpint (array->len, ==, 1);
+	item = g_ptr_array_index (array, 0);
+	split = pk_package_id_split (pk_files_get_package_id (item));
+	g_assert_nonnull (split);
+	g_assert_true (g_str_has_suffix (split[PK_PACKAGE_ID_DATA], "/0/powertop-1.8-1.fc8.rpm"));
+	g_assert_nonnull (
+	    g_strstr_len (split[PK_PACKAGE_ID_DATA], -1, "/var/cache/packagekit/staging/"));
+	g_assert_cmpstr (split[PK_PACKAGE_ID_DATA], !=, rpm);
+	g_clear_pointer (&array, g_ptr_array_unref);
+	g_clear_object (&results);
+
+	/* install it; the dummy backend takes two seconds */
+	results = pk_client_install_files (client,
+					   pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE),
+					   files,
+					   NULL,
+					   NULL,
+					   NULL,
+					   &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_SUCCESS);
+	g_clear_object (&results);
+
+	/* not a package file: the job rejects it right before the backend would read it */
+	files[0] = txt;
+	results = pk_client_get_details_local (client, files, NULL, NULL, NULL, &error);
+	g_assert_null (results);
+	g_assert_nonnull (error);
+	g_assert_nonnull (g_strstr_len (error->message, -1, "unsupported content type"));
+	g_clear_error (&error);
+
+	/* a file we cannot open never reaches the daemon */
+	files[0] = (gchar *) "/nonexistent/foo.rpm";
+	results = pk_client_get_details_local (client, files, NULL, NULL, NULL, &error);
+	g_assert_null (results);
+	g_assert_error (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_INVALID_INPUT);
+
+	g_unlink (rpm);
+	g_unlink (txt);
+	g_rmdir (dir);
 }
 
 static void
@@ -1813,6 +1895,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/libpackagekit/client-helper", pk_test_client_helper_func);
 	g_test_add_func ("/libpackagekit/client", pk_test_client_func);
 	g_test_add_func ("/libpackagekit/client/cancellation", pk_test_client_cancellation_func);
+	g_test_add_func ("/libpackagekit/client/local-files", pk_test_client_local_files_func);
 	g_test_add_func ("/libpackagekit/package-sack", pk_test_package_sack_func);
 	g_test_add_func ("/libpackagekit/task", pk_test_task_func);
 	g_test_add_func ("/libpackagekit/task-wrapper", pk_test_task_wrapper_func);

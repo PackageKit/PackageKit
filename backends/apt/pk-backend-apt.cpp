@@ -283,12 +283,19 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
 static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     g_autofree gchar **package_ids = nullptr;
-    g_autofree gchar **files = nullptr;
+    g_auto(GStrv) files = nullptr;
     PkRoleEnum role;
     role = pk_backend_job_get_role(job);
 
     if (role == PK_ROLE_ENUM_GET_DETAILS_LOCAL) {
-        g_variant_get(params, "(^a&s)", &files);
+        g_autoptr(GVariant) handles = nullptr;
+        g_autoptr(GError) fileError = nullptr;
+        g_variant_get(params, "(@ah)", &handles);
+        files = pk_backend_job_get_file_paths(job, handles, &fileError);
+        if (files == nullptr) {
+            pk_backend_job_error_code(job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", fileError->message);
+            return;
+        }
     } else {
         g_variant_get(params, "(^a&s)", &package_ids);
     }
@@ -316,8 +323,14 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
 
 static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    g_autofree gchar **files = nullptr;
-    g_variant_get(params, "(^a&s)", &files);
+    g_autoptr(GVariant) handles = nullptr;
+    g_autoptr(GError) fileError = nullptr;
+    g_variant_get(params, "(@ah)", &handles);
+    g_auto(GStrv) files = pk_backend_job_get_file_paths(job, handles, &fileError);
+    if (files == nullptr) {
+        pk_backend_job_error_code(job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", fileError->message);
+        return;
+    }
     auto apt = static_cast<AptJob *>(pk_backend_job_get_user_data(job));
 
     for (guint i = 0; files[i] != nullptr; ++i)
@@ -679,9 +692,15 @@ static std::optional<TransactionRequest> requestForUpdate(PkBackendJob *job, Apt
 
 static std::optional<TransactionRequest> requestForInstallFiles(PkBackendJob *job, AptJob *apt, GVariant *params)
 {
-    g_autofree gchar **full_paths = nullptr;
+    g_autoptr(GVariant) handles = nullptr;
+    g_autoptr(GError) fileError = nullptr;
     TransactionRequest request;
-    g_variant_get(params, "(t^a&s)", &request.flags, &full_paths);
+    g_variant_get(params, "(t@ah)", &request.flags, &handles);
+    g_auto(GStrv) full_paths = pk_backend_job_get_file_paths(job, handles, &fileError);
+    if (full_paths == nullptr) {
+        pk_backend_job_error_code(job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", fileError->message);
+        return std::nullopt;
+    }
 
     if (!apt_init_for_request(job, apt, full_paths))
         return std::nullopt;

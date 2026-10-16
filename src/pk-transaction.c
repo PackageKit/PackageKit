@@ -39,6 +39,7 @@
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
+#include <gio/gunixfdlist.h>
 #include <pk-common.h>
 #include <pk-common-private.h>
 #include <pk-enum.h>
@@ -58,10 +59,6 @@
 
 static void pk_transaction_finalize (GObject *object);
 static void pk_transaction_dispose (GObject *object);
-
-static gchar *pk_transaction_get_content_type_for_file (const gchar *filename, GError **error);
-static gboolean pk_transaction_is_supported_content_type (PkTransaction *transaction,
-							  const gchar *content_type);
 
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT 100 /* ms */
 
@@ -127,7 +124,7 @@ struct _PkTransaction
 	gchar *cached_package_id;
 	gchar **cached_package_ids;
 	gchar *cached_transaction_id;
-	gchar **cached_full_paths;
+	GUnixFDList *cached_fds;
 	PkBitfield cached_filters;
 	gchar **cached_values;
 	gchar *cached_repo_id;
@@ -137,7 +134,6 @@ struct _PkTransaction
 	gchar *cached_directory;
 	gchar *cached_cat_id;
 	PkUpgradeKindEnum cached_upgrade_kind;
-	GPtrArray *supported_content_types;
 	guint registration_id;
 	GDBusConnection *connection;
 	GDBusNodeInfo *introspection;
@@ -868,28 +864,12 @@ pk_transaction_get_uid (PkTransaction *transaction)
 	return transaction->client_uid;
 }
 
-static void
-pk_transaction_setup_mime_types (PkTransaction *transaction)
-{
-	guint i;
-	g_auto(GStrv) mime_types = NULL;
-
-	/* get list of mime types supported by backends */
-	mime_types = pk_backend_get_mime_types (transaction->backend);
-	for (i = 0; mime_types[i] != NULL; i++) {
-		g_ptr_array_add (transaction->supported_content_types, g_strdup (mime_types[i]));
-	}
-}
-
 void
 pk_transaction_set_backend (PkTransaction *transaction, PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
 	g_set_object (&transaction->backend, backend);
-
-	/* setup supported mime types */
-	pk_transaction_setup_mime_types (transaction);
 }
 
 /**
@@ -1964,12 +1944,12 @@ pk_transaction_run (PkTransaction *transaction)
 	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
 		pk_backend_get_details_local (transaction->backend,
 					      transaction->job,
-					      transaction->cached_full_paths);
+					      transaction->cached_fds);
 		break;
 	case PK_ROLE_ENUM_GET_FILES_LOCAL:
 		pk_backend_get_files_local (transaction->backend,
 					    transaction->job,
-					    transaction->cached_full_paths);
+					    transaction->cached_fds);
 		break;
 	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
 		pk_backend_get_distro_upgrades (transaction->backend, transaction->job);
@@ -2036,7 +2016,7 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_install_files (transaction->backend,
 					  transaction->job,
 					  transaction->cached_transaction_flags,
-					  transaction->cached_full_paths);
+					  transaction->cached_fds);
 		break;
 	case PK_ROLE_ENUM_INSTALL_SIGNATURE:
 		pk_backend_install_signature (transaction->backend,
@@ -3079,14 +3059,8 @@ pk_transaction_download_packages (PkTransaction *transaction,
 
 	/* create cache directory */
 	if (!store_in_cache) {
-		g_autofree gchar *root_dir = pk_util_get_root_dir (transaction->conf);
-		directory = g_build_filename (root_dir,
-					      LOCALSTATEDIR,
-					      "cache",
-					      "PackageKit",
-					      "downloads",
-					      transaction->tid,
-					      NULL);
+		g_autofree gchar *cache_dir = pk_util_get_cache_dir (transaction->conf);
+		directory = g_build_filename (cache_dir, "downloads", transaction->tid, NULL);
 		/* rwxrwxr-x */
 		retval = g_mkdir_with_parents (directory, 0775);
 		if (retval != 0) {
@@ -3203,192 +3177,6 @@ pk_transaction_get_details (PkTransaction *transaction,
 	/* save so we can run later */
 	transaction->cached_package_ids = g_strdupv (package_ids);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
-	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-static void
-pk_transaction_get_details_local (PkTransaction *transaction,
-				  GVariant *params,
-				  GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error_local = NULL;
-	GError *error = NULL;
-	guint i;
-	guint length;
-	g_autofree gchar *content_type = NULL;
-	g_autofree gchar *files_temp = NULL;
-	g_autofree gchar **full_paths = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	g_variant_get (params, "(^a&s)", &full_paths);
-
-	files_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("GetDetailsLocal method called: %s", files_temp);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_DETAILS_LOCAL)) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "GetDetailsLocal not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for empty package list */
-	length = g_strv_length (full_paths);
-	if (length == 0) {
-		g_set_error_literal (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "No filenames listed");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check all files exists and are valid */
-	length = g_strv_length (full_paths);
-	for (i = 0; i < length; i++) {
-
-		/* exists */
-		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* get content type */
-		content_type = pk_transaction_get_content_type_for_file (full_paths[i],
-									 &error_local);
-		if (content_type == NULL) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* supported content type? */
-		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-	}
-
-	/* save so we can run later */
-	transaction->cached_full_paths = g_strdupv (full_paths);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
-	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-static void
-pk_transaction_get_files_local (PkTransaction *transaction,
-				GVariant *params,
-				GDBusMethodInvocation *context)
-{
-	gboolean ret;
-	GError *error_local = NULL;
-	guint i;
-	guint length;
-	g_autoptr(GError) error = NULL;
-	g_autofree gchar *content_type = NULL;
-	g_autofree gchar *files_temp = NULL;
-	g_autofree gchar **full_paths = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	g_variant_get (params, "(^a&s)", &full_paths);
-
-	files_temp = pk_package_ids_to_string (full_paths);
-	g_debug ("GetFilesLocal method called: %s", files_temp);
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_FILES_LOCAL)) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "GetFilesLocal not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for empty package list */
-	length = g_strv_length (full_paths);
-	if (length == 0) {
-		g_set_error_literal (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-				     "No filenames listed");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check all files exists and are valid */
-	length = g_strv_length (full_paths);
-	for (i = 0; i < length; i++) {
-
-		/* exists */
-		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* get content type */
-		content_type = pk_transaction_get_content_type_for_file (full_paths[i],
-									 &error_local);
-		if (content_type == NULL) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* supported content type? */
-		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-	}
-
-	/* save so we can run later */
-	transaction->cached_full_paths = g_strdupv (full_paths);
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES_LOCAL);
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
@@ -3802,48 +3590,128 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-static gchar *
-pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
+/*
+ * pk_transaction_set_files:
+ *
+ * Shared by the methods that take package files from the client. The files
+ * arrive as fds. Only the shape of the request is checked here, the job copies
+ * or checks each file right before the backend reads it.
+ */
+static gboolean
+pk_transaction_set_files (PkTransaction *transaction,
+			  PkRoleEnum role,
+			  GVariant *handles,
+			  GDBusMethodInvocation *context,
+			  GError **error)
 {
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GFile) file = NULL;
-	g_autoptr(GFileInfo) info = NULL;
+	GUnixFDList *fd_list = NULL;
+	const gint32 *h;
+	gsize n_handles = 0;
 
-	/* get file info synchronously */
-	file = g_file_new_for_path (filename);
-	info = g_file_query_info (file,
-				  "standard::content-type",
-				  G_FILE_QUERY_INFO_NONE,
-				  NULL,
-				  &error_local);
-	if (info == NULL) {
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->backend, role)) {
 		g_set_error (error,
-			     1,
-			     0,
-			     "failed to get file attributes for %s: %s",
-			     filename,
-			     error_local->message);
-		return NULL;
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "%s not supported by backend",
+			     pk_role_enum_to_string (role));
+		return FALSE;
 	}
 
-	/* get content type as string */
-	return g_file_info_get_attribute_as_string (info, "standard::content-type");
+	/* every handle has to name a fd that came with the message, in order */
+	if (context != NULL) {
+		fd_list = g_dbus_message_get_unix_fd_list (
+		    g_dbus_method_invocation_get_message (context));
+	}
+	h = g_variant_get_fixed_array (handles, &n_handles, sizeof (gint32));
+	if (n_handles == 0) {
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
+				     "No files listed");
+		return FALSE;
+	}
+	if (fd_list == NULL || (gsize) g_unix_fd_list_get_length (fd_list) != n_handles) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "expected %" G_GSIZE_FORMAT " file descriptors",
+			     n_handles);
+		return FALSE;
+	}
+	for (gsize i = 0; i < n_handles; i++) {
+		if (h[i] != (gint32) i) {
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_INPUT_INVALID,
+					     "file handles have to be 0..n-1 in order");
+			return FALSE;
+		}
+	}
+
+	/* save so we can run later */
+	transaction->cached_fds = g_object_ref (fd_list);
+	return TRUE;
 }
 
-static gboolean
-pk_transaction_is_supported_content_type (PkTransaction *transaction, const gchar *content_type)
+static void
+pk_transaction_get_details_local (PkTransaction *transaction,
+				  GVariant *params,
+				  GDBusMethodInvocation *context)
 {
-	const gchar *tmp;
-	GPtrArray *array = transaction->supported_content_types;
-	guint i;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) handles = NULL;
 
-	/* can we support this one? */
-	for (i = 0; i < array->len; i++) {
-		tmp = g_ptr_array_index (array, i);
-		if (g_strcmp0 (tmp, content_type) == 0)
-			return TRUE;
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->tid != NULL);
+
+	g_variant_get (params, "(@ah)", &handles);
+	g_debug ("GetDetailsLocal method called: %" G_GSIZE_FORMAT " files",
+		 g_variant_n_children (handles));
+
+	if (!pk_transaction_set_files (transaction,
+				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
+				       handles,
+				       context,
+				       &error)) {
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
 	}
-	return FALSE;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
+static void
+pk_transaction_get_files_local (PkTransaction *transaction,
+				GVariant *params,
+				GDBusMethodInvocation *context)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) handles = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->tid != NULL);
+
+	g_variant_get (params, "(@ah)", &handles);
+	g_debug ("GetFilesLocal method called: %" G_GSIZE_FORMAT " files",
+		 g_variant_n_children (handles));
+
+	if (!pk_transaction_set_files (transaction,
+				       PK_ROLE_ENUM_GET_FILES_LOCAL,
+				       handles,
+				       context,
+				       &error)) {
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_FILES_LOCAL);
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+
+out:
+	pk_transaction_dbus_return (context, error);
 }
 
 static void
@@ -3851,82 +3719,31 @@ pk_transaction_install_files (PkTransaction *transaction,
 			      GVariant *params,
 			      GDBusMethodInvocation *context)
 {
-	gboolean ret;
-	GError *error_local = NULL;
-	guint length;
-	guint i;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *content_type = NULL;
-	g_autofree gchar **full_paths = NULL;
-	g_autofree gchar *full_paths_temp = NULL;
+	g_autoptr(GVariant) handles = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	g_variant_get (params, "(t^a&s)", &transaction_flags, &full_paths);
-
-	full_paths_temp = pk_package_ids_to_string (full_paths);
+	g_variant_get (params, "(t@ah)", &transaction_flags, &handles);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	g_debug ("InstallFiles method called: %s (transaction_flags: %s)",
-		 full_paths_temp,
+	g_debug ("InstallFiles method called: %" G_GSIZE_FORMAT " files (transaction_flags: %s)",
+		 g_variant_n_children (handles),
 		 transaction_flags_temp);
 
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_INSTALL_FILES)) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "InstallFiles not supported by backend");
+	if (!pk_transaction_set_files (transaction,
+				       PK_ROLE_ENUM_INSTALL_FILES,
+				       handles,
+				       context,
+				       &error)) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
-	/* check all files exists and are valid */
-	length = g_strv_length (full_paths);
-	for (i = 0; i < length; i++) {
-		/* exists */
-		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* get content type */
-		content_type = pk_transaction_get_content_type_for_file (full_paths[i],
-									 &error_local);
-		if (content_type == NULL) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-
-		/* supported content type? */
-		ret = pk_transaction_is_supported_content_type (transaction, content_type);
-		if (!ret) {
-			g_set_error (&error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "File %s is not found or unsupported",
-				     full_paths[i]);
-			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-			goto out;
-		}
-	}
-
 	/* save so we can run later */
 	transaction->cached_transaction_flags = transaction_flags;
-	transaction->cached_full_paths = g_strdupv (full_paths);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
 
 	/* this changed */
@@ -3935,11 +3752,9 @@ pk_transaction_install_files (PkTransaction *transaction,
 					      g_variant_new_uint64 (transaction_flags));
 
 	/* try to get authorization */
-	ret = pk_transaction_obtain_authorization (transaction, PK_ROLE_ENUM_INSTALL_FILES, &error);
-	if (!ret) {
+	if (!pk_transaction_obtain_authorization (transaction, PK_ROLE_ENUM_INSTALL_FILES, &error))
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
+
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -4007,6 +3822,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
+
 out:
 	pk_transaction_dbus_return (context, error);
 }
@@ -5322,7 +5138,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->state = PK_TRANSACTION_STATE_UNKNOWN;
 	transaction->dbus = pk_dbus_new ();
 	transaction->results = pk_results_new ();
-	transaction->supported_content_types = g_ptr_array_new_with_free_func (g_free);
 	transaction->cancellable = g_cancellable_new ();
 }
 
@@ -5393,6 +5208,7 @@ pk_transaction_finalize (GObject *object)
 	g_strfreev (transaction->cached_package_ids);
 	g_free (transaction->cached_transaction_id);
 	g_free (transaction->cached_directory);
+	g_clear_object (&transaction->cached_fds);
 	g_strfreev (transaction->cached_values);
 	g_free (transaction->cached_repo_id);
 	g_free (transaction->cached_parameter);
@@ -5400,7 +5216,6 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->tid);
 	g_free (transaction->sender);
 	g_free (transaction->cmdline);
-	g_ptr_array_unref (transaction->supported_content_types);
 
 	if (transaction->connection != NULL)
 		g_object_unref (transaction->connection);

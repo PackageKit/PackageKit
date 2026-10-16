@@ -2081,24 +2081,27 @@ PkEngine *
 pk_engine_new (GKeyFile *conf)
 {
 	PkEngine *engine;
-	g_autofree gchar *root_dir = NULL;
+	g_autofree gchar *cache_dir = NULL;
 	g_autofree gchar *download_dir = NULL;
+	g_autofree gchar *staging_dir = NULL;
 
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->conf = g_key_file_ref (conf);
 	engine->reboot_package_ids = pk_util_reboot_state_load (conf);
 
 	/* clear the download cache */
-	root_dir = pk_util_get_root_dir (conf);
-	download_dir = g_build_filename (root_dir,
-					 LOCALSTATEDIR,
-					 "cache",
-					 "PackageKit",
-					 "downloads",
-					 NULL);
+	cache_dir = pk_util_get_cache_dir (conf);
+	download_dir = g_build_filename (cache_dir, "downloads", NULL);
 	if (g_file_test (download_dir, G_FILE_TEST_EXISTS)) {
 		g_debug ("clearing download cache at %s", download_dir);
 		pk_directory_remove_contents (download_dir);
+	}
+
+	/* clear package files a transaction staged before a crash */
+	staging_dir = g_build_filename (cache_dir, "staging", NULL);
+	if (g_file_test (staging_dir, G_FILE_TEST_EXISTS)) {
+		g_debug ("clearing staged files at %s", staging_dir);
+		pk_directory_remove_contents (staging_dir);
 	}
 
 	/* we use a transaction db to store old transactions */

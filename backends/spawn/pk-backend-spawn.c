@@ -101,7 +101,7 @@ pk_spawn_module_fail_job (PkErrorEnum code, const gchar *format, ...)
 }
 
 static void
-pk_spawn_module_send_run (void)
+pk_spawn_module_send_run_line (void)
 {
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *line = NULL;
@@ -111,6 +111,64 @@ pk_spawn_module_send_run (void)
 		pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
 					  "failed to send the request to the helper: %s",
 					  error->message);
+	}
+}
+
+static void
+pk_spawn_module_stage_files_thread (GTask *task,
+				    gpointer source_object,
+				    gpointer task_data,
+				    GCancellable *cancellable)
+{
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_job_stage_files (PK_BACKEND_JOB (source_object), &error))
+		g_task_return_error (task, g_steal_pointer (&error));
+	else
+		g_task_return_boolean (task, TRUE);
+}
+
+static void
+pk_spawn_module_stage_files_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	g_autoptr(GError) error = NULL;
+
+	/* the job may have been stopped, or another started, while we copied */
+	if (priv->job != PK_BACKEND_JOB (source_object) ||
+	    priv->job_serial != GPOINTER_TO_UINT (user_data) || priv->job_finished)
+		return;
+	if (!g_task_propagate_boolean (G_TASK (res), &error)) {
+		pk_spawn_module_fail_job (PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", error->message);
+		return;
+	}
+	pk_spawn_module_send_run_line ();
+}
+
+/*
+ * pk_spawn_module_send_run:
+ *
+ * The helper takes files as paths, which the job only provides by copying
+ * and checking the client's fds. That can block, so it happens on a thread
+ * before the request is built here on the main loop.
+ */
+static void
+pk_spawn_module_send_run (void)
+{
+	g_autoptr(GTask) task = NULL;
+
+	switch (pk_backend_job_get_role (priv->job)) {
+	case PK_ROLE_ENUM_INSTALL_FILES:
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+	case PK_ROLE_ENUM_GET_FILES_LOCAL:
+		task = g_task_new (priv->job,
+				   NULL,
+				   pk_spawn_module_stage_files_cb,
+				   GUINT_TO_POINTER (priv->job_serial));
+		g_task_run_in_thread (task, pk_spawn_module_stage_files_thread);
+		break;
+	default:
+		pk_spawn_module_send_run_line ();
+		break;
 	}
 }
 

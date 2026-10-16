@@ -577,18 +577,21 @@ pk_freebsd_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 }
 
 static void
-pk_freebsd_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+pk_freebsd_get_details_local (PkBackend *backend, PkBackendJob *job, GVariant *handles)
 {
     PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-    guint size = g_strv_length (files);
-    for (guint i = 0; i < size; i++) {
-        int fd;
-        if ((fd = open(files[i], O_RDONLY)) == -1) {
+    gsize size = 0;
+    auto h = static_cast<const gint32 *>(g_variant_get_fixed_array (handles, &size, sizeof (gint32)));
+    for (gsize i = 0; i < size; i++) {
+        // the job owns the fd and the checked copy behind it
+        g_autoptr(GError) file_error = nullptr;
+        int fd = pk_backend_job_get_file_fd (job, h[i], &file_error);
+        if (fd == -1) {
             pk_backend_job_error_code (job,
-                        PK_ERROR_ENUM_FILE_NOT_FOUND,
-                        "Unable to open file %s", files[i]);
+                        PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
+                        "%s", file_error->message);
             return;
         }
 
@@ -596,8 +599,7 @@ pk_freebsd_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
         if (pkg_open_fd(&pkg, fd, 0) != EPKG_OK) {
             pk_backend_job_error_code (job,
                         PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
-                        "Invalid or broken package file %s", files[i]);
-            close(fd);
+                        "Invalid or broken package file %d", h[i]);
             return;
         }
 
@@ -612,7 +614,6 @@ pk_freebsd_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
                                 pkgView.flatsize(),
                                 pkgView.compressedsize()); // TODO: check if already downloaded
 
-        close(fd);
         pkg_free(pkg);
     }
 }
@@ -1357,9 +1358,9 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
     }
     case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
     {
-        g_autofree gchar **files = NULL;
-        g_variant_get (params, "(^a&s)", &files);
-        pk_freebsd_get_details_local (backend, job, files);
+        g_autoptr(GVariant) handles = NULL;
+        g_variant_get (params, "(@ah)", &handles);
+        pk_freebsd_get_details_local (backend, job, handles);
         break;
     }
     case PK_ROLE_ENUM_GET_FILES_LOCAL:

@@ -118,10 +118,10 @@ void	     pk_backend_get_details (PkBackend	  *backend,
 				     gchar	 **package_ids);
 void	     pk_backend_get_details_local (PkBackend	*backend,
 					   PkBackendJob *job,
-					   gchar       **files);
+					   GUnixFDList	*fds);
 void	     pk_backend_get_files_local (PkBackend    *backend,
 					 PkBackendJob *job,
-					 gchar	     **files);
+					 GUnixFDList  *fds);
 void	     pk_backend_get_distro_upgrades (PkBackend	  *backend,
 					     PkBackendJob *job);
 void	     pk_backend_get_files (PkBackend	*backend,
@@ -150,7 +150,7 @@ void	     pk_backend_install_signature (PkBackend	*backend,
 void	     pk_backend_install_files (PkBackend    *backend,
 				       PkBackendJob *job,
 				       PkBitfield    transaction_flags,
-				       gchar	   **full_paths);
+				       GUnixFDList  *fds);
 void	     pk_backend_refresh_cache (PkBackend    *backend,
 				       PkBackendJob *job,
 				       gboolean	     force);

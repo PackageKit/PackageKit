@@ -76,14 +76,18 @@ pk_alpm_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	gboolean only_trusted;
-	gchar** full_paths;
+	g_autoptr(GVariant) handles = NULL;
+	g_auto(GStrv) full_paths = NULL;
 	PkBitfield flags;
 	alpm_transflag_t alpm_flags = 0;
 	g_autoptr(GError) error = NULL;
 
-	g_variant_get (params, "(t^a&s)",
-				  &flags,
-				  &full_paths);
+	g_variant_get (params, "(t@ah)", &flags, &handles);
+	full_paths = pk_backend_job_get_file_paths (job, handles, &error);
+	if (full_paths == NULL) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_INVALID_PACKAGE_FILE, "%s", error->message);
+		return;
+	}
 	only_trusted = pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
