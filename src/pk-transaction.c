@@ -2646,6 +2646,14 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 		g_ptr_array_add (result, g_strdup ("org.freedesktop.packagekit.package-reinstall"));
 	}
 
+	/* purging deletes the data of every package the transaction removes, so it
+	 * needs the same authorization as removing packages (RemovePackages already
+	 * checks it as its role action) */
+	if (role != PK_ROLE_ENUM_REMOVE_PACKAGES &&
+	    pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_PURGE)) {
+		g_ptr_array_add (result, g_strdup ("org.freedesktop.packagekit.package-remove"));
+	}
+
 	if ((role == PK_ROLE_ENUM_INSTALL_PACKAGES || role == PK_ROLE_ENUM_UPDATE_PACKAGES) &&
 	    pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
 		g_ptr_array_add (result, g_strdup ("org.freedesktop.packagekit.package-downgrade"));

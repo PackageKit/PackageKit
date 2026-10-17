@@ -144,6 +144,10 @@
             admin authentication has been obtained, otherwise packages can still
             be removed. If this is not possible, change this authentication to
             'auth_admin'.
+          - This action is also required for any transaction that carries the
+            purge flag (e.g. UpdatePackages), as purging deletes the
+            configuration files and data of every package the transaction
+            removes.
      -->
     <description>Remove package</description>
     <message>Authentication is required to remove software</message>

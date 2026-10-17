@@ -102,8 +102,8 @@
       The PURGE flag asks the backend to also remove residual data (such as
       configuration files) of every package the transaction removes. It is only
       valid for roles that remove packages and is rejected for InstallPackages
-      and InstallFiles. Backends whose package removal leaves no residual data
-      ignore it.
+      and InstallFiles. A transaction with this flag additionally requires the
+      `org.freedesktop.packagekit.package-remove` authorization.
     -->
     <property name="TransactionFlags" type="t" access="read"/>
 
