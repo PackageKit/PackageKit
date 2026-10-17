@@ -1280,7 +1280,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* check filters */
 	text = pk_filter_bitfield_to_string (filters);
-	g_assert_cmpstr (text, ==, "installed;devel;gui");
+	g_assert_cmpstr (text, ==, "installed;devel;application");
 	g_free (text);
 
 	/* check groups */
