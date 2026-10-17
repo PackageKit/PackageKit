@@ -1,16 +1,16 @@
-if get_option('gstreamer_plugin')
+if get_option('gstreamer-plugin')
     subdir('gstreamer-plugin')
 endif
 
-if get_option('gtk_module')
+if get_option('gtk-module')
     subdir('gtk-module')
 endif
 
-if get_option('bash_command_not_found')
+if get_option('bash-command-not-found')
     subdir('command-not-found')
 endif
 
-if get_option('bash_completion')
+if get_option('bash-completion')
     bash_completion_dep = dependency('bash-completion', version: '>=2.0')
     install_data(
         'pkgcli',

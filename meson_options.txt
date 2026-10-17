@@ -8,7 +8,7 @@ option('maintainer',
     description : 'Enable maintainer mode (use strict compiler flags, e.g. -Werror)'
 )
 
-option('packaging_backend',
+option('pk-backend',
     type : 'array',
     choices : ['alpm',
                'apt',
@@ -23,19 +23,19 @@ option('packaging_backend',
     value : ['dummy'],
     description : 'The name of the backend to use'
 )
-option('dnf_vendor',
+option('dnf-vendor',
     type : 'combo',
     choices : ['fedora', 'mageia', 'openmandriva', 'rosa', 'opensuse'],
     value : 'fedora',
     description : 'Vendor configuration when using the dnf backend'
 )
 
-option('packagekit_user',
+option('daemon-user',
     type : 'string',
     value : 'root',
     description : 'User for running the PackageKit daemon'
 )
-option('daemon_tests',
+option('daemon-tests',
     type : 'boolean',
     value : true,
     description : 'Test the daemon using the dummy backend'
@@ -49,7 +49,7 @@ option('systemd',
     type : 'boolean',
     value : true, description : 'Use systemd and logind'
 )
-option('offline_update',
+option('offline-updates',
     type : 'boolean',
     value : true,
     description : 'Use systemd offline update'
@@ -59,27 +59,27 @@ option('elogind',
     value : false,
     description : 'Use elogind instead of systemd-login'
 )
-option('gobject_introspection',
+option('gir',
     type : 'boolean',
     value : true,
     description : 'Build GObject Introspection data'
 )
-option('bash_completion',
+option('bash-completion',
     type : 'boolean',
     value : true,
     description : 'Bash completion'
 )
-option('bash_command_not_found',
+option('bash-command-not-found',
     type : 'boolean',
     value : true,
     description : 'Build Bash command-not-found functionality'
 )
-option('gstreamer_plugin',
+option('gstreamer-plugin',
     type : 'boolean',
     value : true,
     description : 'Build gstreamer plugin functionality'
 )
-option('gtk_module',
+option('gtk-module',
     type : 'boolean',
     value : true,
     description : 'Build GTK+-3 module functionality'
@@ -89,10 +89,10 @@ option('cron',
     value : true,
     description : 'Build cron background functionality'
 )
-option('python_backend',
+option('python-backend',
     type : 'boolean',
     value : true,
-    description : 'Provide a Python backend'
+    description : 'Provide Python backend helper module'
 )
 
 #
@@ -124,13 +124,13 @@ option('systemduserunitdir',
     value : '',
     description : 'Directory for systemd user service files'
 )
-option('dbus_sys',
+option('dbus-sys',
     type : 'string',
     value : '',
-    description : 'D-BUS system.d directory'
+    description : 'D-Bus system.d directory'
 )
-option('dbus_services',
+option('dbus-services',
     type : 'string',
     value : '',
-    description : 'D-BUS system-services directory'
+    description : 'D-Bus system-services directory'
 )

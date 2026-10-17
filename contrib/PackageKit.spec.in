@@ -151,7 +151,7 @@ using PackageKit.
 %conf
 %meson \
         -Ddocs=true \
-        -Dpackaging_backend=dnf5
+        -Dpk-backend=dnf5
 
 %build
 %meson_build

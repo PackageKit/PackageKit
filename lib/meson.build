@@ -180,7 +180,7 @@ libpackagekit_dep = declare_dependency(
     ],
 )
 
-if get_option('gobject_introspection')
+if get_option('gir')
     libpackagekit_gir = gnome.generate_gir(
         libpackagekit_library,
         sources: [

@@ -11,7 +11,7 @@ dnf5_cpp_args = [
     '-DLIBDNF5_VERSION_PATCH=' + libdnf5_version[2],
     '-DG_LOG_DOMAIN="PackageKit-DNF5"',
 ]
-dnf5_vendor_source = 'dnf5-backend-vendor-@0@.cpp'.format(get_option('dnf_vendor'))
+dnf5_vendor_source = 'dnf5-backend-vendor-@0@.cpp'.format(get_option('dnf-vendor'))
 
 pk_backend_modules += shared_module(
     'pk_backend_dnf5',

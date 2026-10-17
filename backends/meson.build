@@ -3,9 +3,9 @@ pk_backend_modules = []
 
 subdir('spawn')
 
-packaging_backends = get_option('packaging_backend')
+packaging_backends = get_option('pk-backend')
 
-if get_option('daemon_tests') and 'dummy' not in packaging_backends
+if get_option('daemon-tests') and 'dummy' not in packaging_backends
     packaging_backends += ['dummy']
 endif
 

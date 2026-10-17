@@ -1,7 +1,7 @@
 # Meson config for PackageKit documentation
 
-if not get_option('gobject_introspection')
-    error('The API documentation requires -Dgobject_introspection=true')
+if not get_option('gir')
+    error('The API documentation requires -Dgir=true')
 endif
 
 subdir('dbus')

@@ -90,7 +90,7 @@ packagekitd_exe = executable(
     install_dir: get_option('libexecdir'),
 )
 
-if get_option('python_backend')
+if get_option('python-backend')
     subdir('python/packagekit_backend')
 endif
 

@@ -28,7 +28,7 @@ jobs:
           - distro: nix
             backend: nix
             # the nixos/nix image has no system D-Bus or polkit setup
-            options: -Ddaemon_tests=false
+            options: -Ddaemon-tests=false
       fail-fast: false
 
     steps:
@@ -47,7 +47,7 @@ jobs:
 
       - name: Build & Test
         run: podman run -t --privileged -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }} ${{ matrix.options }}
+             ./tests/ci/build-and-test.sh -Dpk-backend=${{ matrix.backend }} ${{ matrix.options }}
 
   freebsd-build-test:
     name: FreeBSD (Build & Test)
@@ -86,11 +86,11 @@ jobs:
           meson --auto-features=enabled -Db_colorout=never --buildtype=debug \
                 -Dlocalstatedir=/var \
                 -Dsystemd=false \
-                -Doffline_update=false \
-                -Dbash_completion=false \
-                -Dbash_command_not_found=false \
-                -Dgstreamer_plugin=false \
-                -Dpackaging_backend=freebsd \
+                -Doffline-updates=false \
+                -Dbash-completion=false \
+                -Dbash-command-not-found=false \
+                -Dgstreamer-plugin=false \
+                -Dpk-backend=freebsd \
                 _build
           cd _build
           ninja all

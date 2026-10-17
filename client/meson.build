@@ -1,5 +1,5 @@
 
-if get_option('offline_update')
+if get_option('offline-updates')
     executable(
         'pk-offline-update',
         'pk-offline-update.c',

@@ -13,7 +13,7 @@ pk_test_root_links = [
     + join_paths(meson.current_source_dir(), 'backends', 'test_spawn'),
 ]
 pk_test_root_deps = []
-if get_option('python_backend')
+if get_option('python-backend')
     pk_test_root_links += [
         '--link', pk_python_dir + '=' + join_paths(build_root, 'src', 'python'),
     ]
@@ -122,7 +122,7 @@ pk_test_e2e_exe = executable(
     install: false,
 )
 
-if get_option('python_backend')
+if get_option('python-backend')
     test('pk-test-python-backend',
         find_program('pk-test-python-backend.py'),
         depends: pk_backend_py,
@@ -137,7 +137,7 @@ endif
 # Integration test that drives a live packagekitd (dummy backend) over D-Bus. It
 # needs the D-Bus/polkit policy installed to system paths, so we allow it to auto-SKIP
 # in case those are not installed.
-if get_option('daemon_tests')
+if get_option('daemon-tests')
     run_with_dbus = find_program('runner/run-ensure-dbus.py')
     run_daemon_test = find_program('runner/run-daemon-test.py')
 

@@ -9,7 +9,7 @@ set -x
 meson setup build \
     --buildtype=debugoptimized \
     -Dmaintainer=true \
-    -Ddaemon_tests=true \
+    -Ddaemon-tests=true \
     $@
 
 DUMMY_DESTDIR=/tmp/install-root/
@@ -34,7 +34,7 @@ meson test -C build \
 
 # The end-to-end suite only exists if the daemon tests are enabled
 case " $* " in
-  *" -Ddaemon_tests=false "*) exit 0 ;;
+  *" -Ddaemon-tests=false "*) exit 0 ;;
 esac
 
 # Run the end-to-end integration suite. It needs the D-Bus and polkit policy
