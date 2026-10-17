@@ -472,12 +472,12 @@ PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
     return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
-        PK_ROLE_ENUM_DEPENDS_ON,
+        PK_ROLE_ENUM_GET_DEPENDENCIES,
         PK_ROLE_ENUM_GET_DETAILS_LOCAL,
         PK_ROLE_ENUM_GET_FILES_LOCAL,
         PK_ROLE_ENUM_GET_DETAILS,
         PK_ROLE_ENUM_GET_FILES,
-        PK_ROLE_ENUM_REQUIRED_BY,
+        PK_ROLE_ENUM_GET_DEPENDENTS,
         PK_ROLE_ENUM_GET_UPDATE_DETAIL,
         PK_ROLE_ENUM_GET_UPDATES,
         PK_ROLE_ENUM_INSTALL_PACKAGES,
@@ -520,13 +520,13 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 static void
-pk_freebsd_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_freebsd_get_dependencies (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
     PKJobFinisher jf (job);
 
     // TODO
     if (recursive)
-        g_warning ("depends_on: recursive is not yet supported");
+        g_warning ("get_dependencies: recursive is not yet supported");
 
     pkgdb_t db_type = PKGDB_MAYBE_REMOTE;
     // Open the local DB only when filters require only installed packages
@@ -1347,13 +1347,13 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
     GVariant *params = pk_backend_job_get_parameters (job);
 
     switch (role) {
-    case PK_ROLE_ENUM_DEPENDS_ON:
+    case PK_ROLE_ENUM_GET_DEPENDENCIES:
     {
         PkBitfield filters;
         g_autofree gchar **package_ids = NULL;
         gboolean recursive;
         g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
-        pk_freebsd_depends_on (backend, job, filters, package_ids, recursive);
+        pk_freebsd_get_dependencies (backend, job, filters, package_ids, recursive);
         break;
     }
     case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
@@ -1376,8 +1376,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
     case PK_ROLE_ENUM_GET_FILES:
         g_error("pk_backend_get_files not implemented yet");
         break;
-    case PK_ROLE_ENUM_REQUIRED_BY:
-        g_error("pk_backend_required_by not implemented yet");
+    case PK_ROLE_ENUM_GET_DEPENDENTS:
+        g_error("pk_backend_get_dependents not implemented yet");
         break;
     case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
     {

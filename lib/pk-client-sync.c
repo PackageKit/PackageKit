@@ -832,7 +832,7 @@ pk_client_get_history (PkClient *client,
 }
 
 /**
- * pk_client_depends_on:
+ * pk_client_get_dependencies:
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -852,7 +852,7 @@ pk_client_get_history (PkClient *client,
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_depends_on (PkClient *client,
+pk_client_get_dependencies (PkClient *client,
 		      PkBitfield filters,
 		      gchar **package_ids,
 		      gboolean recursive,
@@ -876,7 +876,7 @@ pk_client_depends_on (PkClient *client,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_depends_on_async (client,
+	pk_client_get_dependencies_async (client,
 				    filters,
 				    package_ids,
 				    recursive,
@@ -962,7 +962,7 @@ pk_client_get_packages (PkClient *client,
 }
 
 /**
- * pk_client_required_by:
+ * pk_client_get_dependents:
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -982,7 +982,7 @@ pk_client_get_packages (PkClient *client,
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_required_by (PkClient *client,
+pk_client_get_dependents (PkClient *client,
 		       PkBitfield filters,
 		       gchar **package_ids,
 		       gboolean recursive,
@@ -1006,7 +1006,7 @@ pk_client_required_by (PkClient *client,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_required_by_async (client,
+	pk_client_get_dependents_async (client,
 				     filters,
 				     package_ids,
 				     recursive,

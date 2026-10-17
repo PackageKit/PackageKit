@@ -350,7 +350,7 @@ dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, P
 		auto curr = queue.front();
 		queue.pop();
 		libdnf5::rpm::ReldepList reldeps(base);
-		if (role == PK_ROLE_ENUM_DEPENDS_ON)
+		if (role == PK_ROLE_ENUM_GET_DEPENDENCIES)
 			reldeps = curr.get_requires();
 		else
 			reldeps = curr.get_provides();
@@ -358,7 +358,7 @@ dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, P
 		for (const auto &reldep : reldeps) {
 			std::string req = reldep.to_string();
 			libdnf5::rpm::PackageQuery query(base);
-			if (role == PK_ROLE_ENUM_DEPENDS_ON)
+			if (role == PK_ROLE_ENUM_GET_DEPENDENCIES)
 				query.filter_provides(req);
 			else
 				query.filter_requires(req);

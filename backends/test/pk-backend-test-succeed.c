@@ -86,7 +86,7 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		pk_backend_job_finished (job);
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
 		pk_backend_job_finished (job);
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS:
@@ -104,7 +104,7 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_GET_FILES:
 		pk_backend_job_finished (job);
 		break;
-	case PK_ROLE_ENUM_REQUIRED_BY:
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
 		pk_backend_job_finished (job);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
@@ -180,13 +180,13 @@ pk_backend_get_roles (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
 				       PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
-				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_GET_DEPENDENCIES,
 				       PK_ROLE_ENUM_GET_DETAILS,
 				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 				       PK_ROLE_ENUM_GET_FILES_LOCAL,
 				       PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 				       PK_ROLE_ENUM_GET_FILES,
-				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 				       PK_ROLE_ENUM_GET_UPDATES,
 				       PK_ROLE_ENUM_INSTALL_PACKAGES,

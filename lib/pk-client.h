@@ -219,7 +219,7 @@ void	     pk_client_get_history_async (PkClient	     *client,
 					  GAsyncReadyCallback callback_ready,
 					  gpointer	      user_data);
 
-void	     pk_client_depends_on_async (PkClient	    *client,
+void	     pk_client_get_dependencies_async (PkClient	    *client,
 					 PkBitfield	     filters,
 					 gchar		   **package_ids,
 					 gboolean	     recursive,
@@ -237,7 +237,7 @@ void	     pk_client_get_packages_async (PkClient	      *client,
 					   GAsyncReadyCallback callback_ready,
 					   gpointer	       user_data);
 
-void	     pk_client_required_by_async (PkClient	     *client,
+void	     pk_client_get_dependents_async (PkClient	     *client,
 					  PkBitfield	      filters,
 					  gchar		    **package_ids,
 					  gboolean	      recursive,

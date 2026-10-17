@@ -1985,9 +1985,9 @@ pk_client_call_role_method (PkClientState *state)
 				   state->cancellable,
 				   pk_client_method_cb,
 				   g_object_ref (state));
-	} else if (state->role == PK_ROLE_ENUM_DEPENDS_ON) {
+	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENCIES) {
 		g_dbus_proxy_call (state->proxy,
-				   "DependsOn",
+				   "GetDependencies",
 				   g_variant_new ("(t^a&sb)",
 						  state->filters,
 						  state->package_ids,
@@ -1999,9 +1999,9 @@ pk_client_call_role_method (PkClientState *state)
 				   g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
 
-	} else if (state->role == PK_ROLE_ENUM_REQUIRED_BY) {
+	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENTS) {
 		g_dbus_proxy_call (state->proxy,
-				   "RequiredBy",
+				   "GetDependents",
 				   g_variant_new ("(t^a&sb)",
 						  state->filters,
 						  state->package_ids,
@@ -3117,7 +3117,7 @@ pk_client_get_history_async (PkClient *client,
 }
 
 /**
- * pk_client_depends_on_async: (finish-func pk_client_generic_finish):
+ * pk_client_get_dependencies_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -3133,7 +3133,7 @@ pk_client_get_history_async (PkClient *client,
  * Since: 0.5.2
  **/
 void
-pk_client_depends_on_async (PkClient *client,
+pk_client_get_dependencies_async (PkClient *client,
 			    PkBitfield filters,
 			    gchar **package_ids,
 			    gboolean recursive,
@@ -3156,8 +3156,8 @@ pk_client_depends_on_async (PkClient *client,
 	state = pk_client_state_new (client,
 				     callback_ready,
 				     user_data,
-				     pk_client_depends_on_async,
-				     PK_ROLE_ENUM_DEPENDS_ON,
+				     pk_client_get_dependencies_async,
+				     PK_ROLE_ENUM_GET_DEPENDENCIES,
 				     cancellable);
 	state->filters = filters;
 	state->recursive = recursive;
@@ -3238,7 +3238,7 @@ pk_client_get_packages_async (PkClient *client,
 }
 
 /**
- * pk_client_required_by_async: (finish-func pk_client_generic_finish):
+ * pk_client_get_dependents_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -3254,7 +3254,7 @@ pk_client_get_packages_async (PkClient *client,
  * Since: 0.5.2
  **/
 void
-pk_client_required_by_async (PkClient *client,
+pk_client_get_dependents_async (PkClient *client,
 			     PkBitfield filters,
 			     gchar **package_ids,
 			     gboolean recursive,
@@ -3277,8 +3277,8 @@ pk_client_required_by_async (PkClient *client,
 	state = pk_client_state_new (client,
 				     callback_ready,
 				     user_data,
-				     pk_client_required_by_async,
-				     PK_ROLE_ENUM_REQUIRED_BY,
+				     pk_client_get_dependents_async,
+				     PK_ROLE_ENUM_GET_DEPENDENTS,
 				     cancellable);
 	state->recursive = recursive;
 	state->filters = filters;

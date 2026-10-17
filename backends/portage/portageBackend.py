@@ -1180,7 +1180,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
 
         self._selected_build_id = prev_bid
 
-    def depends_on(self, filters, pkgs, recursive):
+    def get_dependencies(self, filters, pkgs, recursive):
         # TODO: use only myparams ?
         # TODO: improve error management / info
 
@@ -1366,7 +1366,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
                     continue
                 self.repo_detail(repo_name, repo_name, enabled)
 
-    def required_by(self, filters, pkgs, recursive):
+    def get_dependents(self, filters, pkgs, recursive):
         # TODO: manage non-installed package
 
         # FILTERS:
@@ -1384,7 +1384,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
         if pkb.FILTER_NOT_INSTALLED in filters:
             self.error(
                 pkb.ERROR_CANNOT_GET_REQUIRES,
-                "required-by returns only installed packages" " at the moment",
+                "get-dependents returns only installed packages" " at the moment",
             )
             return
 
@@ -1397,7 +1397,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
             if not self._is_installed(cpv):
                 self.error(
                     pkb.ERROR_CANNOT_GET_REQUIRES,
-                    "required-by is only available for installed" " packages at the moment",
+                    "get-dependents is only available for installed" " packages at the moment",
                 )
                 continue
 

@@ -868,7 +868,7 @@ pk_task_get_updates_sync (PkTask *task,
 }
 
 /**
- * pk_task_depends_on_sync:
+ * pk_task_get_dependencies_sync:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -885,7 +885,7 @@ pk_task_get_updates_sync (PkTask *task,
  * Since: 0.6.5
  **/
 PkResults *
-pk_task_depends_on_sync (PkTask *task,
+pk_task_get_dependencies_sync (PkTask *task,
 			 PkBitfield filters,
 			 gchar **package_ids,
 			 gboolean recursive,
@@ -910,7 +910,7 @@ pk_task_depends_on_sync (PkTask *task,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_task_depends_on_async (task,
+	pk_task_get_dependencies_async (task,
 				  filters,
 				  package_ids,
 				  recursive,
@@ -993,7 +993,7 @@ pk_task_get_packages_sync (PkTask *task,
 }
 
 /**
- * pk_task_required_by_sync:
+ * pk_task_get_dependents_sync:
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -1010,7 +1010,7 @@ pk_task_get_packages_sync (PkTask *task,
  * Since: 0.6.5
  **/
 PkResults *
-pk_task_required_by_sync (PkTask *task,
+pk_task_get_dependents_sync (PkTask *task,
 			  PkBitfield filters,
 			  gchar **package_ids,
 			  gboolean recursive,
@@ -1035,7 +1035,7 @@ pk_task_required_by_sync (PkTask *task,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_task_required_by_async (task,
+	pk_task_get_dependents_async (task,
 				   filters,
 				   package_ids,
 				   recursive,

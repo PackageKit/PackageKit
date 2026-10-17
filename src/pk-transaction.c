@@ -1915,8 +1915,8 @@ pk_transaction_run (PkTransaction *transaction)
 
 	/* do the correct action with the cached parameters */
 	switch (transaction->role) {
-	case PK_ROLE_ENUM_DEPENDS_ON:
-		pk_backend_depends_on (transaction->backend,
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
+		pk_backend_get_dependencies (transaction->backend,
 				       transaction->job,
 				       transaction->cached_filters,
 				       transaction->cached_package_ids,
@@ -1962,8 +1962,8 @@ pk_transaction_run (PkTransaction *transaction)
 				      transaction->job,
 				      transaction->cached_package_ids);
 		break;
-	case PK_ROLE_ENUM_REQUIRED_BY:
-		pk_backend_required_by (transaction->backend,
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
+		pk_backend_get_dependents (transaction->backend,
 					transaction->job,
 					transaction->cached_filters,
 					transaction->cached_package_ids,
@@ -3086,7 +3086,7 @@ out:
 }
 
 static void
-pk_transaction_depends_on (PkTransaction *transaction,
+pk_transaction_get_dependencies (PkTransaction *transaction,
 			   GVariant *params,
 			   GDBusMethodInvocation *context)
 {
@@ -3103,14 +3103,14 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	g_variant_get (params, "(t^a&sb)", &filter, &package_ids, &recursive);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("DependsOn method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("GetDependencies method called: %s (recursive %i)", package_ids_temp, recursive);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_DEPENDS_ON)) {
+	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_DEPENDENCIES)) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "DependsOn not supported by backend");
+			     "GetDependencies not supported by backend");
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3131,7 +3131,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 	transaction->cached_filters = filter;
 	transaction->cached_package_ids = g_strdupv (package_ids);
 	transaction->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DEPENDS_ON);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDENCIES);
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
@@ -3510,7 +3510,7 @@ out:
 }
 
 static void
-pk_transaction_required_by (PkTransaction *transaction,
+pk_transaction_get_dependents (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
 {
@@ -3527,14 +3527,14 @@ pk_transaction_required_by (PkTransaction *transaction,
 	g_variant_get (params, "(t^a&sb)", &filter, &package_ids, &recursive);
 
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	g_debug ("RequiredBy method called: %s (recursive %i)", package_ids_temp, recursive);
+	g_debug ("GetDependents method called: %s (recursive %i)", package_ids_temp, recursive);
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_REQUIRED_BY)) {
+	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_DEPENDENTS)) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "RequiredBy not supported by backend");
+			     "GetDependents not supported by backend");
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3555,7 +3555,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 	transaction->cached_filters = filter;
 	transaction->cached_package_ids = g_strdupv (package_ids);
 	transaction->cached_force = recursive;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REQUIRED_BY);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DEPENDENTS);
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
@@ -5008,8 +5008,8 @@ pk_transaction_method_call (GDBusConnection *connection_,
 		pk_transaction_download_packages (transaction, parameters, invocation);
 		return;
 	}
-	if (g_strcmp0 (method_name, "DependsOn") == 0) {
-		pk_transaction_depends_on (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "GetDependencies") == 0) {
+		pk_transaction_get_dependencies (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "GetDetails") == 0) {
@@ -5040,8 +5040,8 @@ pk_transaction_method_call (GDBusConnection *connection_,
 		pk_transaction_get_repo_list (transaction, parameters, invocation);
 		return;
 	}
-	if (g_strcmp0 (method_name, "RequiredBy") == 0) {
-		pk_transaction_required_by (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "GetDependents") == 0) {
+		pk_transaction_get_dependents (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "GetUpdateDetail") == 0) {

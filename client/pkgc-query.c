@@ -495,7 +495,7 @@ pkgc_query_list_depends (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	    ctx,
 	    cmd,
 	    "PACKAGE...",
-	    /* TRANSLATORS: Description for pkgcli depends-on */
+	    /* TRANSLATORS: Description for pkgcli list-depends */
 	    _("Show dependencies for one or more packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
@@ -509,7 +509,7 @@ pkgc_query_list_depends (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	}
 
 	/* get dependencies */
-	pk_task_depends_on_async (PK_TASK (ctx->task),
+	pk_task_get_dependencies_async (PK_TASK (ctx->task),
 				  ctx->filters,
 				  package_ids,
 				  recursive,
@@ -784,7 +784,7 @@ pkgc_query_list_requiring (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 	    ctx,
 	    cmd,
 	    "PACKAGE...",
-	    /* TRANSLATORS: Description for pkgcli required-by */
+	    /* TRANSLATORS: Description for pkgcli list-requiring */
 	    _("Show which packages require the specified packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
@@ -799,7 +799,7 @@ pkgc_query_list_requiring (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 	}
 
 	/* get packages that require this package */
-	pk_task_required_by_async (PK_TASK (ctx->task),
+	pk_task_get_dependents_async (PK_TASK (ctx->task),
 				   ctx->filters,
 				   package_ids,
 				   recursive,

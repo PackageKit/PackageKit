@@ -127,7 +127,7 @@ pk_backend_find_requirer (PkBackendJob *job, GPtrArray *packages, alpm_list_t *p
 }
 
 void
-pk_alpm_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
+pk_alpm_get_dependencies_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
@@ -179,7 +179,7 @@ pk_alpm_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 }
 
 void
-pk_alpm_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
+pk_alpm_get_dependents_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;

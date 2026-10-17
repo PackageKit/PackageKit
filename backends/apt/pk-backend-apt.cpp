@@ -202,7 +202,7 @@ void pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
     }
 }
 
-static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+static void backend_get_dependencies_or_requires_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkRoleEnum role;
     PkBitfield filters;
@@ -239,7 +239,7 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
             return;
         }
 
-        if (role == PK_ROLE_ENUM_DEPENDS_ON) {
+        if (role == PK_ROLE_ENUM_GET_DEPENDENCIES) {
             apt->getDepends(output, pkInfo.ver, recursive);
         } else {
             apt->getRequires(output, pkInfo.ver, recursive);
@@ -914,11 +914,11 @@ void pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
     const PkRoleEnum role = pk_backend_job_get_role(job);
 
     switch (role) {
-    case PK_ROLE_ENUM_DEPENDS_ON:
-        pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
+    case PK_ROLE_ENUM_GET_DEPENDENCIES:
+        pk_backend_job_thread_create(job, backend_get_dependencies_or_requires_thread, nullptr, nullptr);
         break;
-    case PK_ROLE_ENUM_REQUIRED_BY:
-        pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
+    case PK_ROLE_ENUM_GET_DEPENDENTS:
+        pk_backend_job_thread_create(job, backend_get_dependencies_or_requires_thread, nullptr, nullptr);
         break;
     case PK_ROLE_ENUM_GET_FILES:
         pk_backend_job_thread_create(job, backend_get_files_thread, nullptr, nullptr);
@@ -1005,12 +1005,12 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
     PkBitfield roles;
     roles = pk_bitfield_from_enums(
         PK_ROLE_ENUM_CANCEL,
-        PK_ROLE_ENUM_DEPENDS_ON,
+        PK_ROLE_ENUM_GET_DEPENDENCIES,
         PK_ROLE_ENUM_GET_DETAILS,
         PK_ROLE_ENUM_GET_DETAILS_LOCAL,
         PK_ROLE_ENUM_GET_FILES,
         PK_ROLE_ENUM_GET_FILES_LOCAL,
-        PK_ROLE_ENUM_REQUIRED_BY,
+        PK_ROLE_ENUM_GET_DEPENDENTS,
         PK_ROLE_ENUM_GET_PACKAGES,
         PK_ROLE_ENUM_WHAT_PROVIDES,
         PK_ROLE_ENUM_GET_UPDATES,

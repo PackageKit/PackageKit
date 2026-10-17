@@ -229,10 +229,10 @@
 
     <!--*********************************************************************-->
     <!--
-      DependsOn:
+      GetDependencies:
       @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
       @package_ids: An array of package IDs.
-      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then DependsOn on gnome-power-manager should return both HAL and NetworkManager.
+      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then GetDependencies on gnome-power-manager should return both HAL and NetworkManager.
 
       This method returns packages that this package depends on.
 
@@ -241,7 +241,7 @@
 
       `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
-    <method name="DependsOn">
+    <method name="GetDependencies">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="t" name="filter" direction="in"/>
       <arg type="as" name="package_ids" direction="in"/>
@@ -366,10 +366,10 @@
 
     <!--*********************************************************************-->
     <!--
-      RequiredBy:
+      GetDependents:
       @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
       @package_ids: An array of package IDs.
-      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then GetRequires on HAL should return both gnome-power-manager and NetworkManager.
+      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then GetDependents on HAL should return both gnome-power-manager and NetworkManager.
 
       This method returns packages that depend on this package. This is useful
       to know, as if `package_id` is being removed, we can warn the user what
@@ -380,7 +380,7 @@
 
       `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
-    <method name="RequiredBy">
+    <method name="GetDependents">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="t" name="filter" direction="in"/>
       <arg type="as" name="package_ids" direction="in"/>
@@ -497,7 +497,7 @@
       This method installs new packages on the local system.
 
       The installer should always install extra packages automatically as the
-      use could call DependsOn prior to the install if a confirmation is
+      use could call GetDependencies prior to the install if a confirmation is
       required in the UI.
 
       This method typically emits `Progress`, `Status` and `Error` and

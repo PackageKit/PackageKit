@@ -182,8 +182,8 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 		g_variant_get (params, "(t)", &bits);
 		FILTERS (bits);
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
-	case PK_ROLE_ENUM_REQUIRED_BY:
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
 		g_variant_get (params, "(t^asb)", &bits, &strv, &b1);
 		FILTERS (bits);
 		STRV ("package_ids", strv);

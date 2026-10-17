@@ -302,8 +302,8 @@ pk_task_do_async_action (GTask *gtask)
 					     state->progress_user_data,
 					     pk_task_ready_cb,
 					     g_steal_pointer (&gtask));
-	} else if (state->role == PK_ROLE_ENUM_DEPENDS_ON) {
-		pk_client_depends_on_async (PK_CLIENT (task),
+	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENCIES) {
+		pk_client_get_dependencies_async (PK_CLIENT (task),
 					    state->filters,
 					    state->package_ids,
 					    state->recursive,
@@ -320,8 +320,8 @@ pk_task_do_async_action (GTask *gtask)
 					      state->progress_user_data,
 					      pk_task_ready_cb,
 					      g_steal_pointer (&gtask));
-	} else if (state->role == PK_ROLE_ENUM_REQUIRED_BY) {
-		pk_client_required_by_async (PK_CLIENT (task),
+	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENTS) {
+		pk_client_get_dependents_async (PK_CLIENT (task),
 					     state->filters,
 					     state->package_ids,
 					     state->recursive,
@@ -1881,7 +1881,7 @@ pk_task_get_updates_async (PkTask *task,
 }
 
 /**
- * pk_task_depends_on_async: (finish-func pk_task_generic_finish):
+ * pk_task_get_dependencies_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -1897,7 +1897,7 @@ pk_task_get_updates_async (PkTask *task,
  * Since: 0.6.5
  **/
 void
-pk_task_depends_on_async (PkTask *task,
+pk_task_get_dependencies_async (PkTask *task,
 			  PkBitfield filters,
 			  gchar **package_ids,
 			  gboolean recursive,
@@ -1918,7 +1918,7 @@ pk_task_depends_on_async (PkTask *task,
 
 	/* save state */
 	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_DEPENDS_ON;
+	state->role = PK_ROLE_ENUM_GET_DEPENDENCIES;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
@@ -1928,7 +1928,7 @@ pk_task_depends_on_async (PkTask *task,
 	state->request = pk_task_generate_request_id ();
 
 	gtask = g_task_new (task, cancellable, callback_ready, user_data);
-	g_task_set_source_tag (gtask, pk_task_depends_on_async);
+	g_task_set_source_tag (gtask, pk_task_get_dependencies_async);
 	g_debug ("adding state %p", state);
 	g_hash_table_insert (priv->gtasks, GUINT_TO_POINTER (state->request), g_object_ref (gtask));
 	g_task_set_task_data (gtask, g_steal_pointer (&state), pk_task_state_free);
@@ -1988,7 +1988,7 @@ pk_task_get_packages_async (PkTask *task,
 }
 
 /**
- * pk_task_required_by_async: (finish-func pk_task_generic_finish):
+ * pk_task_get_dependents_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
@@ -2004,7 +2004,7 @@ pk_task_get_packages_async (PkTask *task,
  * Since: 0.6.5
  **/
 void
-pk_task_required_by_async (PkTask *task,
+pk_task_get_dependents_async (PkTask *task,
 			   PkBitfield filters,
 			   gchar **package_ids,
 			   gboolean recursive,
@@ -2025,7 +2025,7 @@ pk_task_required_by_async (PkTask *task,
 
 	/* save state */
 	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_REQUIRED_BY;
+	state->role = PK_ROLE_ENUM_GET_DEPENDENTS;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);

@@ -126,7 +126,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			g_debug("Final results: %zu packages", results.size());
 			dnf5_sort_and_emit(job, results);
 
-		} else if (role == PK_ROLE_ENUM_DEPENDS_ON || role == PK_ROLE_ENUM_REQUIRED_BY) {
+		} else if (role == PK_ROLE_ENUM_GET_DEPENDENCIES || role == PK_ROLE_ENUM_GET_DEPENDENTS) {
 			PkBitfield filters;
 			g_auto(GStrv) package_ids = NULL;
 			gboolean recursive;

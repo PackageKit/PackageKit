@@ -133,7 +133,7 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 |--------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | `search-name`, `search-details`, `search-group`, `search-file`, `what-provides`, `resolve` | `filters`, `values` (array of string)                                  |
 | `get-packages`, `get-updates`, `get-repo-list`                                             | `filters`                                                              |
-| `depends-on`, `required-by`                                                                | `filters`, `package_ids`, `recursive` (boolean)                        |
+| `get-dependencies`, `get-dependents`                                                                | `filters`, `package_ids`, `recursive` (boolean)                        |
 | `get-details`, `get-files`, `get-update-detail`                                            | `package_ids`                                                          |
 | `get-details-local`, `get-files-local`                                                     | `files` (array of absolute paths, see below)                           |
 | `get-distro-upgrades`                                                                      | none                                                                   |

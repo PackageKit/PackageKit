@@ -41,8 +41,8 @@ void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,
 gboolean	 pk_alpm_finish		(PkBackendJob *job, GError *error);
 
 void		 pk_alpm_get_repo_list_thread	(PkBackendJob *job, GVariant *params, gpointer data);
-void		 pk_alpm_depends_on_thread	(PkBackendJob *job, GVariant *params, gpointer data);
-void		 pk_alpm_required_by_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_dependencies_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_dependents_thread	(PkBackendJob *job, GVariant *params, gpointer data);
 void		 pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer data);
 void		 pk_alpm_get_updates_thread	(PkBackendJob *job, GVariant *params, gpointer data);
 void		 pk_alpm_refresh_cache_thread	(PkBackendJob *job, GVariant *params, gpointer data);

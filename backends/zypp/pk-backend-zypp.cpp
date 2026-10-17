@@ -1997,10 +1997,10 @@ zypp_is_no_solvable (const sat::Solvable &solv)
 }
 
 /**
-  * backend_required_by_thread:
+  * backend_get_dependents_thread:
   */
 static void
-backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_get_dependents_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
 
@@ -2037,7 +2037,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 		PoolItem package = PoolItem(solvable);
 
-		// required-by only works for installed packages. It's meaningless for stuff in the repo
+		// get-dependents only works for installed packages. It's meaningless for stuff in the repo
 		// same with yum backend
 		if (!solvable.isSystem ())
 			continue;
@@ -2142,7 +2142,7 @@ pk_backend_get_filters (PkBackend *backend)
  * clearly often there is no simple answer.
  */
 static void
-backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_get_dependencies_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield _filters;
 	gchar **package_ids;
@@ -2191,7 +2191,7 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		vector<string> pkg_names;
 
 		for (Capabilities::const_iterator cap = req.begin (); cap != req.end (); ++cap) {
-			g_debug ("depends_on - capability '%s'", cap->asString().c_str());
+			g_debug ("get_dependencies - capability '%s'", cap->asString().c_str());
 
 			if (caps.find (cap->asString ()) != caps.end()) {
 				g_debug ("Interesting ! already have capability '%s'", cap->asString().c_str());
@@ -4129,8 +4129,8 @@ PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
-		PK_ROLE_ENUM_REQUIRED_BY,
-		PK_ROLE_ENUM_DEPENDS_ON,
+		PK_ROLE_ENUM_GET_DEPENDENTS,
+		PK_ROLE_ENUM_GET_DEPENDENCIES,
 		PK_ROLE_ENUM_GET_DETAILS,
 		PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 		PK_ROLE_ENUM_GET_FILES_LOCAL,
@@ -4167,11 +4167,11 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	GVariant *params = pk_backend_job_get_parameters (job);
 
 	switch (role) {
-	case PK_ROLE_ENUM_REQUIRED_BY:
-		pk_backend_job_thread_create (job, backend_required_by_thread, NULL, NULL);
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
+		pk_backend_job_thread_create (job, backend_get_dependents_thread, NULL, NULL);
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
-		pk_backend_job_thread_create (job, backend_depends_on_thread, NULL, NULL);
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
+		pk_backend_job_thread_create (job, backend_get_dependencies_thread, NULL, NULL);
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS:
 		pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);

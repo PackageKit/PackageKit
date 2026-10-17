@@ -231,8 +231,8 @@ PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_ROLE_ENUM_GET_REPO_LIST,
-				       PK_ROLE_ENUM_DEPENDS_ON,
-				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_DEPENDENCIES,
+				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 				       PK_ROLE_ENUM_GET_UPDATES,
 				       PK_ROLE_ENUM_REFRESH_CACHE,
@@ -262,11 +262,11 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_GET_REPO_LIST:
 		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_repo_list_thread, NULL);
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
-		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_depends_on_thread, NULL);
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_dependencies_thread, NULL);
 		break;
-	case PK_ROLE_ENUM_REQUIRED_BY:
-		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_required_by_thread, NULL);
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_dependents_thread, NULL);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
 		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_update_detail_thread, NULL);

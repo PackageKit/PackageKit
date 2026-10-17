@@ -996,7 +996,7 @@ pk_backend_download_packages (PkBackend *backend,
 }
 
 void
-pk_backend_depends_on (PkBackend *backend,
+pk_backend_get_dependencies (PkBackend *backend,
 		       PkBackendJob *job,
 		       PkBitfield filters,
 		       gchar **package_ids,
@@ -1008,7 +1008,7 @@ pk_backend_depends_on (PkBackend *backend,
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_DEPENDS_ON);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DEPENDENCIES);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^asb)", filters, package_ids, recursive));
 	backend->desc->run_job (backend, job);
@@ -1088,7 +1088,7 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 }
 
 void
-pk_backend_required_by (PkBackend *backend,
+pk_backend_get_dependents (PkBackend *backend,
 			PkBackendJob *job,
 			PkBitfield filters,
 			gchar **package_ids,
@@ -1100,7 +1100,7 @@ pk_backend_required_by (PkBackend *backend,
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_REQUIRED_BY);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DEPENDENTS);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^asb)", filters, package_ids, recursive));
 	backend->desc->run_job (backend, job);

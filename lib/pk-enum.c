@@ -92,14 +92,14 @@ static const PkEnumMatch enum_status[] = {
 static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,				"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,				"cancel"},
-	{PK_ROLE_ENUM_DEPENDS_ON,			"depends-on"},
+	{PK_ROLE_ENUM_GET_DEPENDENCIES,			"get-dependencies"},
 	{PK_ROLE_ENUM_GET_DETAILS,			"get-details"},
 	{PK_ROLE_ENUM_GET_DETAILS_LOCAL,		"get-details-local"},
 	{PK_ROLE_ENUM_GET_FILES_LOCAL,			"get-files-local"},
 	{PK_ROLE_ENUM_GET_FILES,			"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,			"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,			"get-repo-list"},
-	{PK_ROLE_ENUM_REQUIRED_BY,			"required-by"},
+	{PK_ROLE_ENUM_GET_DEPENDENTS,			"get-dependents"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,		"get-update-detail"},
 	{PK_ROLE_ENUM_GET_UPDATES,			"get-updates"},
 	{PK_ROLE_ENUM_INSTALL_FILES,			"install-files"},
@@ -1251,7 +1251,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Unknown role type");
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Getting dependencies");
 		break;
@@ -1264,9 +1264,9 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Getting details");
 		break;
-	case PK_ROLE_ENUM_REQUIRED_BY:
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting requires");
+		text = dgettext ("PackageKit", "Getting dependents");
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		/* TRANSLATORS: The role of the transaction, in present tense */

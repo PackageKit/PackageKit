@@ -439,7 +439,7 @@ class PackageKitEopkgBackend(pkb.Backend):
             pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, origin, data)
             self.package(pkg_id, status, pkg.summary)
 
-    def depends_on(self, filters, package_ids, recursive):
+    def get_dependencies(self, filters, package_ids, recursive):
         """Prints a list of depends for a given package"""
         self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
@@ -612,7 +612,7 @@ class PackageKitEopkgBackend(pkb.Backend):
                 enabled = True
             self.repo_detail(repo, uri, enabled)
 
-    def required_by(self, filters, package_ids, recursive):
+    def get_dependents(self, filters, package_ids, recursive):
         """Prints a list of requires for a given package"""
         self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)

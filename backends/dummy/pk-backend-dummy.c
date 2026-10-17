@@ -138,7 +138,7 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 static void
-backend_depends_on (PkBackend *backend,
+backend_get_dependencies (PkBackend *backend,
 		    PkBackendJob *job,
 		    PkBitfield filters,
 		    gchar **package_ids,
@@ -402,7 +402,7 @@ backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 }
 
 static void
-backend_required_by (PkBackend *backend,
+backend_get_dependents (PkBackend *backend,
 		     PkBackendJob *job,
 		     PkBitfield filters,
 		     gchar **package_ids,
@@ -1939,13 +1939,13 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	PkRoleEnum role = pk_backend_job_get_role (job);
 
 	switch (role) {
-	case PK_ROLE_ENUM_DEPENDS_ON: {
+	case PK_ROLE_ENUM_GET_DEPENDENCIES: {
 		PkBitfield filters;
 		g_autofree gchar **package_ids = NULL;
 		gboolean recursive;
 
 		g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
-		backend_depends_on (backend, job, filters, package_ids, recursive);
+		backend_get_dependencies (backend, job, filters, package_ids, recursive);
 		break;
 	}
 	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
@@ -1971,13 +1971,13 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 		backend_get_files (backend, job, package_ids);
 		break;
 	}
-	case PK_ROLE_ENUM_REQUIRED_BY: {
+	case PK_ROLE_ENUM_GET_DEPENDENTS: {
 		PkBitfield filters;
 		g_autofree gchar **package_ids = NULL;
 		gboolean recursive;
 
 		g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
-		backend_required_by (backend, job, filters, package_ids, recursive);
+		backend_get_dependents (backend, job, filters, package_ids, recursive);
 		break;
 	}
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
@@ -2168,13 +2168,13 @@ PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
-				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_GET_DEPENDENCIES,
 				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 				       PK_ROLE_ENUM_GET_FILES_LOCAL,
 				       PK_ROLE_ENUM_GET_DETAILS,
 				       PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 				       PK_ROLE_ENUM_GET_FILES,
-				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 				       PK_ROLE_ENUM_GET_UPDATES,
 				       PK_ROLE_ENUM_INSTALL_PACKAGES,

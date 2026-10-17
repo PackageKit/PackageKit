@@ -47,12 +47,12 @@ typedef struct
  * PkRoleEnum:
  * @PK_ROLE_ENUM_UNKNOWN: Unknow request
  * @PK_ROLE_ENUM_CANCEL: Cancel transaction
- * @PK_ROLE_ENUM_DEPENDS_ON: Get package dependencies
+ * @PK_ROLE_ENUM_GET_DEPENDENCIES: Get package dependencies
  * @PK_ROLE_ENUM_GET_DETAILS: Get package details
  * @PK_ROLE_ENUM_GET_FILES:
  * @PK_ROLE_ENUM_GET_PACKAGES: Get available packages
  * @PK_ROLE_ENUM_GET_REPO_LIST: Get repository list
- * @PK_ROLE_ENUM_REQUIRED_BY: Get packages required by given package
+ * @PK_ROLE_ENUM_GET_DEPENDENTS: Get packages that depend on the given package
  * @PK_ROLE_ENUM_GET_UPDATE_DETAIL: Get update details
  * @PK_ROLE_ENUM_GET_UPDATES: Get available updates
  * @PK_ROLE_ENUM_INSTALL_FILES: Install package files
@@ -68,7 +68,7 @@ typedef struct
  * @PK_ROLE_ENUM_SEARCH_GROUP: Search for group
  * @PK_ROLE_ENUM_SEARCH_NAME: Search for package name
  * @PK_ROLE_ENUM_UPDATE_PACKAGES: Update packages
- * @PK_ROLE_ENUM_WHAT_PROVIDES: Get what a package provides
+ * @PK_ROLE_ENUM_WHAT_PROVIDES: Get packages that provide a capability
  * @PK_ROLE_ENUM_ACCEPT_EULA: Accept an EULA
  * @PK_ROLE_ENUM_DOWNLOAD_PACKAGES: Download packages
  * @PK_ROLE_ENUM_GET_DISTRO_UPGRADES: Get available distribution upgrades
@@ -87,12 +87,12 @@ typedef struct
 typedef enum {
 	PK_ROLE_ENUM_UNKNOWN,
 	PK_ROLE_ENUM_CANCEL,
-	PK_ROLE_ENUM_DEPENDS_ON,
+	PK_ROLE_ENUM_GET_DEPENDENCIES,
 	PK_ROLE_ENUM_GET_DETAILS,
 	PK_ROLE_ENUM_GET_FILES,
 	PK_ROLE_ENUM_GET_PACKAGES,
 	PK_ROLE_ENUM_GET_REPO_LIST,
-	PK_ROLE_ENUM_REQUIRED_BY,
+	PK_ROLE_ENUM_GET_DEPENDENTS,
 	PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 	PK_ROLE_ENUM_GET_UPDATES,
 	PK_ROLE_ENUM_INSTALL_FILES,

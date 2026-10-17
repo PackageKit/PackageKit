@@ -2634,7 +2634,7 @@ backend_download_packages (PkBackend *backend, PkBackendJob *job)
 }
 
 static void
-backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_get_dependencies_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBitfield filters;
 	gboolean recursive;
@@ -2678,13 +2678,13 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 }
 
 static void
-backend_depends_on (PkBackend *backend, PkBackendJob *job)
+backend_get_dependencies (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_job_thread_create (job, backend_depends_on_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_dependencies_thread, NULL, NULL);
 }
 
 static void
@@ -2891,7 +2891,7 @@ backend_get_packages (PkBackend *backend, PkBackendJob *job)
 }
 
 static void
-backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_get_dependents_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	struct pkg *pkg;
 	tn_array *reqpkgs, *available, *installed;
@@ -2933,13 +2933,13 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 }
 
 static void
-backend_required_by (PkBackend *backend, PkBackendJob *job)
+backend_get_dependents (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_job_thread_create (job, backend_required_by_thread, NULL, NULL);
+	pk_backend_job_thread_create (job, backend_get_dependents_thread, NULL, NULL);
 }
 
 static GPtrArray *
@@ -3445,11 +3445,11 @@ pk_backend_get_roles (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
 				       PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
-				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_GET_DEPENDENCIES,
 				       PK_ROLE_ENUM_GET_DETAILS,
 				       PK_ROLE_ENUM_GET_FILES,
 				       PK_ROLE_ENUM_GET_PACKAGES,
-				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 				       PK_ROLE_ENUM_GET_UPDATES,
 				       PK_ROLE_ENUM_INSTALL_PACKAGES,
@@ -3478,8 +3478,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		backend_download_packages (backend, job);
 		break;
-	case PK_ROLE_ENUM_DEPENDS_ON:
-		backend_depends_on (backend, job);
+	case PK_ROLE_ENUM_GET_DEPENDENCIES:
+		backend_get_dependencies (backend, job);
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS:
 		backend_get_details (backend, job);
@@ -3490,8 +3490,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_GET_PACKAGES:
 		backend_get_packages (backend, job);
 		break;
-	case PK_ROLE_ENUM_REQUIRED_BY:
-		backend_required_by (backend, job);
+	case PK_ROLE_ENUM_GET_DEPENDENTS:
+		backend_get_dependents (backend, job);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
 		backend_get_update_detail (backend, job);
