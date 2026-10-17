@@ -208,9 +208,13 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
  * pk_task_text_simulate_question_type_to_string:
  **/
 static const gchar *
-pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
+pk_task_text_simulate_question_type_to_string (PkInfoEnum info, gboolean purge)
 {
 	if (info == PK_INFO_ENUM_REMOVE) {
+		if (purge) {
+			/* TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too */
+			return _("The following packages have to be removed, including their configuration files and data:");
+		}
 		/* TRANSLATORS: When processing, we might have to remove other dependencies */
 		return _("The following packages have to be removed:");
 	}
@@ -237,6 +241,10 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 	}
 
 	if (info == PK_INFO_ENUM_OBSOLETE) {
+		if (purge) {
+			/* TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too */
+			return _("The following packages have to be obsoleted, including their configuration files and data:");
+		}
 		/* TRANSLATORS: When processing, we might have to obsolete other dependencies */
 		return _("The following packages have to be obsoleted:");
 	}
@@ -344,7 +352,8 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 
 		/* new header */
 		info = GPOINTER_TO_INT (l->data);
-		title = pk_task_text_simulate_question_type_to_string (info);
+		title = pk_task_text_simulate_question_type_to_string (info,
+								       pk_task_get_purge (task));
 		if (title == NULL) {
 			title = pk_info_enum_to_string (info);
 			g_warning ("cannot translate '%s', please report!", title);
