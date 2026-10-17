@@ -97,6 +97,10 @@ pk_alpm_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	if (autoremove)
 		flags |= ALPM_TRANS_FLAG_RECURSE;
 
+	/* do not keep backup copies (.pacsave) of configuration files */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_PURGE))
+		flags |= ALPM_TRANS_FLAG_NOSAVE;
+
 	if (pk_alpm_transaction_initialize (job, flags, NULL, &error) &&
 	    pk_alpm_transaction_remove_targets (job, package_ids, &error) &&
 	    pk_alpm_transaction_remove_simulate (job, &error)) {

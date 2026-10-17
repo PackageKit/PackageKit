@@ -216,6 +216,11 @@ pk_alpm_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
 		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
+	/* do not keep backup copies (.pacsave) of configuration files of
+	 * packages the upgrade removes */
+	if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_PURGE))
+		alpm_flags |= ALPM_TRANS_FLAG_NOSAVE;
+
 	if (!pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error))
 		goto out;
 
