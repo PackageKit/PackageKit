@@ -182,7 +182,7 @@ class PackageKitEopkgBackend(pkb.Backend):
     name = "eopkg"
     description = "Eopkg - Solus Package Manager"
     author = "Solus Developers <releng@getsol.us>"
-    filters = (pkb.FILTER_GUI, pkb.FILTER_INSTALLED)
+    filters = (pkb.FILTER_APPLICATION, pkb.FILTER_INSTALLED)
     groups = (
         pkb.GROUP_UTILITIES,
         pkb.GROUP_EDUCATION,
@@ -411,9 +411,9 @@ class PackageKitEopkgBackend(pkb.Backend):
 
         for pkg, status, origin, data in candidates:
             if filters is not None:
-                if pkb.FILTER_GUI in filters and "app:gui" not in pkg.isA:
+                if pkb.FILTER_APPLICATION in filters and "app:gui" not in pkg.isA:
                     continue
-                if pkb.FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
+                if pkb.FILTER_NOT_APPLICATION in filters and "app:gui" in pkg.isA:
                     continue
                 # FIXME: To lower
                 nonfree = ["EULA", "Distributable"]

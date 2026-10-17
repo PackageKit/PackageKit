@@ -61,7 +61,7 @@ bool dnf5_repo_is_devel(const libdnf5::repo::Repo &repo);
 bool dnf5_repo_is_source(const libdnf5::repo::Repo &repo);
 bool dnf5_repo_is_supported(const libdnf5::repo::Repo &repo);
 bool dnf5_backend_pk_repo_filter(const libdnf5::repo::Repo &repo, PkBitfield filters);
-bool dnf5_package_is_gui(const libdnf5::rpm::Package &pkg);
+bool dnf5_package_is_application(const libdnf5::rpm::Package &pkg);
 bool dnf5_package_filter(const libdnf5::rpm::Package &pkg, PkBitfield filters);
 std::vector<libdnf5::rpm::Package>
 dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, PkRoleEnum role, gboolean recursive);

@@ -72,9 +72,9 @@ pk_test_bitfield_func (void)
 
 	/* check we can convert filter bitfield to text (plural) */
 	text = pk_filter_bitfield_to_string (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-					     pk_bitfield_value (PK_FILTER_ENUM_GUI) |
+					     pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) |
 					     pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
-	g_assert_cmpstr (text, ==, "~devel;gui;newest");
+	g_assert_cmpstr (text, ==, "newest;~devel;application");
 	g_free (text);
 
 	/* check we can convert filter text to bitfield (none) */
@@ -86,25 +86,25 @@ pk_test_bitfield_func (void)
 	g_assert_cmpint (filter, ==, pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT));
 
 	/* check we can convert filter text to bitfield (plural) */
-	filter = pk_filter_bitfield_from_string ("~devel;gui;newest");
+	filter = pk_filter_bitfield_from_string ("newest;~devel;application");
 	g_assert_cmpint (filter,
 			 ==,
 			 (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-			  pk_bitfield_value (PK_FILTER_ENUM_GUI) |
+			  pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) |
 			  pk_bitfield_value (PK_FILTER_ENUM_NEWEST)));
 
 	/* check we can add / remove bitfield */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_GUI) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_string (filter);
-	g_assert_cmpstr (text, ==, "gui;~free;newest");
+	g_assert_cmpstr (text, ==, "newest;application;~free");
 	g_free (text);
 
 	/* check we can test enum presence */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_GUI) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	g_assert_true (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT));
 
 	/* check we can test enum false-presence */

@@ -2385,7 +2385,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 /**
  * pk_client_resolve_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: (array zero-terminated=1): an array of package names to resolve, e.g. "gnome-system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2447,7 +2447,7 @@ pk_client_resolve_async (PkClient *client,
 /**
  * pk_client_search_names_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2508,7 +2508,7 @@ pk_client_search_names_async (PkClient *client,
 /**
  * pk_client_search_details_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2570,7 +2570,7 @@ pk_client_search_details_async (PkClient *client,
 /**
  * pk_client_search_groups_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a group enum to search for, for instance, "system-tools"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -2630,7 +2630,7 @@ pk_client_search_groups_async (PkClient *client,
 /**
  * pk_client_search_files_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): file to search for, for instance, "/sbin/service"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -3119,7 +3119,7 @@ pk_client_get_history_async (PkClient *client,
 /**
  * pk_client_depends_on_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @recursive: If we should search recursively for depends
  * @cancellable: a #GCancellable or %NULL
@@ -3183,7 +3183,7 @@ pk_client_depends_on_async (PkClient *client,
 /**
  * pk_client_get_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -3240,7 +3240,7 @@ pk_client_get_packages_async (PkClient *client,
 /**
  * pk_client_required_by_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @recursive: If we should search recursively for requires
  * @cancellable: a #GCancellable or %NULL
@@ -3304,7 +3304,7 @@ pk_client_required_by_async (PkClient *client,
 /**
  * pk_client_what_provides_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @filters: a #PkBitfield such as %PK_FILTER_ENUM_INSTALLED | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes

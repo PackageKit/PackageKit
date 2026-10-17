@@ -152,7 +152,6 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
 {
     PkBitfield filters;
     filters = pk_bitfield_from_enums(
-        PK_FILTER_ENUM_GUI,
         PK_FILTER_ENUM_INSTALLED,
         PK_FILTER_ENUM_DEVELOPMENT,
         PK_FILTER_ENUM_SUPPORTED,

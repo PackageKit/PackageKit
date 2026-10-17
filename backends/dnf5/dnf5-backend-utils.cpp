@@ -298,7 +298,7 @@ dnf5_backend_pk_repo_filter(const libdnf5::repo::Repo &repo, PkBitfield filters)
 }
 
 bool
-dnf5_package_is_gui(const libdnf5::rpm::Package &pkg)
+dnf5_package_is_application(const libdnf5::rpm::Package &pkg)
 {
 	for (const auto &provide : pkg.get_provides()) {
 		std::string name = provide.get_name();
@@ -311,9 +311,9 @@ dnf5_package_is_gui(const libdnf5::rpm::Package &pkg)
 bool
 dnf5_package_filter(const libdnf5::rpm::Package &pkg, PkBitfield filters)
 {
-	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI) && !dnf5_package_is_gui(pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION) && !dnf5_package_is_application(pkg))
 		return false;
-	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI) && dnf5_package_is_gui(pkg))
+	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION) && dnf5_package_is_application(pkg))
 		return false;
 
 	if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && !pkg.is_available_locally())

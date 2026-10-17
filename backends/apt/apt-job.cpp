@@ -247,11 +247,6 @@ static bool isDevelopmentName(const std::string &pkgName, const std::string &sec
            || section == "devel" || section == "libdevel";
 }
 
-static bool isGuiSection(const std::string &section)
-{
-    return section == "x11" || section == "gnome" || section == "kde" || section == "graphics";
-}
-
 static bool isFreeComponent(const std::string &component)
 {
     return component == "main" || component == "universe";
@@ -294,11 +289,6 @@ bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && isDevelopmentName(pkgName, section))
         return false;
 
-    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI) && !isGuiSection(section))
-        return false;
-    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI) && isGuiSection(section))
-        return false;
-
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE) && !isFreeComponent(component))
         return false;
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE) && isFreeComponent(component))
@@ -309,11 +299,9 @@ bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED) && packageIsSupported(ver, component))
         return false;
 
-    // Check for applications, if they have files with .desktop. We do not support checking
-    // if it is an Application when not installed.
-    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION) && (!installed || !isApplication(ver)))
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION) && !isApplication(ver))
         return false;
-    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION) && (!installed || isApplication(ver)))
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION) && isApplication(ver))
         return false;
 
     return true;
@@ -1429,52 +1417,46 @@ std::optional<UpdatePlan> AptJob::computeUpdatePlan()
     return plan;
 }
 
-// used to return files it reads, using the info from the files in /var/lib/dpkg/info/
-void AptJob::providesMimeType(PkgList &output, gchar **values)
+AsPool *AptJob::loadAppStreamPool()
 {
-    g_autoptr(AsPool) pool = nullptr;
     g_autoptr(GError) error = nullptr;
-    std::vector<string> pkg_names;
-
-    pool = as_pool_new();
+    AsPool *pool = as_pool_new();
 
     /* don't monitor cache locations or load Flatpak data */
     as_pool_remove_flags(pool, AS_POOL_FLAG_MONITOR);
     as_pool_remove_flags(pool, AS_POOL_FLAG_LOAD_FLATPAK);
 
-    /* try to load the metadata pool */
     if (!as_pool_load(pool, nullptr, &error)) {
         pk_backend_job_error_code(
             m_job,
             PK_ERROR_ENUM_INTERNAL_ERROR,
             "Failed to load AppStream metadata: %s",
             error->message);
-        return;
+        g_object_unref(pool);
+        return nullptr;
     }
+
+    return pool;
+}
+
+void AptJob::providesMimeType(PkgList &output, gchar **values)
+{
+    g_autoptr(AsPool) pool = loadAppStreamPool();
+    std::vector<string> pkg_names;
+
+    if (pool == nullptr)
+        return;
 
     /* search for mimetypes for all values */
     for (guint i = 0; values[i] != nullptr; i++) {
-#if AS_CHECK_VERSION(1, 0, 0)
-        g_autoptr(AsComponentBox) result = nullptr;
-#else
-        g_autoptr(GPtrArray) result = nullptr;
-#endif
         if (m_cancel)
             break;
 
-#if AS_CHECK_VERSION(1, 0, 0)
-        result = as_pool_get_components_by_provided_item(pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
+        g_autoptr(AsComponentBox) result =
+            as_pool_get_components_by_provided_item(pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
         for (guint j = 0; j < as_component_box_len(result); j++) {
-            const gchar *pkgname;
             AsComponent *cpt = as_component_box_index(result, j);
-#else
-        result = as_pool_get_components_by_provided_item(pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
-        for (guint j = 0; j < result->len; j++) {
-            const gchar *pkgname;
-            AsComponent *cpt = AS_COMPONENT(g_ptr_array_index(result, j));
-#endif
-            /* sanity check */
-            pkgname = as_component_get_pkgname(cpt);
+            const gchar *pkgname = as_component_get_pkgname(cpt);
             if (pkgname == nullptr) {
                 g_warning(
                     "Component %s has no package name (it was ignored in the search).",
@@ -1504,25 +1486,21 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
 bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 {
-    auto fileName = std::format("/var/lib/dpkg/info/{}:{}.list", ver.ParentPkg().Name(), ver.Arch());
-    if (!FileExists(fileName)) {
-        // if the file was not found, try without the arch field
-        fileName = std::format("/var/lib/dpkg/info/{}.list", ver.ParentPkg().Name());
+    /* collect the package names of all desktop applications once per job */
+    if (!m_appPkgNames) {
+        m_appPkgNames.emplace();
+        g_autoptr(AsPool) pool = loadAppStreamPool();
+        if (pool != nullptr) {
+            g_autoptr(AsComponentBox) apps = as_pool_get_components_by_kind(pool, AS_COMPONENT_KIND_DESKTOP_APP);
+            for (guint i = 0; i < as_component_box_len(apps); i++) {
+                gchar **pkgnames = as_component_get_pkgnames(as_component_box_index(apps, i));
+                for (guint j = 0; pkgnames != nullptr && pkgnames[j] != nullptr; j++)
+                    m_appPkgNames->insert(pkgnames[j]);
+            }
+        }
     }
 
-    if (!FileExists(fileName))
-        return false;
-
-    std::ifstream in(fileName.c_str());
-    if (!in)
-        return false;
-
-    std::string line;
-    while (getline(in, line)) {
-        if (ends_with(line, ".desktop"))
-            return true;
-    }
-    return false;
+    return m_appPkgNames->contains(ver.ParentPkg().Name());
 }
 
 // used to emit files it reads the info directly from the files

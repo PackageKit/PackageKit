@@ -209,7 +209,7 @@ pk_group_bitfield_to_string (PkBitfield groups)
 
 /**
  * pk_group_bitfield_from_string:
- * @groups: the enumerated constant value, e.g. "available;~gui"
+ * @groups: the enumerated constant value, e.g. "installed;~devel"
  *
  * Converts text representation to its enumerated type bitfield
  *
@@ -247,7 +247,7 @@ pk_group_bitfield_from_string (const gchar *groups)
  *
  * Converts a enumerated type bitfield to its text representation
  *
- * Return value: the enumerated constant value, e.g. "available;~gui"
+ * Return value: the enumerated constant value, e.g. "installed;~devel"
  *
  * Since: 0.5.2
  **/
@@ -280,7 +280,7 @@ pk_filter_bitfield_to_string (PkBitfield filters)
 
 /**
  * pk_filter_bitfield_from_string:
- * @filters: the enumerated constant value, e.g. "available;~gui"
+ * @filters: the enumerated constant value, e.g. "installed;~devel"
  *
  * Converts text representation to its enumerated type bitfield, or 0 for invalid
  *

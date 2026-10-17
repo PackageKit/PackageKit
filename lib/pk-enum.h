@@ -269,24 +269,22 @@ typedef enum {
  * @PK_FILTER_ENUM_NONE: No filter
  * @PK_FILTER_ENUM_INSTALLED: Filter for installed packages
  * @PK_FILTER_ENUM_NOT_INSTALLED: Filter for not installed packages
+ * @PK_FILTER_ENUM_NEWEST: Filter for newest packages
+ * @PK_FILTER_ENUM_NOT_NEWEST: Filter for not newest packages
  * @PK_FILTER_ENUM_DEVELOPMENT: Filter for development packages
  * @PK_FILTER_ENUM_NOT_DEVELOPMENT: Filter for non-development packages
- * @PK_FILTER_ENUM_GUI: Filter for GUI packages
- * @PK_FILTER_ENUM_NOT_GUI: Filter for non-GUI packages
+ * @PK_FILTER_ENUM_APPLICATION: Filter for packages that provide a desktop application
+ * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for packages that do not provide a desktop application
  * @PK_FILTER_ENUM_FREE: Filter for free packages
  * @PK_FILTER_ENUM_NOT_FREE: Filter for non-free packages
  * @PK_FILTER_ENUM_SUPPORTED: Filter for supported packages
  * @PK_FILTER_ENUM_NOT_SUPPORTED: Filter for not supported packages
  * @PK_FILTER_ENUM_BASENAME: Filter for packages that match basename
  * @PK_FILTER_ENUM_NOT_BASENAME: Filter for packages that don't match basename
- * @PK_FILTER_ENUM_NEWEST: Filter for newest packages
- * @PK_FILTER_ENUM_NOT_NEWEST: Filter for not newest packages
  * @PK_FILTER_ENUM_ARCH: Filter for packages that match architecture
  * @PK_FILTER_ENUM_NOT_ARCH: Filter for packages that don't match architecture
  * @PK_FILTER_ENUM_SOURCE: Filter for source packages
  * @PK_FILTER_ENUM_NOT_SOURCE: Filter for non-source packages
- * @PK_FILTER_ENUM_APPLICATION: Filter for application packages
- * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for non-application packages
  * @PK_FILTER_ENUM_DOWNLOADED: Filter for downloaded packages
  * @PK_FILTER_ENUM_NOT_DOWNLOADED: Filter for not downloaded packages
  * @PK_FILTER_ENUM_RESIDUAL: Filter for packages that are not installed but have residual data left
@@ -299,24 +297,22 @@ typedef enum {
 	PK_FILTER_ENUM_NONE,
 	PK_FILTER_ENUM_INSTALLED,
 	PK_FILTER_ENUM_NOT_INSTALLED,
+	PK_FILTER_ENUM_NEWEST,
+	PK_FILTER_ENUM_NOT_NEWEST,
 	PK_FILTER_ENUM_DEVELOPMENT,
 	PK_FILTER_ENUM_NOT_DEVELOPMENT,
-	PK_FILTER_ENUM_GUI,
-	PK_FILTER_ENUM_NOT_GUI,
+	PK_FILTER_ENUM_APPLICATION,
+	PK_FILTER_ENUM_NOT_APPLICATION,
 	PK_FILTER_ENUM_FREE,
 	PK_FILTER_ENUM_NOT_FREE,
 	PK_FILTER_ENUM_SUPPORTED,
 	PK_FILTER_ENUM_NOT_SUPPORTED,
 	PK_FILTER_ENUM_BASENAME,
 	PK_FILTER_ENUM_NOT_BASENAME,
-	PK_FILTER_ENUM_NEWEST,
-	PK_FILTER_ENUM_NOT_NEWEST,
 	PK_FILTER_ENUM_ARCH,
 	PK_FILTER_ENUM_NOT_ARCH,
 	PK_FILTER_ENUM_SOURCE,
 	PK_FILTER_ENUM_NOT_SOURCE,
-	PK_FILTER_ENUM_APPLICATION,
-	PK_FILTER_ENUM_NOT_APPLICATION,
 	PK_FILTER_ENUM_DOWNLOADED,     /* Since: 0.8.10 */
 	PK_FILTER_ENUM_NOT_DOWNLOADED, /* Since: 0.8.10 */
 	PK_FILTER_ENUM_RESIDUAL,       /* Since: 2.0.0 */

@@ -128,12 +128,9 @@ are available in remote software sources.</td>
 and typically have the suffixes -devel, -dgb and -static.</td>
 </tr>
 <tr>
-<td><code>gui</code> or <code>~gui</code></td>
-<td>GUI programs typically depend on gtk, libkde or libxfce.</td>
-</tr>
-<tr>
 <td><code>application</code> or <code>~application</code></td>
-<td>Packages that provide desktop files and are probably applications.</td>
+<td>Packages that provide a desktop application, as known from AppStream
+metadata or shipped desktop files.</td>
 </tr>
 <tr>
 <td><code>free</code> or <code>~free</code></td>
@@ -198,7 +195,7 @@ So valid options would be:
 | `none` | All packages installed or available with no filtering |
 | `devel;~installed` | All non-installed development packages |
 | `installed;~devel` | All installed non-development packages |
-| `gui;~installed;~devel` | All non-installed, non-devel gui programs |
+| `application;~installed;~devel` | All non-installed, non-devel applications |
 
 ### Removing installed versions in search results
 

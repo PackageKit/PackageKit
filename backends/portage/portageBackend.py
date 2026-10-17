@@ -1092,7 +1092,6 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
     )
     filters = (pkb.FILTER_INSTALLED, pkb.FILTER_FREE, pkb.FILTER_NEWEST, pkb.FILTER_APPLICATION)
     # These filters are candidates for further add:
-    # pkb.FILTER_GUI (need new PROPERTIES entry)
     # pkb.FILTER_ARCH (need some work, see ML)
     # pkb.FILTER_SOURCE (need some work/support, see ML)
     groups = (

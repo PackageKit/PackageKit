@@ -49,7 +49,7 @@ pk_backend_get_groups (PkBackend *backend)
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (PK_FILTER_ENUM_GUI,
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_APPLICATION,
 				       PK_FILTER_ENUM_INSTALLED,
 				       PK_FILTER_ENUM_DEVELOPMENT,
 				       PK_FILTER_ENUM_FREE,

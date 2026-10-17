@@ -1187,15 +1187,6 @@ poldek_pkg_is_devel (struct pkg *pkg)
 	return FALSE;
 }
 
-static gboolean
-poldek_pkg_is_gui (struct pkg *pkg)
-{
-	if (g_str_has_prefix (pkg_group (pkg), "X11"))
-		return TRUE;
-
-	return FALSE;
-}
-
 static void
 do_newest (tn_array *pkgs)
 {
@@ -1221,7 +1212,7 @@ do_newest (tn_array *pkgs)
 /**
  * do_filtering:
  *
- * Apply newest, devel and gui filters (if requested).
+ * Apply newest and devel filters (if requested).
  *
  **/
 static void
@@ -1245,18 +1236,6 @@ do_filtering (tn_array *packages, PkBitfield filters)
 
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT))
 			if (poldek_pkg_is_devel (pkg)) {
-				n_array_remove_nth (packages, i);
-				continue;
-			}
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI))
-			if (!poldek_pkg_is_gui (pkg)) {
-				n_array_remove_nth (packages, i);
-				continue;
-			}
-
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI))
-			if (poldek_pkg_is_gui (pkg)) {
 				n_array_remove_nth (packages, i);
 				continue;
 			}
@@ -2566,7 +2545,6 @@ PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
-				       PK_FILTER_ENUM_GUI,
 				       PK_FILTER_ENUM_INSTALLED,
 				       PK_FILTER_ENUM_DEVELOPMENT,
 				       -1);

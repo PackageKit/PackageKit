@@ -23,6 +23,8 @@
 
 #include <memory>
 #include <optional>
+#include <set>
+#include <string>
 #include <vector>
 
 #include <glib.h>
@@ -37,6 +39,7 @@
 #include "apt-sourceslist.h"
 
 class pkgProblemResolver;
+typedef struct _AsPool AsPool;
 class pkgPackageManager;
 class Matcher;
 class AptCacheFile;
@@ -293,8 +296,18 @@ private:
      * prompts, and report an error if it fails.
      */
     bool runDpkg(pkgPackageManager &PM);
-    bool packageIsSupported(const pkgCache::VerIterator &verIter, std::string component);
+
+    /**
+     * Load the system AppStream metadata pool.
+     * @returns a new pool reference, or nullptr (and emits an error) if loading failed.
+     */
+    AsPool *loadAppStreamPool();
+
+    /** Whether the package of @verIter provides a desktop application according to AppStream. */
     bool isApplication(const pkgCache::VerIterator &verIter);
+
+    bool packageIsSupported(const pkgCache::VerIterator &verIter, std::string component);
+
     bool matchesQueries(const std::vector<std::string> &queries, std::string s);
     bool dpkgHasForceConfFileSet();
     void stagePackageForEmit(
@@ -337,4 +350,7 @@ private:
 
     bool m_interactive;
     pid_t m_child_pid;
+
+    /* package names of all AppStream desktop applications, loaded on first use */
+    std::optional<std::set<std::string>> m_appPkgNames;
 };
