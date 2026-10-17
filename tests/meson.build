@@ -5,11 +5,12 @@
 # location below it, and all state the daemon writes ends up below it, so a
 # test run never touches the host system.
 pk_test_root_dir = join_paths(meson.current_build_dir(), '_test-root')
+
 # spawned backends and the Python library are linked into the root at their
 # installed locations
 pk_test_root_links = [
     '--link', join_paths(pk_backends_dir, 'test_spawn') + '='
-    + join_paths(source_root, 'backends', 'test', 'helpers', 'test_spawn'),
+    + join_paths(meson.current_source_dir(), 'backends', 'test_spawn'),
 ]
 pk_test_root_deps = []
 if get_option('python_backend')
@@ -139,6 +140,9 @@ endif
 if get_option('daemon_tests')
     run_with_dbus = find_program('runner/run-ensure-dbus.py')
     run_daemon_test = find_program('runner/run-daemon-test.py')
+
+    # our backend stubs for testing purposes are needed
+    subdir('backends')
 
     test('pk-test-daemon-internal',
         run_with_dbus,

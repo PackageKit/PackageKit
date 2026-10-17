@@ -197,14 +197,12 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/packagekit/pk-upgrade-distro.sh
-%{_libdir}/packagekit/backends/test_spawn/
 %{_metainfodir}/org.freedesktop.packagekit.metainfo.xml
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
 %{_bindir}/pkgcli
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
-%{_libdir}/packagekit-backend/libpk_backend_test_*.so
 %ghost %verify(not md5 size mtime) %attr(0644,-,-) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system.d/*
 %{_datadir}/dbus-1/system-services/*.service

@@ -499,10 +499,8 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 			continue;
 		if (g_strstr_len (tmp, -1, "libpk_backend_dummy"))
 			continue;
-		if (g_strstr_len (tmp, -1, "libpk_backend_test"))
-			continue;
 
-		/* turn 'libpk_backend_test.so' into 'test' */
+		/* turn 'libpk_backend_apt.so' into 'apt' */
 		name_tmp = g_strdup (tmp + 14);
 		g_strdelimit (name_tmp, ".", '\0');
 		g_ptr_array_add (array, name_tmp);

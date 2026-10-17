@@ -1,3 +1,5 @@
+# Dummy backend for testing purposes
+
 pk_backend_modules += shared_module(
     'pk_backend_dummy',
     'pk-backend-dummy.c',
@@ -9,7 +11,6 @@ pk_backend_modules += shared_module(
     c_args: [
         '-DG_LOG_DOMAIN="PackageKit-Dummy"',
     ],
-    override_options: ['cpp_std=c++0x'],
     install: true,
     install_dir: pk_backends_dir,
 )

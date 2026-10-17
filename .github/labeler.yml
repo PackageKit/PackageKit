@@ -6,7 +6,7 @@
 daemon:
 - changed-files:
   - any-glob-to-any-file: src/**
-  - any-glob-to-any-file: ['backends/dummy/**', 'backends/test/**']
+  - any-glob-to-any-file: ['backends/dummy/**', 'tests/backends/**']
 
 library:
 - changed-files:
