@@ -8,3 +8,15 @@ Architecture: amd64
 Version: 1.0
 Description: Test package foo
  Installed package that gains a new dependency in version 2.0.
+
+Package: bar
+Status: deinstall ok config-files
+Priority: optional
+Section: misc
+Installed-Size: 10
+Maintainer: PackageKit Tests <packagekit@example.org>
+Architecture: amd64
+Version: 1.0
+Config-Version: 1.0
+Description: Test package bar
+ Removed package that still has configuration files left (dpkg state "rc").

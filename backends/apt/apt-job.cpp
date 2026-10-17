@@ -277,6 +277,12 @@ bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed)
         return false;
 
+    const bool residual = pkg->CurrentState == pkgCache::State::ConfigFiles;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_RESIDUAL) && !residual)
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_RESIDUAL) && residual)
+        return false;
+
     const std::string sectionRaw = ver.Section() == nullptr ? "" : ver.Section();
     const size_t slash = sectionRaw.find_last_of('/');
     const std::string section = sectionRaw.substr(slash == std::string::npos ? 0 : slash + 1);
@@ -386,11 +392,12 @@ PkgList AptJob::filterPackages(const PkgList &packages, PkBitfield filters)
 PkInfoEnum AptJob::packageStateFromVer(const pkgCache::VerIterator &ver) const
 {
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
+    // only configuration files are left of this package (dpkg state "rc")
+    if (pkg->CurrentState == pkgCache::State::ConfigFiles)
+        return PK_INFO_ENUM_RESIDUAL;
+    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver)
         return PK_INFO_ENUM_INSTALLED;
-    } else {
-        return PK_INFO_ENUM_AVAILABLE;
-    }
+    return PK_INFO_ENUM_AVAILABLE;
 }
 
 void AptJob::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
@@ -1395,7 +1402,8 @@ std::optional<UpdatePlan> AptJob::computeUpdatePlan()
             if (!ver.end()) {
                 bool is_obsoleted = false;
 
-                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
+                // a purged "rc" package has no current version, and nothing can obsolete it
+                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end() && !pkg.CurrentVer().end(); ++D) {
                     if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
                         && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
                         && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
@@ -1688,7 +1696,8 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
 
                 bool is_obsoleted = false;
 
-                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
+                // a purged "rc" package has no current version, and nothing can obsolete it
+                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end() && !pkg.CurrentVer().end(); ++D) {
                     if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
                         && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
                         && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
@@ -1971,6 +1980,7 @@ bool AptJob::runTransaction(const TransactionRequest &request)
     const PkBitfield flags = request.flags;
     const bool autoremove = request.autoremove;
     const bool allowRemoveDeps = request.allowRemoveDeps;
+    const bool purge = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_PURGE);
 
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_RUNNING);
 
@@ -2029,7 +2039,7 @@ bool AptJob::runTransaction(const TransactionRequest &request)
             if (m_cancel)
                 break;
 
-            m_cache->tryToRemove(Fix, pkInfo);
+            m_cache->tryToRemove(Fix, pkInfo, purge);
         }
 
         // Call the scored problem resolver
@@ -2052,7 +2062,16 @@ bool AptJob::runTransaction(const TransactionRequest &request)
 
     // Remove new garbage that is created
     if (autoremove)
-        markNewGarbageForRemoval(Fix, initial_garbage);
+        markNewGarbageForRemoval(Fix, initial_garbage, purge);
+
+    // Purge everything that ends up being removed, including removals the
+    // problem resolver decided on (this is what apt-get --purge does)
+    if (purge) {
+        for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
+            if ((*m_cache)[pkg].Delete())
+                (*m_cache)->MarkDelete(pkg, true);
+        }
+    }
 
     // Prepare for the restart thing
     const struct timespec rebootFlagStart = fileMtime(REBOOT_REQUIRED_FILE);
@@ -2123,12 +2142,12 @@ bool AptJob::checkNoImplicitRemovals(const std::vector<unsigned int> &explicitRe
     return false;
 }
 
-void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage)
+void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage, bool purge)
 {
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
         const pkgCache::VerIterator &ver = pkg.CurrentVer();
         if (!ver.end() && !initialGarbage.contains(pkg) && m_cache->isGarbage(pkg))
-            m_cache->tryToRemove(Fix, PkgInfo(ver));
+            m_cache->tryToRemove(Fix, PkgInfo(ver), purge);
     }
 }
 

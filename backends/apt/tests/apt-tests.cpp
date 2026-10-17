@@ -694,6 +694,109 @@ static void apt_test_install_marks_package_manual(void)
     g_assert_false(test_pkg_marked_auto(job, "foo-firmware"));
 }
 
+static PkgInfo test_resolve_one(AptJob &job, const char *name, PkBitfield filters = PK_FILTER_ENUM_NONE)
+{
+    g_auto(GStrv) ids = g_new0(gchar *, 2);
+    ids[0] = g_strdup(name);
+    const PkgList found = job.resolvePackageIds(ids, filters);
+    g_assert_cmpuint(found.size(), ==, 1);
+    return found[0];
+}
+
+/* a package in dpkg state "rc" (removed, configuration files left) is reported as residual */
+static void apt_test_residual_state(void)
+{
+    AptTestRoot testRoot("cache-auto-deps");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+
+    const PkgList all = job.getPackages();
+    const PkgInfo *bar = test_find_pkg(all, "bar");
+    g_assert_nonnull(bar);
+    g_assert_cmpint(job.packageStateFromVer(bar->ver), ==, PK_INFO_ENUM_RESIDUAL);
+    g_assert_cmpint(job.packageStateFromVer(test_find_pkg(all, "foo")->ver), ==, PK_INFO_ENUM_INSTALLED);
+
+    // the residual filter selects exactly these packages, the installed filter excludes them
+    g_auto(GStrv) names = g_new0(gchar *, 3);
+    names[0] = g_strdup("bar");
+    names[1] = g_strdup("foo");
+    g_assert_cmpuint(job.resolvePackageIds(names, pk_bitfield_value(PK_FILTER_ENUM_RESIDUAL)).size(), ==, 1);
+    g_assert_cmpuint(job.resolvePackageIds(names, pk_bitfield_value(PK_FILTER_ENUM_INSTALLED)).size(), ==, 1);
+    g_assert_cmpstr(
+        job.resolvePackageIds(names, pk_bitfield_value(PK_FILTER_ENUM_RESIDUAL))[0].ver.ParentPkg().Name(),
+        ==,
+        "bar");
+    // (foo resolves to its installed and its candidate version, bar must not be among them)
+    const PkgList notResidual = job.resolvePackageIds(names, pk_bitfield_value(PK_FILTER_ENUM_NOT_RESIDUAL));
+    g_assert_cmpuint(notResidual.size(), ==, 2);
+    g_assert_null(test_find_pkg(notResidual, "bar"));
+
+    // the package-id we hand out resolves back to the same package
+    const std::string barId = test_package_id(job, *bar);
+    const PkgInfo resolved = test_resolve_one(job, barId.c_str());
+    g_assert_cmpstr(resolved.ver.ParentPkg().Name(), ==, "bar");
+}
+
+static bool test_simulate_remove(AptJob &job, const char *name, PkFilterEnum filter, PkBitfield extraFlags)
+{
+    TransactionRequest request;
+    request.remove.append(test_resolve_one(job, name, pk_bitfield_value(filter)).ver);
+    request.flags = pk_bitfield_value(PK_TRANSACTION_FLAG_ENUM_SIMULATE) | extraFlags;
+    return job.runTransaction(request);
+}
+
+/* the purge flag turns a removal into a purge, without it only the package is removed */
+static void apt_test_purge_remove_flag(void)
+{
+    {
+        AptTestRoot testRoot("cache-auto-deps");
+        AptJob job(nullptr);
+        g_assert_true(job.init());
+        g_assert_true(test_simulate_remove(job, "foo", PK_FILTER_ENUM_INSTALLED, 0));
+        const auto &state = (*job.aptCacheFile())[(*job.aptCacheFile())->FindPkg("foo")];
+        g_assert_true(state.Delete());
+        g_assert_false(state.Purge());
+    }
+    {
+        AptTestRoot testRoot("cache-auto-deps");
+        AptJob job(nullptr);
+        g_assert_true(job.init());
+        g_assert_true(test_simulate_remove(
+            job,
+            "foo",
+            PK_FILTER_ENUM_INSTALLED,
+            pk_bitfield_value(PK_TRANSACTION_FLAG_ENUM_PURGE)));
+        const auto &state = (*job.aptCacheFile())[(*job.aptCacheFile())->FindPkg("foo")];
+        g_assert_true(state.Delete());
+        g_assert_true(state.Purge());
+    }
+}
+
+/* a residual package can only be acted on with the purge flag */
+static void apt_test_purge_residual_package(void)
+{
+    {
+        AptTestRoot testRoot("cache-auto-deps");
+        AptJob job(nullptr);
+        g_assert_true(job.init());
+        g_assert_true(test_simulate_remove(job, "bar", PK_FILTER_ENUM_RESIDUAL, 0));
+        g_assert_true((*job.aptCacheFile())[(*job.aptCacheFile())->FindPkg("bar")].Keep());
+    }
+    {
+        AptTestRoot testRoot("cache-auto-deps");
+        AptJob job(nullptr);
+        g_assert_true(job.init());
+        g_assert_true(test_simulate_remove(
+            job,
+            "bar",
+            PK_FILTER_ENUM_RESIDUAL,
+            pk_bitfield_value(PK_TRANSACTION_FLAG_ENUM_PURGE)));
+        g_assert_true((*job.aptCacheFile())[(*job.aptCacheFile())->FindPkg("bar")].Purge());
+        // nothing else was touched
+        g_assert_true((*job.aptCacheFile())[(*job.aptCacheFile())->FindPkg("foo")].Keep());
+    }
+}
+
 static void apt_test_deb_file_open_error(void)
 {
     const std::string missing = testdata_dir + "/does-not-exist.deb";
@@ -730,6 +833,9 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/updates/new-dependency", apt_test_updates_new_dependency);
     g_test_add_func("/apt/updates/new-dependency-auto", apt_test_update_marks_new_dependency_auto);
     g_test_add_func("/apt/install/package-manual", apt_test_install_marks_package_manual);
+    g_test_add_func("/apt/residual/state", apt_test_residual_state);
+    g_test_add_func("/apt/purge/remove-flag", apt_test_purge_remove_flag);
+    g_test_add_func("/apt/purge/residual-package", apt_test_purge_residual_package);
 
     return g_test_run();
 }

@@ -476,25 +476,20 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix, const PkgInfo &pki, boo
     return true;
 }
 
-void AptCacheFile::tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki)
+void AptCacheFile::tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki, bool purge)
 {
     pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
-
-    // The package is not installed
-    if (Pkg->CurrentVer == 0) {
-        Fix.Clear(Pkg);
-        Fix.Protect(Pkg);
-        Fix.Remove(Pkg);
-
-        return;
-    }
 
     Fix.Clear(Pkg);
     Fix.Protect(Pkg);
     Fix.Remove(Pkg);
-    // TODO this is false since PackageKit can't
-    // tell it want's o purge
-    GetDepCache()->MarkDelete(Pkg, false);
+
+    // The package is not installed: there is nothing to remove, unless only its
+    // configuration files are left and we were asked to purge those (like apt-get purge does)
+    if (Pkg->CurrentVer == 0 && !(purge && Pkg->CurrentState == pkgCache::State::ConfigFiles))
+        return;
+
+    GetDepCache()->MarkDelete(Pkg, purge);
 }
 
 std::string AptCacheFile::debParser(std::string descr)

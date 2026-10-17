@@ -158,7 +158,7 @@ public:
      */
     bool tryToInstall(pkgProblemResolver &Fix, const PkgInfo &pki, bool autoInst, bool fixBroken = false);
 
-    void tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki);
+    void tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki, bool purge = false);
 
 private:
     void buildPkgRecords();

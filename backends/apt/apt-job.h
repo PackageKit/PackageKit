@@ -149,6 +149,11 @@ public:
     PkgList getPackages();
 
     /**
+     * The state (installed, available, residual) to report for a package version
+     */
+    PkInfoEnum packageStateFromVer(const pkgCache::VerIterator &ver) const;
+
+    /**
      * Returns a list of all packages in the cache
      */
     PkgList getPackagesFromRepo(SourcesList::SourceRecord *rec);
@@ -292,7 +297,6 @@ private:
     bool isApplication(const pkgCache::VerIterator &verIter);
     bool matchesQueries(const std::vector<std::string> &queries, std::string s);
     bool dpkgHasForceConfFileSet();
-    PkInfoEnum packageStateFromVer(const pkgCache::VerIterator &ver) const;
     void stagePackageForEmit(
         GPtrArray *array,
         const pkgCache::VerIterator &ver,
@@ -313,7 +317,7 @@ private:
      * Mark any package for removal that became garbage as a result of the
      * current transaction (i.e. was not garbage initially).
      */
-    void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage);
+    void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage, bool purge);
 
     PkgList checkChangedPackages(bool emitChanged);
 
