@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-10 10:05+0200\n"
-"PO-Revision-Date: 2026-09-25 19:51+0000\n"
+"PO-Revision-Date: 2026-10-17 06:05+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Weblate 2026.10.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:165
@@ -475,10 +475,8 @@ msgstr "Wyświetla pakiety wymagające podanych pakietów."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:821
-#, fuzzy
-#| msgid "List all available filters, groups and categories for package organization."
 msgid "List all available filters and groups for package organization."
-msgstr "Wyświetla listę wszystkich dostępnych filtrów, grup i kategorii do porządkowania pakietów."
+msgstr "Wyświetla listę wszystkich dostępnych filtrów i grup do porządkowania pakietów."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:829
@@ -583,10 +581,8 @@ msgstr "Rozwiązuje nazwy pakietów"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1061
-#, fuzzy
-#| msgid "List available filters and categories"
 msgid "List available filters and groups"
-msgstr "Wyświetla listę dostępnych filtrów i kategorii"
+msgstr "Wyświetla listę dostępnych filtrów i grup"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1068
@@ -727,12 +723,12 @@ msgstr "Użycie: %s %s %s"
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:552
 msgid "high"
-msgstr ""
+msgstr "wysoka"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:557
 msgid "critical"
-msgstr ""
+msgstr "krytyczna"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
@@ -1544,10 +1540,8 @@ msgstr "Usunięcie"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
 #: lib/pk-enum.c:988
-#, fuzzy
-#| msgid "Reinstalled"
 msgid "Reinstall"
-msgstr "Zainstalowano ponownie"
+msgstr "Ponowna instalacja"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/pk-enum.c:992
@@ -1561,24 +1555,18 @@ msgstr "Instalacja starszej wersji"
 
 #. TRANSLATORS: The state of a package: package is to be updated
 #: lib/pk-enum.c:1000
-#, fuzzy
-#| msgid "Updates"
 msgid "Update"
-msgstr "Aktualizuje"
+msgstr "Aktualizacja"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
 #: lib/pk-enum.c:1004
-#, fuzzy
-#| msgid "Security"
 msgid "Security update"
-msgstr "Zabezpieczeń"
+msgstr "Aktualizacja zabezpieczeń"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
 #: lib/pk-enum.c:1008
-#, fuzzy
-#| msgid "Enhancement"
 msgid "Enhancement update"
-msgstr "Ulepszenie"
+msgstr "Aktualizacja z ulepszeniami"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1033
