@@ -2086,7 +2086,7 @@ pk_test_scheduler_parallel_func (void)
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (
 	    transaction1,
-	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE), array),
 	    NULL);
 	g_strfreev (array);
 
@@ -2105,7 +2105,7 @@ pk_test_scheduler_parallel_func (void)
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (
 	    transaction1,
-	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE), array),
 	    NULL);
 	g_strfreev (array);
 

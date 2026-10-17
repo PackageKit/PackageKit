@@ -83,6 +83,7 @@ typedef struct
 	gboolean       allow_downgrade;
 	gboolean       allow_reinstall;
 	gboolean       allow_untrusted;
+	gboolean       purge;
 	guint	       cache_age;
 
 	PkBitfield     filters;

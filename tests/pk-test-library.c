@@ -233,7 +233,6 @@ pk_test_enum_func (void)
 {
 	const gchar *string;
 	PkRoleEnum role_value;
-	guint i;
 
 	/* find value */
 	role_value = pk_role_enum_from_string ("search-file");
@@ -244,7 +243,7 @@ pk_test_enum_func (void)
 	g_assert_cmpstr (string, ==, "search-file");
 
 	/* check we convert all the role bitfield */
-	for (i = 1; i < PK_ROLE_ENUM_LAST; i++) {
+	for (guint i = 1; i < PK_ROLE_ENUM_LAST; i++) {
 		string = pk_role_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -254,7 +253,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the status bitfield */
-	for (i = 1; i < PK_STATUS_ENUM_LAST; i++) {
+	for (guint i = 1; i < PK_STATUS_ENUM_LAST; i++) {
 		string = pk_status_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -264,7 +263,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the exit bitfield */
-	for (i = 0; i < PK_EXIT_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_EXIT_ENUM_LAST; i++) {
 		string = pk_exit_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -274,7 +273,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the filter bitfield */
-	for (i = 0; i < PK_FILTER_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_FILTER_ENUM_LAST; i++) {
 		string = pk_filter_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -284,7 +283,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the restart bitfield */
-	for (i = 0; i < PK_RESTART_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_RESTART_ENUM_LAST; i++) {
 		string = pk_restart_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -294,7 +293,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the error_code bitfield */
-	for (i = 0; i < PK_ERROR_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_ERROR_ENUM_LAST; i++) {
 		string = pk_error_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -304,7 +303,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the group bitfield */
-	for (i = 1; i < PK_GROUP_ENUM_LAST; i++) {
+	for (guint i = 1; i < PK_GROUP_ENUM_LAST; i++) {
 		string = pk_group_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -314,7 +313,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the info bitfield */
-	for (i = 1; i < PK_INFO_ENUM_LAST; i++) {
+	for (guint i = 1; i < PK_INFO_ENUM_LAST; i++) {
 		string = pk_info_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -324,7 +323,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the severity bitfield */
-	for (i = 1; i < PK_SEVERITY_ENUM_LAST; i++) {
+	for (guint i = 1; i < PK_SEVERITY_ENUM_LAST; i++) {
 		string = pk_severity_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -335,7 +334,7 @@ pk_test_enum_func (void)
 	}
 
 	/* check we convert all the sig_type bitfield */
-	for (i = 0; i < PK_SIGTYPE_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_SIGTYPE_ENUM_LAST; i++) {
 		string = pk_sig_type_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
@@ -344,8 +343,18 @@ pk_test_enum_func (void)
 		}
 	}
 
+	/* check we convert all the transaction flag bitfield */
+	for (guint i = 0; i < PK_TRANSACTION_FLAG_ENUM_LAST; i++) {
+		string = pk_transaction_flag_enum_to_string (i);
+		if (string == NULL) {
+			/* so we get the value of i in the assert text */
+			g_assert_cmpint (0, ==, i);
+			break;
+		}
+	}
+
 	/* check we convert all the upgrade bitfield */
-	for (i = 0; i < PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
+	for (guint i = 0; i < PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
 		string = pk_distro_upgrade_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */

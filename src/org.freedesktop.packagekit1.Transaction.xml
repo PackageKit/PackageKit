@@ -98,6 +98,12 @@
       TransactionFlags:
 
       The flags set for this transaction, e.g. SIMULATE or ONLY_DOWNLOAD.
+
+      The PURGE flag asks the backend to also remove residual data (such as
+      configuration files) of every package the transaction removes. It is only
+      valid for roles that remove packages and is rejected for InstallPackages
+      and InstallFiles. Backends whose package removal leaves no residual data
+      ignore it.
     -->
     <property name="TransactionFlags" type="t" access="read"/>
 
@@ -233,7 +239,7 @@
       This method typically emits `Progress`, `Status` and `Error` and
       `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
     <method name="DependsOn">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -337,7 +343,7 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
     <method name="GetPackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -372,7 +378,7 @@
       This method typically emits `Progress`, `Status` and `Error` and
       `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
     <method name="RequiredBy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -657,7 +663,7 @@
 
       This method typically emits `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
 
       Notes on `packages`:
 
@@ -693,7 +699,7 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
 
       Notes on `values`:
 
@@ -719,7 +725,7 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
 
       Notes on `values`:
 
@@ -752,7 +758,7 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
 
       Notes on `values`:
 
@@ -792,7 +798,7 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
 
       Notes on `values`:
 
@@ -848,7 +854,7 @@
       This method typically emits `Progress`, `Status` and `Error` and
       `Packages`.
 
-      `Packages` info enumerated types should be `available` or `installed`.
+      `Packages` info enumerated types should be `available`, `installed` or `residual`.
     -->
     <method name="WhatProvides">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>

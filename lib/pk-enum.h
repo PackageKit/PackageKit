@@ -289,6 +289,8 @@ typedef enum {
  * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for non-application packages
  * @PK_FILTER_ENUM_DOWNLOADED: Filter for downloaded packages
  * @PK_FILTER_ENUM_NOT_DOWNLOADED: Filter for not downloaded packages
+ * @PK_FILTER_ENUM_RESIDUAL: Filter for packages that are not installed but have residual data left
+ * @PK_FILTER_ENUM_NOT_RESIDUAL: Filter for packages without residual data
  *
  * The filter types
  **/
@@ -317,6 +319,8 @@ typedef enum {
 	PK_FILTER_ENUM_NOT_APPLICATION,
 	PK_FILTER_ENUM_DOWNLOADED,     /* Since: 0.8.10 */
 	PK_FILTER_ENUM_NOT_DOWNLOADED, /* Since: 0.8.10 */
+	PK_FILTER_ENUM_RESIDUAL,       /* Since: 2.0.0 */
+	PK_FILTER_ENUM_NOT_RESIDUAL,   /* Since: 2.0.0 */
 	/*< private >*/
 	PK_FILTER_ENUM_LAST,
 } PkFilterEnum;
@@ -653,6 +657,7 @@ typedef enum {
  * PkInfoEnum:
  * @PK_INFO_ENUM_UNKNOWN:	Package status is unknown
  * @PK_INFO_ENUM_AVAILABLE:	Package is available to be installed
+ * @PK_INFO_ENUM_RESIDUAL:	Package is not installed, but has residual data left
  * @PK_INFO_ENUM_INSTALLED:	Package is installed
  * @PK_INFO_ENUM_BLOCKED:	Package has an update that is blocked
  * @PK_INFO_ENUM_UNTRUSTED:	Package is not signed or can not be verified
@@ -696,6 +701,7 @@ typedef enum {
 	PK_INFO_ENUM_UNKNOWN,
 	/* state */
 	PK_INFO_ENUM_AVAILABLE,
+	PK_INFO_ENUM_RESIDUAL,
 	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_BLOCKED,
 	PK_INFO_ENUM_UNTRUSTED,
@@ -814,9 +820,10 @@ typedef enum {
 /**
  * PkTransactionFlagEnum:
  * @PK_TRANSACTION_FLAG_ENUM_NONE: No transaction flag
- * @PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED: Only allow trusted packages
  * @PK_TRANSACTION_FLAG_ENUM_SIMULATE: Simulate transaction
+ * @PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED: Only allow trusted packages
  * @PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD: Only download packages
+ * @PK_TRANSACTION_FLAG_ENUM_PURGE: Also remove residual data of packages that get removed
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL: Allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL: Only allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE: Allow packages to be downgraded
@@ -825,9 +832,10 @@ typedef enum {
  **/
 typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_NONE,		  /* Since: 0.8.1 */
-	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,	  /* Since: 0.8.1 */
 	PK_TRANSACTION_FLAG_ENUM_SIMULATE,	  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,	  /* Since: 0.8.1 */
 	PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD,	  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_PURGE,		  /* Since: 2.0.0 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL, /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */

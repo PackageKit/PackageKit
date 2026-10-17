@@ -51,6 +51,7 @@ struct _PkTaskPrivate
 	gboolean only_trusted;
 	gboolean allow_reinstall;
 	gboolean allow_downgrade;
+	gboolean purge;
 };
 
 enum {
@@ -60,6 +61,7 @@ enum {
 	PROP_ONLY_TRUSTED,
 	PROP_ALLOW_REINSTALL,
 	PROP_ALLOW_DOWNGRADE,
+	PROP_PURGE,
 	PROP_LAST
 };
 
@@ -178,6 +180,9 @@ pk_task_do_async_action (GTask *gtask)
 	}
 	if (priv->allow_downgrade) {
 		pk_bitfield_add (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
+	}
+	if (priv->purge) {
+		pk_bitfield_add (transaction_flags, PK_TRANSACTION_FLAG_ENUM_PURGE);
 	}
 
 	/* do the correct action */
@@ -2554,6 +2559,50 @@ pk_task_get_allow_downgrade (PkTask *task)
 }
 
 /**
+ * pk_task_set_purge:
+ * @task: a valid #PkTask instance
+ * @purge: %TRUE to also remove residual data of removed packages.
+ *
+ * If residual data (such as configuration files) of packages that get removed
+ * during the transaction shall be removed as well.
+ *
+ * Since: 2.0.0
+ **/
+void
+pk_task_set_purge (PkTask *task, gboolean purge)
+{
+	PkTaskPrivate *priv = GET_PRIVATE(task);
+
+	g_return_if_fail (PK_IS_TASK (task));
+
+	if (priv->purge == purge)
+		return;
+
+	priv->purge = purge;
+	g_object_notify_by_pspec (G_OBJECT(task), obj_properties[PROP_PURGE]);
+}
+
+/**
+ * pk_task_get_purge:
+ * @task: a valid #PkTask instance
+ *
+ * Gets if residual data of removed packages should be removed as well.
+ *
+ * Return value: %TRUE if removed packages are purged
+ *
+ * Since: 2.0.0
+ **/
+gboolean
+pk_task_get_purge (PkTask *task)
+{
+	PkTaskPrivate *priv = GET_PRIVATE(task);
+
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	return priv->purge;
+}
+
+/**
  * pk_task_set_allow_reinstall:
  * @task: a valid #PkTask instance
  * @allow_reinstall: %TRUE to allow packages to be reinstalled.
@@ -2621,6 +2670,9 @@ pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec 
 	case PROP_ALLOW_DOWNGRADE:
 		g_value_set_boolean (value, priv->allow_downgrade);
 		break;
+	case PROP_PURGE:
+		g_value_set_boolean (value, priv->purge);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2651,6 +2703,9 @@ pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GPara
 		break;
 	case PROP_ALLOW_DOWNGRADE:
 		priv->allow_downgrade = g_value_get_boolean (value);
+		break;
+	case PROP_PURGE:
+		priv->purge = g_value_get_boolean (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -2739,6 +2794,21 @@ pk_task_class_init (PkTaskClass *klass)
 								     G_PARAM_READWRITE |
 									 G_PARAM_STATIC_STRINGS);
 
+	/**
+	 * PkTask:purge:
+	 *
+	 * %TRUE if residual data (e.g. configuration files) of packages removed
+	 * by the transaction shall be removed as well.
+	 *
+	 * Since: 2.0.0
+	 */
+	obj_properties[PROP_PURGE] = g_param_spec_boolean ("purge",
+							   NULL,
+							   NULL,
+							   FALSE,
+							   G_PARAM_READWRITE |
+							       G_PARAM_STATIC_STRINGS);
+
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 }
 
@@ -2755,6 +2825,7 @@ pk_task_init (PkTask *task)
 	priv->simulate = TRUE;
 	priv->allow_reinstall = FALSE;
 	priv->allow_downgrade = FALSE;
+	priv->purge = FALSE;
 }
 
 /*

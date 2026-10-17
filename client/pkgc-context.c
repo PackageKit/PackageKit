@@ -224,6 +224,8 @@ pkgc_context_apply_settings (PkgcliContext *ctx)
 		      ctx->allow_downgrade,
 		      "allow-reinstall",
 		      ctx->allow_reinstall,
+		      "purge",
+		      ctx->purge,
 		      "cache-age",
 		      ctx->cache_age,
 		      "only-trusted",

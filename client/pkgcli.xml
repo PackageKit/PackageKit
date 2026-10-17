@@ -310,9 +310,11 @@
         <listitem>
           <para>
             Remove one or more installed packages from the system. This may also
-            remove dependent packages if they are no longer needed.
-            Use with the <literal>--autoremove</literal> option to clean up unused
-            packages as well.
+            remove dependent packages if they are no longer needed. Unused
+            dependencies are removed as well unless <literal>--no-autoremove</literal>
+            is given. Use <literal>--purge</literal> to also delete residual data
+            such as configuration files; this also accepts packages that are not
+            installed anymore but still have residual data left.
           </para>
         </listitem>
       </varlistentry>
@@ -321,7 +323,9 @@
         <listitem>
           <para>
             Install available updates for all installed packages on the system,
-            or for specific packages if specified as arguments.
+            or for specific packages if specified as arguments. With
+            <literal>--purge</literal>, residual data of packages removed by the
+            update is deleted as well.
           </para>
         </listitem>
       </varlistentry>

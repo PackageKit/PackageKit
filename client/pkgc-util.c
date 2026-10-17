@@ -511,6 +511,10 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		info_color = COLOR_BLUE;
 		info_symbol = SYMBOL_PACKAGE;
 		break;
+	case PK_INFO_ENUM_RESIDUAL:
+		info_color = COLOR_YELLOW;
+		info_symbol = SYMBOL_PACKAGE;
+		break;
 	case PK_INFO_ENUM_UPDATE:
 	case PK_INFO_ENUM_UPDATE_SECURITY:
 	case PK_INFO_ENUM_UPDATE_ENHANCEMENT:

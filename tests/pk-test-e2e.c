@@ -1068,6 +1068,35 @@ pk_test_client_local_files_func (void)
 	g_rmdir (dir);
 }
 
+/* the purge flag is a removal modifier: rejected for installs, passed on for removals */
+static void
+pk_test_client_purge_flag_func (void)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkClient) client = pk_client_new ();
+	g_autoptr(PkResults) results = NULL;
+	g_auto(GStrv) package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora;");
+	const PkBitfield purge = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_PURGE);
+
+	results = pk_client_install_packages (client, purge, package_ids, NULL, NULL, NULL, &error);
+	g_assert_error (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_NOT_SUPPORTED);
+	g_assert_null (results);
+	g_clear_error (&error);
+
+	/* the dummy backend ignores the flag and fails its removal the usual way */
+	results = pk_client_remove_packages (client,
+					     purge,
+					     package_ids,
+					     TRUE,
+					     FALSE,
+					     NULL,
+					     NULL,
+					     NULL,
+					     &error);
+	g_assert_nonnull (error);
+	g_assert_nonnull (strstr (error->message, "No network"));
+}
+
 static void
 pk_test_client_cancellation_func (void)
 {
@@ -1973,6 +2002,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/libpackagekit/client", pk_test_client_func);
 	g_test_add_func ("/libpackagekit/client/cancellation", pk_test_client_cancellation_func);
 	g_test_add_func ("/libpackagekit/client/local-files", pk_test_client_local_files_func);
+	g_test_add_func ("/libpackagekit/client/purge-flag", pk_test_client_purge_flag_func);
 	g_test_add_func ("/libpackagekit/package-sack", pk_test_package_sack_func);
 	g_test_add_func ("/libpackagekit/task", pk_test_task_func);
 	g_test_add_func ("/libpackagekit/task-wrapper", pk_test_task_wrapper_func);

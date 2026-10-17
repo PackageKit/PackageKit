@@ -1264,7 +1264,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 			}
 		}
 		if (pk_bitfield_contain (transaction->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
-			if (info == PK_INFO_ENUM_AVAILABLE) {
+			if (info == PK_INFO_ENUM_AVAILABLE || info == PK_INFO_ENUM_RESIDUAL) {
 				role_text = pk_role_enum_to_string (transaction->role);
 				g_warning ("%s emitted package that was ~installed when "
 					   "the installed filter is in place",
@@ -3785,6 +3785,16 @@ pk_transaction_install_files (PkTransaction *transaction,
 		 g_variant_n_children (handles),
 		 transaction_flags_temp);
 
+	/* purging is a removal modifier, it makes no sense when installing */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_PURGE)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "The purge flag is not valid for InstallFiles");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
 	if (!pk_transaction_set_files (transaction,
 				       PK_ROLE_ENUM_INSTALL_FILES,
 				       handles,
@@ -3840,6 +3850,16 @@ pk_transaction_install_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "InstallPackages not supported by backend");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
+	/* purging is a removal modifier, it makes no sense when installing */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_PURGE)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "The purge flag is not valid for InstallPackages");
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}

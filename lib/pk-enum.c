@@ -229,6 +229,8 @@ static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_APPLICATION,	"~application"},
 	{PK_FILTER_ENUM_DOWNLOADED,		"downloaded"},
 	{PK_FILTER_ENUM_NOT_DOWNLOADED,		"~downloaded"},
+	{PK_FILTER_ENUM_RESIDUAL,		"residual"},
+	{PK_FILTER_ENUM_NOT_RESIDUAL,		"~residual"},
 	{0, NULL}
 };
 
@@ -313,6 +315,7 @@ static const PkEnumMatch enum_file_kind[] = {
 static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
+	{PK_INFO_ENUM_RESIDUAL,			"residual"},
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_BLOCKED,			"blocked"},
 	{PK_INFO_ENUM_UNTRUSTED,		"untrusted"},
@@ -387,9 +390,10 @@ static const PkEnumMatch enum_upgrade_kind[] = {
 
 static const PkEnumMatch enum_transaction_flag[] = {
 	{PK_TRANSACTION_FLAG_ENUM_NONE,			"none"},	/* fall though value */
-	{PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,		"only-trusted"},
 	{PK_TRANSACTION_FLAG_ENUM_SIMULATE,		"simulate"},
+	{PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,		"only-trusted"},
 	{PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD,	"only-download"},
+	{PK_TRANSACTION_FLAG_ENUM_PURGE,		"purge"},
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL,	"allow-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,	"just-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE,	"allow-downgrade"},
