@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-17 10:44+0000\n"
+"PO-Revision-Date: 2026-10-17 14:12+0000\n"
 "Last-Translator: Anders Jonsson <haaninjo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -101,7 +101,7 @@ msgstr "Ta inte automatiskt bort oanvända beroenden"
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Ta även bort kvarvarande data (konfigurationsfiler, databaser o.s.v.) när paket tas bort"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -113,10 +113,8 @@ msgid "SECONDS"
 msgstr "SEKUNDER"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Starta om datorn för att färdigställa uppdateringen."
+msgstr "En systemomstart krävs för att färdigställa ändringarna."
 
 #: client/pkgc-manage.c:161
 msgid "You need to log out and back in to complete the changes."
@@ -124,7 +122,7 @@ msgstr "Du behöver logga ut och logga in igen för att färdigställa ändringa
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Påverkade program behöver startas om för att färdigställa ändringarna."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
@@ -742,10 +740,9 @@ msgstr "Varning:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "Alias för %s"
+msgstr "Alias: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
@@ -832,25 +829,23 @@ msgstr "Föråldrar:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
-#| msgid "Issued:"
 msgid "Issues:"
-msgstr "Utfärdad:"
+msgstr "Ärenden:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE:er:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "Rekommendation:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "Referenser:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
@@ -1688,10 +1683,8 @@ msgstr "Hämtar detaljer"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Hämtar beroenden"
+msgstr "Hämtar paket som beror på detta"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1795,10 +1788,8 @@ msgstr "Hämtar uppgraderingar"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "Hämtar transaktioner"
+msgstr "Hämtar transaktionshistorik"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
