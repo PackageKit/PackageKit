@@ -371,6 +371,18 @@ pk_backend_load (PkBackend *backend, GError **error)
 		return FALSE;
 	}
 
+	/* a module for spawned backends is useless without a manifest */
+	if (manifest == NULL && g_module_symbol (handle, "pk_backend_initialize_manifest", &func)) {
+		g_clear_pointer (&backend->desc, g_free);
+		g_module_close (handle);
+		g_set_error (error,
+			     1,
+			     0,
+			     "module %s can only run backends that have a manifest",
+			     backend_name);
+		return FALSE;
+	}
+
 	/* save the backend name and handle */
 	g_free (backend->name);
 	backend->name = g_strdup (backend_name);

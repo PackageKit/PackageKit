@@ -499,6 +499,9 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 			continue;
 		if (g_strstr_len (tmp, -1, "libpk_backend_dummy"))
 			continue;
+		/* only usable together with a backend manifest */
+		if (g_strstr_len (tmp, -1, "libpk_backend_spawn"))
+			continue;
 
 		/* turn 'libpk_backend_apt.so' into 'apt' */
 		name_tmp = g_strdup (tmp + 14);
