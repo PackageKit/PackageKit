@@ -109,11 +109,11 @@ void	     pk_backend_download_packages (PkBackend	*backend,
 					   PkBackendJob *job,
 					   gchar       **package_ids,
 					   const gchar	*directory);
-void	     pk_backend_get_dependencies (PkBackend	 *backend,
-				    PkBackendJob *job,
-				    PkBitfield	  filters,
-				    gchar	**package_ids,
-				    gboolean	  recursive);
+void	     pk_backend_get_dependencies (PkBackend    *backend,
+					  PkBackendJob *job,
+					  PkBitfield	filters,
+					  gchar	      **package_ids,
+					  gboolean	recursive);
 void	     pk_backend_get_details (PkBackend	  *backend,
 				     PkBackendJob *job,
 				     gchar	 **package_ids);
@@ -128,11 +128,11 @@ void	     pk_backend_get_distro_upgrades (PkBackend	  *backend,
 void	     pk_backend_get_files (PkBackend	*backend,
 				   PkBackendJob *job,
 				   gchar       **package_ids);
-void	     pk_backend_get_dependents (PkBackend	  *backend,
-				     PkBackendJob *job,
-				     PkBitfield	   filters,
-				     gchar	 **package_ids,
-				     gboolean	   recursive);
+void	     pk_backend_get_dependents (PkBackend    *backend,
+					PkBackendJob *job,
+					PkBitfield    filters,
+					gchar	    **package_ids,
+					gboolean      recursive);
 void	     pk_backend_get_update_detail (PkBackend	*backend,
 					   PkBackendJob *job,
 					   gchar       **package_ids);

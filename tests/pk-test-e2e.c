@@ -1266,16 +1266,17 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* check roles */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text,
-			 ==,
-			 "cancel;get-dependencies;get-details;get-files;get-packages;get-repo-list;"
-			 "get-dependents;get-update-detail;get-updates;install-files;install-packages;"
-			 "install-signature;"
-			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-			 "search-details;search-file;search-group;search-name;update-packages;"
-			 "what-provides;download-packages;get-distro-upgrades;"
-			 "get-history;repair-system;get-details-local;"
-			 "get-files-local;upgrade-system");
+	g_assert_cmpstr (
+	    text,
+	    ==,
+	    "cancel;get-dependencies;get-details;get-files;get-packages;get-repo-list;"
+	    "get-dependents;get-update-detail;get-updates;install-files;install-packages;"
+	    "install-signature;"
+	    "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
+	    "search-details;search-file;search-group;search-name;update-packages;"
+	    "what-provides;download-packages;get-distro-upgrades;"
+	    "get-history;repair-system;get-details-local;"
+	    "get-files-local;upgrade-system");
 	g_free (text);
 
 	/* check filters */
@@ -1446,16 +1447,17 @@ pk_test_control_func (void)
 
 	/* check data */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text,
-			 ==,
-			 "cancel;get-dependencies;get-details;get-files;get-packages;get-repo-list;"
-			 "get-dependents;get-update-detail;get-updates;install-files;install-packages;"
-			 "install-signature;"
-			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-			 "search-details;search-file;search-group;search-name;update-packages;"
-			 "what-provides;download-packages;get-distro-upgrades;"
-			 "get-history;repair-system;get-details-local;"
-			 "get-files-local;upgrade-system");
+	g_assert_cmpstr (
+	    text,
+	    ==,
+	    "cancel;get-dependencies;get-details;get-files;get-packages;get-repo-list;"
+	    "get-dependents;get-update-detail;get-updates;install-files;install-packages;"
+	    "install-signature;"
+	    "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
+	    "search-details;search-file;search-group;search-name;update-packages;"
+	    "what-provides;download-packages;get-distro-upgrades;"
+	    "get-history;repair-system;get-details-local;"
+	    "get-files-local;upgrade-system");
 	g_free (text);
 
 	g_object_unref (control);

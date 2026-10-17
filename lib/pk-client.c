@@ -3134,14 +3134,14 @@ pk_client_get_history_async (PkClient *client,
  **/
 void
 pk_client_get_dependencies_async (PkClient *client,
-			    PkBitfield filters,
-			    gchar **package_ids,
-			    gboolean recursive,
-			    GCancellable *cancellable,
-			    PkProgressCallback progress_callback,
-			    gpointer progress_user_data,
-			    GAsyncReadyCallback callback_ready,
-			    gpointer user_data)
+				  PkBitfield filters,
+				  gchar **package_ids,
+				  gboolean recursive,
+				  GCancellable *cancellable,
+				  PkProgressCallback progress_callback,
+				  gpointer progress_user_data,
+				  GAsyncReadyCallback callback_ready,
+				  gpointer user_data)
 {
 	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
@@ -3255,14 +3255,14 @@ pk_client_get_packages_async (PkClient *client,
  **/
 void
 pk_client_get_dependents_async (PkClient *client,
-			     PkBitfield filters,
-			     gchar **package_ids,
-			     gboolean recursive,
-			     GCancellable *cancellable,
-			     PkProgressCallback progress_callback,
-			     gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready,
-			     gpointer user_data)
+				PkBitfield filters,
+				gchar **package_ids,
+				gboolean recursive,
+				GCancellable *cancellable,
+				PkProgressCallback progress_callback,
+				gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready,
+				gpointer user_data)
 {
 	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;

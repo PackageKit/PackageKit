@@ -510,14 +510,14 @@ pkgc_query_list_dependencies (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc,
 
 	/* get dependencies */
 	pk_task_get_dependencies_async (PK_TASK (ctx->task),
-				  ctx->filters,
-				  package_ids,
-				  recursive,
-				  ctx->cancellable,
-				  pkgc_context_on_progress_cb,
-				  ctx,
-				  pkgc_query_on_task_finished_cb,
-				  ctx);
+					ctx->filters,
+					package_ids,
+					recursive,
+					ctx->cancellable,
+					pkgc_context_on_progress_cb,
+					ctx,
+					pkgc_query_on_task_finished_cb,
+					ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;
@@ -800,14 +800,14 @@ pkgc_query_list_requiring (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 
 	/* get packages that require this package */
 	pk_task_get_dependents_async (PK_TASK (ctx->task),
-				   ctx->filters,
-				   package_ids,
-				   recursive,
-				   ctx->cancellable,
-				   pkgc_context_on_progress_cb,
-				   ctx,
-				   pkgc_query_on_task_finished_cb,
-				   ctx);
+				      ctx->filters,
+				      package_ids,
+				      recursive,
+				      ctx->cancellable,
+				      pkgc_context_on_progress_cb,
+				      ctx,
+				      pkgc_query_on_task_finished_cb,
+				      ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;

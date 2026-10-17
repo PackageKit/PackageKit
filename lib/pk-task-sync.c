@@ -886,13 +886,13 @@ pk_task_get_updates_sync (PkTask *task,
  **/
 PkResults *
 pk_task_get_dependencies_sync (PkTask *task,
-			 PkBitfield filters,
-			 gchar **package_ids,
-			 gboolean recursive,
-			 GCancellable *cancellable,
-			 PkProgressCallback progress_callback,
-			 gpointer progress_user_data,
-			 GError **error)
+			       PkBitfield filters,
+			       gchar **package_ids,
+			       gboolean recursive,
+			       GCancellable *cancellable,
+			       PkProgressCallback progress_callback,
+			       gpointer progress_user_data,
+			       GError **error)
 {
 	PkTaskHelper helper;
 	PkResults *results;
@@ -911,14 +911,14 @@ pk_task_get_dependencies_sync (PkTask *task,
 
 	/* run async method */
 	pk_task_get_dependencies_async (task,
-				  filters,
-				  package_ids,
-				  recursive,
-				  cancellable,
-				  progress_callback,
-				  progress_user_data,
-				  (GAsyncReadyCallback) pk_task_generic_finish_sync,
-				  &helper);
+					filters,
+					package_ids,
+					recursive,
+					cancellable,
+					progress_callback,
+					progress_user_data,
+					(GAsyncReadyCallback) pk_task_generic_finish_sync,
+					&helper);
 
 	g_main_loop_run (helper.loop);
 
@@ -1011,13 +1011,13 @@ pk_task_get_packages_sync (PkTask *task,
  **/
 PkResults *
 pk_task_get_dependents_sync (PkTask *task,
-			  PkBitfield filters,
-			  gchar **package_ids,
-			  gboolean recursive,
-			  GCancellable *cancellable,
-			  PkProgressCallback progress_callback,
-			  gpointer progress_user_data,
-			  GError **error)
+			     PkBitfield filters,
+			     gchar **package_ids,
+			     gboolean recursive,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GError **error)
 {
 	PkTaskHelper helper;
 	PkResults *results;
@@ -1036,14 +1036,14 @@ pk_task_get_dependents_sync (PkTask *task,
 
 	/* run async method */
 	pk_task_get_dependents_async (task,
-				   filters,
-				   package_ids,
-				   recursive,
-				   cancellable,
-				   progress_callback,
-				   progress_user_data,
-				   (GAsyncReadyCallback) pk_task_generic_finish_sync,
-				   &helper);
+				      filters,
+				      package_ids,
+				      recursive,
+				      cancellable,
+				      progress_callback,
+				      progress_user_data,
+				      (GAsyncReadyCallback) pk_task_generic_finish_sync,
+				      &helper);
 
 	g_main_loop_run (helper.loop);
 

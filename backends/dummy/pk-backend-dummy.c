@@ -139,10 +139,10 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 
 static void
 backend_get_dependencies (PkBackend *backend,
-		    PkBackendJob *job,
-		    PkBitfield filters,
-		    gchar **package_ids,
-		    gboolean recursive)
+			  PkBackendJob *job,
+			  PkBitfield filters,
+			  gchar **package_ids,
+			  gboolean recursive)
 {
 	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 
@@ -403,10 +403,10 @@ backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 
 static void
 backend_get_dependents (PkBackend *backend,
-		     PkBackendJob *job,
-		     PkBitfield filters,
-		     gchar **package_ids,
-		     gboolean recursive)
+			PkBackendJob *job,
+			PkBitfield filters,
+			gchar **package_ids,
+			gboolean recursive)
 {
 	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 

@@ -853,13 +853,13 @@ pk_client_get_history (PkClient *client,
  **/
 PkResults *
 pk_client_get_dependencies (PkClient *client,
-		      PkBitfield filters,
-		      gchar **package_ids,
-		      gboolean recursive,
-		      GCancellable *cancellable,
-		      PkProgressCallback progress_callback,
-		      gpointer progress_user_data,
-		      GError **error)
+			    PkBitfield filters,
+			    gchar **package_ids,
+			    gboolean recursive,
+			    GCancellable *cancellable,
+			    PkProgressCallback progress_callback,
+			    gpointer progress_user_data,
+			    GError **error)
 {
 	PkClientHelper helper;
 	PkResults *results;
@@ -877,14 +877,14 @@ pk_client_get_dependencies (PkClient *client,
 
 	/* run async method */
 	pk_client_get_dependencies_async (client,
-				    filters,
-				    package_ids,
-				    recursive,
-				    cancellable,
-				    progress_callback,
-				    progress_user_data,
-				    (GAsyncReadyCallback) pk_client_generic_finish_sync,
-				    &helper);
+					  filters,
+					  package_ids,
+					  recursive,
+					  cancellable,
+					  progress_callback,
+					  progress_user_data,
+					  (GAsyncReadyCallback) pk_client_generic_finish_sync,
+					  &helper);
 
 	g_main_loop_run (helper.loop);
 
@@ -983,13 +983,13 @@ pk_client_get_packages (PkClient *client,
  **/
 PkResults *
 pk_client_get_dependents (PkClient *client,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean recursive,
-		       GCancellable *cancellable,
-		       PkProgressCallback progress_callback,
-		       gpointer progress_user_data,
-		       GError **error)
+			  PkBitfield filters,
+			  gchar **package_ids,
+			  gboolean recursive,
+			  GCancellable *cancellable,
+			  PkProgressCallback progress_callback,
+			  gpointer progress_user_data,
+			  GError **error)
 {
 	PkClientHelper helper;
 	PkResults *results;
@@ -1007,14 +1007,14 @@ pk_client_get_dependents (PkClient *client,
 
 	/* run async method */
 	pk_client_get_dependents_async (client,
-				     filters,
-				     package_ids,
-				     recursive,
-				     cancellable,
-				     progress_callback,
-				     progress_user_data,
-				     (GAsyncReadyCallback) pk_client_generic_finish_sync,
-				     &helper);
+					filters,
+					package_ids,
+					recursive,
+					cancellable,
+					progress_callback,
+					progress_user_data,
+					(GAsyncReadyCallback) pk_client_generic_finish_sync,
+					&helper);
 
 	g_main_loop_run (helper.loop);
 

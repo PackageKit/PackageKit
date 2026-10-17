@@ -1917,10 +1917,10 @@ pk_transaction_run (PkTransaction *transaction)
 	switch (transaction->role) {
 	case PK_ROLE_ENUM_GET_DEPENDENCIES:
 		pk_backend_get_dependencies (transaction->backend,
-				       transaction->job,
-				       transaction->cached_filters,
-				       transaction->cached_package_ids,
-				       transaction->cached_force);
+					     transaction->job,
+					     transaction->cached_filters,
+					     transaction->cached_package_ids,
+					     transaction->cached_force);
 		break;
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
 		pk_backend_get_update_detail (transaction->backend,
@@ -1964,10 +1964,10 @@ pk_transaction_run (PkTransaction *transaction)
 		break;
 	case PK_ROLE_ENUM_GET_DEPENDENTS:
 		pk_backend_get_dependents (transaction->backend,
-					transaction->job,
-					transaction->cached_filters,
-					transaction->cached_package_ids,
-					transaction->cached_force);
+					   transaction->job,
+					   transaction->cached_filters,
+					   transaction->cached_package_ids,
+					   transaction->cached_force);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		pk_backend_what_provides (transaction->backend,
@@ -3087,8 +3087,8 @@ out:
 
 static void
 pk_transaction_get_dependencies (PkTransaction *transaction,
-			   GVariant *params,
-			   GDBusMethodInvocation *context)
+				 GVariant *params,
+				 GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	gchar *package_ids_temp;
@@ -3511,8 +3511,8 @@ out:
 
 static void
 pk_transaction_get_dependents (PkTransaction *transaction,
-			    GVariant *params,
-			    GDBusMethodInvocation *context)
+			       GVariant *params,
+			       GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	PkBitfield filter;

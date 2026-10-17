@@ -997,10 +997,10 @@ pk_backend_download_packages (PkBackend *backend,
 
 void
 pk_backend_get_dependencies (PkBackend *backend,
-		       PkBackendJob *job,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean recursive)
+			     PkBackendJob *job,
+			     PkBitfield filters,
+			     gchar **package_ids,
+			     gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());
@@ -1089,10 +1089,10 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 
 void
 pk_backend_get_dependents (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield filters,
-			gchar **package_ids,
-			gboolean recursive)
+			   PkBackendJob *job,
+			   PkBitfield filters,
+			   gchar **package_ids,
+			   gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());

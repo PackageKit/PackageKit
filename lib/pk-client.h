@@ -219,15 +219,15 @@ void	     pk_client_get_history_async (PkClient	     *client,
 					  GAsyncReadyCallback callback_ready,
 					  gpointer	      user_data);
 
-void	     pk_client_get_dependencies_async (PkClient	    *client,
-					 PkBitfield	     filters,
-					 gchar		   **package_ids,
-					 gboolean	     recursive,
-					 GCancellable	    *cancellable,
-					 PkProgressCallback  progress_callback,
-					 gpointer	     progress_user_data,
-					 GAsyncReadyCallback callback_ready,
-					 gpointer	     user_data);
+void	     pk_client_get_dependencies_async (PkClient		  *client,
+					       PkBitfield	   filters,
+					       gchar		 **package_ids,
+					       gboolean		   recursive,
+					       GCancellable	  *cancellable,
+					       PkProgressCallback  progress_callback,
+					       gpointer		   progress_user_data,
+					       GAsyncReadyCallback callback_ready,
+					       gpointer		   user_data);
 
 void	     pk_client_get_packages_async (PkClient	      *client,
 					   PkBitfield	       filters,
@@ -237,15 +237,15 @@ void	     pk_client_get_packages_async (PkClient	      *client,
 					   GAsyncReadyCallback callback_ready,
 					   gpointer	       user_data);
 
-void	     pk_client_get_dependents_async (PkClient	     *client,
-					  PkBitfield	      filters,
-					  gchar		    **package_ids,
-					  gboolean	      recursive,
-					  GCancellable	     *cancellable,
-					  PkProgressCallback  progress_callback,
-					  gpointer	      progress_user_data,
-					  GAsyncReadyCallback callback_ready,
-					  gpointer	      user_data);
+void	     pk_client_get_dependents_async (PkClient		*client,
+					     PkBitfield		 filters,
+					     gchar	       **package_ids,
+					     gboolean		 recursive,
+					     GCancellable	*cancellable,
+					     PkProgressCallback	 progress_callback,
+					     gpointer		 progress_user_data,
+					     GAsyncReadyCallback callback_ready,
+					     gpointer		 user_data);
 
 void	     pk_client_what_provides_async (PkClient	       *client,
 					    PkBitfield		filters,

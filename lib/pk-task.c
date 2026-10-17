@@ -304,14 +304,14 @@ pk_task_do_async_action (GTask *gtask)
 					     g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENCIES) {
 		pk_client_get_dependencies_async (PK_CLIENT (task),
-					    state->filters,
-					    state->package_ids,
-					    state->recursive,
-					    cancellable,
-					    state->progress_callback,
-					    state->progress_user_data,
-					    pk_task_ready_cb,
-					    g_steal_pointer (&gtask));
+						  state->filters,
+						  state->package_ids,
+						  state->recursive,
+						  cancellable,
+						  state->progress_callback,
+						  state->progress_user_data,
+						  pk_task_ready_cb,
+						  g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
 		pk_client_get_packages_async (PK_CLIENT (task),
 					      state->filters,
@@ -322,14 +322,14 @@ pk_task_do_async_action (GTask *gtask)
 					      g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_DEPENDENTS) {
 		pk_client_get_dependents_async (PK_CLIENT (task),
-					     state->filters,
-					     state->package_ids,
-					     state->recursive,
-					     cancellable,
-					     state->progress_callback,
-					     state->progress_user_data,
-					     pk_task_ready_cb,
-					     g_steal_pointer (&gtask));
+						state->filters,
+						state->package_ids,
+						state->recursive,
+						cancellable,
+						state->progress_callback,
+						state->progress_user_data,
+						pk_task_ready_cb,
+						g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 		pk_client_what_provides_async (PK_CLIENT (task),
 					       state->filters,
@@ -1898,14 +1898,14 @@ pk_task_get_updates_async (PkTask *task,
  **/
 void
 pk_task_get_dependencies_async (PkTask *task,
-			  PkBitfield filters,
-			  gchar **package_ids,
-			  gboolean recursive,
-			  GCancellable *cancellable,
-			  PkProgressCallback progress_callback,
-			  gpointer progress_user_data,
-			  GAsyncReadyCallback callback_ready,
-			  gpointer user_data)
+				PkBitfield filters,
+				gchar **package_ids,
+				gboolean recursive,
+				GCancellable *cancellable,
+				PkProgressCallback progress_callback,
+				gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready,
+				gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -2005,14 +2005,14 @@ pk_task_get_packages_async (PkTask *task,
  **/
 void
 pk_task_get_dependents_async (PkTask *task,
-			   PkBitfield filters,
-			   gchar **package_ids,
-			   gboolean recursive,
-			   GCancellable *cancellable,
-			   PkProgressCallback progress_callback,
-			   gpointer progress_user_data,
-			   GAsyncReadyCallback callback_ready,
-			   gpointer user_data)
+			      PkBitfield filters,
+			      gchar **package_ids,
+			      gboolean recursive,
+			      GCancellable *cancellable,
+			      PkProgressCallback progress_callback,
+			      gpointer progress_user_data,
+			      GAsyncReadyCallback callback_ready,
+			      gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
