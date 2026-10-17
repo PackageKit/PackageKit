@@ -1,0 +1,36 @@
+FROM registry.gitlab.com/pld-linux/pld:latest
+
+# the image lags behind the repository, and installing into it can need newer core packages
+RUN poldek --up -q && poldek --upgrade-dist --noprogress -q --noask
+# the GTK module and the GStreamer plugin are disabled in the CI job, so their
+# build dependencies are not installed
+RUN poldek -uvg --noprogress -q --noask \
+	bash-completion-devel \
+	dbus \
+	docbook-style-xsl \
+	gcc \
+	gettext-tools \
+	glib2-devel \
+	gnupg-agent \
+	gnupg2 \
+	gobject-introspection-devel \
+	jansson-devel \
+	libxslt-progs \
+	meson \
+	ninja \
+	pkgconfig \
+	poldek-devel \
+	polkit \
+	polkit-devel \
+	python3 \
+	python3-modules \
+	rpm-build \
+	rpm-devel \
+	rpm-sign \
+	shared-mime-info \
+	sqlite3-devel \
+	systemd-devel \
+	vala
+
+RUN mkdir /build
+WORKDIR /build
