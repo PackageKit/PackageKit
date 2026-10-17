@@ -95,7 +95,8 @@ pk_test_bitfield_func (void)
 
 	/* check we can add / remove bitfield */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) |
+		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_string (filter);
@@ -104,7 +105,8 @@ pk_test_bitfield_func (void)
 
 	/* check we can test enum presence */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_APPLICATION) |
+		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	g_assert_true (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT));
 
 	/* check we can test enum false-presence */

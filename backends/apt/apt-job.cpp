@@ -1452,8 +1452,8 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
         if (m_cancel)
             break;
 
-        g_autoptr(AsComponentBox) result =
-            as_pool_get_components_by_provided_item(pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
+        g_autoptr(AsComponentBox)
+            result = as_pool_get_components_by_provided_item(pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
         for (guint j = 0; j < as_component_box_len(result); j++) {
             AsComponent *cpt = as_component_box_index(result, j);
             const gchar *pkgname = as_component_get_pkgname(cpt);

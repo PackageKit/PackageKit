@@ -770,7 +770,7 @@ pkgc_query_list_requiring (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 	g_autoptr(GOptionContext) option_context = NULL;
 
 	/* Each option is one record per line; clang-format would put every field
- * on a line of its own and make the table unreadable. */
+	 * on a line of its own and make the table unreadable. */
 	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "recursive", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &recursive,

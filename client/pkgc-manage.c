@@ -424,15 +424,23 @@ pkgc_remove_resolve_for_purge (PkgcliContext *ctx, gchar **packages, GError **er
 
 	for (guint i = 0; packages[i] != NULL; i++) {
 		g_autoptr(GError) error_local = NULL;
-		gchar *package_id = pkgc_resolve_package (ctx, ctx->filters, packages[i], &error_local);
+		gchar *package_id = pkgc_resolve_package (ctx,
+							  ctx->filters,
+							  packages[i],
+							  &error_local);
 
 		if (package_id == NULL &&
 		    g_error_matches (error_local, PKGC_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
 			g_clear_error (&error_local);
-			package_id = pkgc_resolve_package (ctx, residual_filters, packages[i], &error_local);
+			package_id = pkgc_resolve_package (ctx,
+							   residual_filters,
+							   packages[i],
+							   &error_local);
 		}
 		if (package_id == NULL) {
-			if (g_error_matches (error_local, PKGC_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
+			if (g_error_matches (error_local,
+					     PKGC_ERROR,
+					     PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
 				pkgc_print_warning (ctx, _("Package not found: %s"), packages[i]);
 				continue;
 			}
