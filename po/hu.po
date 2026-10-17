@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-10-10 10:05+0200\n"
+"POT-Creation-Date: 2026-10-17 10:34+0200\n"
 "PO-Revision-Date: 2026-03-26 19:09+0000\n"
 "Last-Translator: Romhányi-Kakucska Viktor <viktor@romhanyi.dev>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/packagekit/translations/hu/>\n"
@@ -67,127 +67,153 @@ msgstr "Rendszerfrissítés telepítése, ez eltarthat egy ideig…"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:130
+#: client/pkgc-context.c:131
 msgid "The daemon crashed mid-transaction!"
 msgstr "A démon tranzakció közben összeomlott!"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:43
+#: client/pkgc-manage.c:44
 msgid "Prepare the transaction by downloading packages only"
 msgstr "A tranzakció előkészítése a csomagok letöltésével"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:50
+#: client/pkgc-manage.c:51
 #, fuzzy
 msgid "Allow package downgrades"
 msgstr "Csomagok visszafejlesztésének engedélyezése a tranzakció során"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:57
+#: client/pkgc-manage.c:58
 #, fuzzy
 msgid "Allow package re-installations"
 msgstr "Csomagok újratelepítésének engedélyezése a tranzakció során"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:64
+#: client/pkgc-manage.c:65
 #, fuzzy
 msgid "Allow installation of untrusted packages"
 msgstr "A telepített csomag régebbi verziójának telepítése"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:71
+#: client/pkgc-manage.c:72
 #, fuzzy
 #| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
 msgstr "Nem használt függőségek automatikus eltávolítása"
 
+#. TRANSLATORS: command line argument, remove configuration files too
+#: client/pkgc-manage.c:79
+msgid "Also remove residual data (config files, databases, etc.) when removing packages"
+msgstr ""
+
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:78
+#: client/pkgc-manage.c:86
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
 msgstr "A metaadatok gyorsítótárának maximális érvényességi ideje másodpercben (alapértelmezett: 3 nap)"
 
-#: client/pkgc-manage.c:78
+#: client/pkgc-manage.c:86
 msgid "SECONDS"
 msgstr "MÁSODPERC"
 
+#: client/pkgc-manage.c:156
+#, fuzzy
+#| msgid "Please restart the computer to complete the update."
+msgid "A system restart is required to complete the changes."
+msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez."
+
+#: client/pkgc-manage.c:161
+#, fuzzy
+#| msgid "Please logout and login to complete the update."
+msgid "You need to log out and back in to complete the changes."
+msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
+
+#: client/pkgc-manage.c:167
+msgid "Affected applications need to be restarted to complete the changes."
+msgstr ""
+
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:203
+#: client/pkgc-manage.c:256
 #, fuzzy
 msgid "Refresh the package metadata cache."
 msgstr "A gyorsítótár frissítése"
 
-#: client/pkgc-manage.c:229
+#: client/pkgc-manage.c:282
 msgid "Package metadata refreshed"
 msgstr "Csomag metaadatai frissültek"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:254
+#: client/pkgc-manage.c:307
 msgid "Install one or more packages or local package files."
 msgstr "Telepítsen egy vagy több csomagot, illetve helyi csomagfájlt."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:316 client/pkgc-manage.c:330
+#: client/pkgc-manage.c:369 client/pkgc-manage.c:383
 #, fuzzy, c-format
 msgid "Could not find any available package: %s"
 msgstr "Az eszköz nem talál elérhető csomagokat: %s"
 
-#: client/pkgc-manage.c:335
+#: client/pkgc-manage.c:388
 #, fuzzy
 msgid "The selected package is already installed."
 msgstr "A kiválasztott csomagok már telepítve lehetnek."
 
+#: client/pkgc-manage.c:444 client/pkgc-util.c:1288
+#, fuzzy, c-format
+msgid "Package not found: %s"
+msgstr "Csomag nem található"
+
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:376
+#: client/pkgc-manage.c:485
 msgid "Remove one or more packages from the system."
 msgstr "Távolítson el egy vagy több csomagot a rendszerből."
 
-#: client/pkgc-manage.c:393
+#: client/pkgc-manage.c:506
 #, fuzzy, c-format
 msgid "Could not find installed packages: %s"
 msgstr "Az eszköz nem találja a csomagot: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:435
+#: client/pkgc-manage.c:548
 msgid "Download packages to the specified directory without installing."
 msgstr "Töltse le a csomagokat a megadott könyvtárba telepítés nélkül."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
-#: client/pkgc-manage.c:448 client/pkgc-query.c:439 client/pkgc-query.c:786
+#: client/pkgc-manage.c:561 client/pkgc-query.c:450 client/pkgc-query.c:797
 #, fuzzy, c-format
 msgid "Could not find packages: %s"
 msgstr "Az eszköz nem találja a csomagot: %s"
 
-#: client/pkgc-manage.c:456
+#: client/pkgc-manage.c:569
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "Könyvtár nem létezik: %s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:500
+#: client/pkgc-manage.c:613
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Frissítse az összes csomagot vagy a kívánt csomagokat a legújabb verzióra."
 
-#: client/pkgc-manage.c:522
+#: client/pkgc-manage.c:636
 #, fuzzy, c-format
 msgid "Could not find packages to update: %s"
 msgstr "Az eszköz nem találja a csomagot: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:653 client/pkgc-manage.c:885
+#: client/pkgc-manage.c:666 client/pkgc-manage.c:767 client/pkgc-manage.c:999
 #, fuzzy, c-format
 msgid "Failed to get updates: %s"
 msgstr "A démon állapotának lekérése meghiúsult"
 
-#: client/pkgc-manage.c:564 client/pkgc-manage.c:664 client/pkgc-manage.c:893
+#: client/pkgc-manage.c:678 client/pkgc-manage.c:778 client/pkgc-manage.c:1007
 #, fuzzy
 msgid "No packages require updating"
 msgstr "Nincsenek frissítést igénylő csomagok."
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:604
+#: client/pkgc-manage.c:718
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -197,69 +223,69 @@ msgstr ""
 "\n"
 "Típusok: minimal, default, complete"
 
-#: client/pkgc-manage.c:701
+#: client/pkgc-manage.c:815
 #, fuzzy, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
-#: client/pkgc-manage.c:711
+#: client/pkgc-manage.c:825
 #, fuzzy
 msgid "Offline update is not triggered."
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#: client/pkgc-manage.c:720
+#: client/pkgc-manage.c:834
 #, fuzzy, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:731
+#: client/pkgc-manage.c:845
 #, fuzzy
 msgid "Prepared packages:"
 msgstr "Előkészített frissítések:"
 
-#: client/pkgc-manage.c:745
+#: client/pkgc-manage.c:859
 #, fuzzy
 msgid "No offline update is prepared."
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#: client/pkgc-manage.c:748
+#: client/pkgc-manage.c:862
 #, fuzzy, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
-#: client/pkgc-manage.c:759
+#: client/pkgc-manage.c:873
 #, fuzzy
 msgid "No results from last offline update available."
 msgstr "Frissítési információk letöltése"
 
-#: client/pkgc-manage.c:766
+#: client/pkgc-manage.c:880
 #, fuzzy, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#: client/pkgc-manage.c:773
+#: client/pkgc-manage.c:887
 #, fuzzy
 msgid "Last offline update completed successfully"
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#: client/pkgc-manage.c:783
+#: client/pkgc-manage.c:897
 #, fuzzy, c-format
 msgid "Updated: %s"
 msgstr "Frissítve"
 
-#: client/pkgc-manage.c:807
+#: client/pkgc-manage.c:921
 #, fuzzy, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
-#: client/pkgc-manage.c:811
+#: client/pkgc-manage.c:925
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "Offline frissítés ütemezve. A rendszer a következő újraindításkor frissül."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:831
+#: client/pkgc-manage.c:945
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -270,101 +296,101 @@ msgid ""
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
-#: client/pkgc-manage.c:853
+#: client/pkgc-manage.c:967
 #, fuzzy, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "Az automata megoldása sikertelen: %s"
 
-#: client/pkgc-manage.c:857
+#: client/pkgc-manage.c:971
 #, fuzzy
 msgid "Offline update cancelled"
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#: client/pkgc-manage.c:914
+#: client/pkgc-manage.c:1028
 #, fuzzy, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:935
+#: client/pkgc-manage.c:1049
 #, fuzzy
 msgid "Install a package signature for GPG verification."
 msgstr "Telepíti a csomagokat megerősítés kérése nélkül"
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:971
+#: client/pkgc-manage.c:1085
 msgid "Attempt to repair the package management system."
 msgstr ""
 
-#: client/pkgc-manage.c:987
+#: client/pkgc-manage.c:1101
 msgid "System repaired successfully"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:1009
+#: client/pkgc-manage.c:1123
 msgid "Safely terminate the PackageKit daemon."
 msgstr ""
 
-#: client/pkgc-manage.c:1015
+#: client/pkgc-manage.c:1129
 #, fuzzy, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "A démon állapotának lekérése meghiúsult"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
-#: client/pkgc-manage.c:1035
+#: client/pkgc-manage.c:1149
 msgid "Refresh package metadata"
 msgstr ""
 
 #. TRANSLATORS: Description for install command in pkgcli help
-#: client/pkgc-manage.c:1042
+#: client/pkgc-manage.c:1156
 #, fuzzy
 msgid "Install packages"
 msgstr "Csomag telepítése"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
-#: client/pkgc-manage.c:1049
+#: client/pkgc-manage.c:1163
 #, fuzzy
 msgid "Remove packages"
 msgstr "Csomag eltávolítása"
 
 #. TRANSLATORS: Description for update command in pkgcli help
-#: client/pkgc-manage.c:1056
+#: client/pkgc-manage.c:1170
 #, fuzzy
 msgid "Update packages"
 msgstr "Csomagok frissítése"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
-#: client/pkgc-manage.c:1063
+#: client/pkgc-manage.c:1177
 #, fuzzy
 msgid "Upgrade the system"
 msgstr "Rendszer frissítése"
 
 #. TRANSLATORS: Description for download command in pkgcli help
-#: client/pkgc-manage.c:1070
+#: client/pkgc-manage.c:1184
 #, fuzzy
 msgid "Download packages"
 msgstr "Csomagok letöltése"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
-#: client/pkgc-manage.c:1077
+#: client/pkgc-manage.c:1191
 #, fuzzy
 msgid "Manage offline system updates"
 msgstr "Nincsenek frissítendő csomagok."
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
-#: client/pkgc-manage.c:1084
+#: client/pkgc-manage.c:1198
 #, fuzzy
 msgid "Install package signature"
 msgstr "Aláírás telepítése"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
-#: client/pkgc-manage.c:1091
+#: client/pkgc-manage.c:1205
 #, fuzzy
 msgid "Repair package system"
 msgstr "Rendszer javítása"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
-#: client/pkgc-manage.c:1098
+#: client/pkgc-manage.c:1212
 msgid "Safely stop the PackageKit daemon"
 msgstr ""
 
@@ -389,39 +415,39 @@ msgid "Monitor PackageKit bus events"
 msgstr "PackageKit szolgáltatás"
 
 #. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:165
+#: client/pkgc-query.c:174
 msgid "Show PackageKit backend information."
 msgstr ""
 
-#: client/pkgc-query.c:209
+#: client/pkgc-query.c:218
 #, c-format
 msgid "Backend: %s"
 msgstr ""
 
-#: client/pkgc-query.c:212
+#: client/pkgc-query.c:221
 #, fuzzy, c-format
 msgid "Description: %s"
 msgstr "Leírás"
 
-#: client/pkgc-query.c:215
+#: client/pkgc-query.c:224
 #, fuzzy, c-format
 msgid "Author: %s"
 msgstr "Szerző"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:221
+#: client/pkgc-query.c:230
 #, fuzzy, c-format
 msgid "Roles: %s"
 msgstr "Szerep"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
+#: client/pkgc-query.c:254
 msgid "Show recent package management transactions."
 msgstr ""
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
+#: client/pkgc-query.c:295
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -432,196 +458,196 @@ msgid ""
 "  group   - search by package group"
 msgstr ""
 
-#: client/pkgc-query.c:312
+#: client/pkgc-query.c:323
 #, fuzzy
 msgid "No search pattern specified"
 msgstr "Keresőkifejezés szükséges"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:373
+#: client/pkgc-query.c:384
 msgid "List all packages or those matching a pattern."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:418
+#: client/pkgc-query.c:429
 msgid "Show information about one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:477 client/pkgc-query.c:766
+#: client/pkgc-query.c:488 client/pkgc-query.c:777
 msgid "Check dependencies recursively"
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:488
+#. TRANSLATORS: Description for pkgcli list-dependencies
+#: client/pkgc-query.c:499
 msgid "Show dependencies for one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:496 client/pkgc-query.c:580 client/pkgc-query.c:697
+#: client/pkgc-query.c:507 client/pkgc-query.c:591 client/pkgc-query.c:708
 #, fuzzy, c-format
 msgid "Could not resolve packages: %s"
 msgstr "Az automata megoldása sikertelen: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:529
+#: client/pkgc-query.c:540
 msgid "Show which packages provide the specified capability."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:561
+#: client/pkgc-query.c:572
 msgid "List all files contained in one or more packages."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:657
+#: client/pkgc-query.c:668
 #, fuzzy
 msgid "List all currently available package updates."
 msgstr "Az eszköz nem talál elérhető csomagokat: %s"
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:690
+#: client/pkgc-query.c:701
 msgid "Show detailed information about the specified package update."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:729
+#: client/pkgc-query.c:740
 msgid "Resolve package names to package IDs."
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:777
+#. TRANSLATORS: Description for pkgcli list-requiring
+#: client/pkgc-query.c:788
 msgid "Show which packages require the specified packages."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:821
+#: client/pkgc-query.c:832
 msgid "List all available filters and groups for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:829
+#: client/pkgc-query.c:840
 msgid "Filters:"
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:841
+#: client/pkgc-query.c:852
 msgid "Groups:"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:864
+#: client/pkgc-query.c:875
 msgid "Show distribution version upgrades, if any are available."
 msgstr ""
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkgc-query.c:896
+#: client/pkgc-query.c:907
 msgid "Failed to get the time since this action was last completed"
 msgstr "A művelet utolsó végrehajtása óta eltelt idő lekérése meghiúsult"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:909
+#: client/pkgc-query.c:920
 #, fuzzy
 msgid "Elapsed time"
 msgstr "Rendszeridő"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
+#: client/pkgc-query.c:945
 msgid "Get time in seconds since the last specified action."
 msgstr ""
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: client/pkgc-query.c:945
+#: client/pkgc-query.c:956
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Egy művelet, például az „update-packages” szükséges"
 
 #. TRANSLATORS: The user specified an invalid action
-#: client/pkgc-query.c:953
+#: client/pkgc-query.c:964
 msgid "A correct role is required"
 msgstr "Megfelelő szerep szükséges"
 
 #. TRANSLATORS: Description for backend command in pkgcli help
-#: client/pkgc-query.c:977
+#: client/pkgc-query.c:988
 #, fuzzy
 msgid "Show backend information"
 msgstr "Információk lekérése"
 
 #. TRANSLATORS: Description for history command in pkgcli help
-#: client/pkgc-query.c:984
+#: client/pkgc-query.c:995
 #, fuzzy
 msgid "Show transaction history"
 msgstr "A tranzakció meghiúsult"
 
 #. TRANSLATORS: Description for search command in pkgcli help
-#: client/pkgc-query.c:991
+#: client/pkgc-query.c:1002
 #, fuzzy
 msgid "Search for packages"
 msgstr "Keresés nevek szerint"
 
 #. TRANSLATORS: Description for list command in pkgcli help
-#: client/pkgc-query.c:998
+#: client/pkgc-query.c:1009
 #, fuzzy
 msgid "List packages"
 msgstr "Csomag telepítése"
 
 #. TRANSLATORS: Description for show command in pkgcli help
-#: client/pkgc-query.c:1005
+#: client/pkgc-query.c:1016
 #, fuzzy
 msgid "Show package information"
 msgstr "Frissítési információk letöltése"
 
-#. TRANSLATORS: Description for list-depends command in pkgcli help
-#: client/pkgc-query.c:1012
+#. TRANSLATORS: Description for list-dependencies command in pkgcli help
+#: client/pkgc-query.c:1023
 msgid "List dependencies of the specified package(s)"
 msgstr ""
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
-#: client/pkgc-query.c:1019
+#: client/pkgc-query.c:1031
 #, fuzzy
 msgid "List other packages requiring the specified package(s)"
 msgstr "A fájlt biztosító csomag:"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
-#: client/pkgc-query.c:1026
+#: client/pkgc-query.c:1039
 #, fuzzy
 msgid "List packages providing a capability"
 msgstr "A fájlt biztosító csomag:"
 
 #. TRANSLATORS: Description for files command in pkgcli help
-#: client/pkgc-query.c:1033
+#: client/pkgc-query.c:1046
 #, fuzzy
 msgid "Show files in package"
 msgstr "Csomagok elavulttá tétele"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
-#: client/pkgc-query.c:1040
+#: client/pkgc-query.c:1053
 #, fuzzy
 msgid "Get available updates"
 msgstr "Frissítések lekérése"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
-#: client/pkgc-query.c:1047
+#: client/pkgc-query.c:1060
 #, fuzzy
 msgid "Get update details"
 msgstr "Frissítés részleteinek lekérése"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
-#: client/pkgc-query.c:1054
+#: client/pkgc-query.c:1067
 #, fuzzy
 msgid "Resolve package names"
 msgstr "Csomag eltávolítása"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
-#: client/pkgc-query.c:1061
+#: client/pkgc-query.c:1074
 msgid "List available filters and groups"
 msgstr ""
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
-#: client/pkgc-query.c:1068
+#: client/pkgc-query.c:1081
 msgid "Show available distribution upgrades"
 msgstr ""
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
-#: client/pkgc-query.c:1075
+#: client/pkgc-query.c:1088
 #, fuzzy
 msgid "Get time since last action"
 msgstr "Tranzakciók lekérése"
@@ -747,235 +773,231 @@ msgstr ""
 msgid "Warning:"
 msgstr ""
 
+#. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
+#: client/pkgc-util.c:409
+#, fuzzy, c-format
+#| msgid "Alias to %s"
+msgid "Alias: %s"
+msgstr "Álnév erre: %s"
+
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:433 client/pkgcli.c:194
+#: client/pkgc-util.c:443 client/pkgcli.c:194
 #, fuzzy, c-format
 msgid "Failed to parse options: %s"
 msgstr "Az automata megoldása sikertelen: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:441
+#: client/pkgc-util.c:451
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr ""
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:552
+#: client/pkgc-util.c:566
 msgid "high"
 msgstr ""
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:557
+#: client/pkgc-util.c:571
 msgid "critical"
 msgstr ""
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:673 client/pkgc-util.c:828
+#: client/pkgc-util.c:687 client/pkgc-util.c:859
 #, fuzzy
 msgid "Package:"
 msgstr "Csomag"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:677
+#: client/pkgc-util.c:691
 msgid "Version:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:683
+#: client/pkgc-util.c:697
 #, fuzzy
 msgid "Summary:"
 msgstr "Összegzés"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:691
+#: client/pkgc-util.c:705
 #, fuzzy
 msgid "Description:"
 msgstr "Leírás"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:698
+#: client/pkgc-util.c:712
 msgid "License:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:705
+#: client/pkgc-util.c:719
 msgid "URL:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:713
+#: client/pkgc-util.c:727
 msgid "Group:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:721
+#: client/pkgc-util.c:735
 #, fuzzy
 msgid "Installed Size:"
 msgstr "Telepítve"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:730
+#: client/pkgc-util.c:744
 #, fuzzy
 msgid "Download Size:"
 msgstr "Letöltve"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:824
+#: client/pkgc-util.c:855
 #, fuzzy
 msgid "Update Details:"
 msgstr "Frissítési szöveg"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:835
+#: client/pkgc-util.c:866
 #, fuzzy
 msgid "Updates:"
 msgstr "Frissítések"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:844
+#: client/pkgc-util.c:875
 #, fuzzy
 msgid "Obsoletes:"
 msgstr "Elavult"
 
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:853
+#. TRANSLATORS: Label for issue tracker entries in update details
+#: client/pkgc-util.c:886
 #, fuzzy
-msgid "Vendor:"
-msgstr "Gyártó"
+msgid "Issues:"
+msgstr "Kiadva"
 
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:862
-msgid "Issue Tracker:"
+#. TRANSLATORS: Label for CVE records in update details
+#: client/pkgc-util.c:888
+msgid "CVEs:"
 msgstr ""
 
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:871
-msgid "CVE:"
+#. TRANSLATORS: Label for the distributor's advisory in update details
+#: client/pkgc-util.c:890
+msgid "Advisory:"
+msgstr ""
+
+#. TRANSLATORS: Label for references of unknown kind in update details
+#: client/pkgc-util.c:892
+msgid "References:"
 msgstr ""
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:879
+#: client/pkgc-util.c:928
 #, fuzzy
 msgid "Restart:"
 msgstr "Újraindítás"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:888
+#: client/pkgc-util.c:937
 #, fuzzy
 msgid "Update text:"
 msgstr "Frissítési szöveg"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:895
+#: client/pkgc-util.c:944
 #, fuzzy
 msgid "Changes:"
 msgstr "Változások"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:902
+#: client/pkgc-util.c:951
 #, fuzzy
 msgid "State:"
 msgstr "Állapot"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:911
+#: client/pkgc-util.c:960
 #, fuzzy
 msgid "Issued:"
 msgstr "Kiadva"
 
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:918
-#, fuzzy
-msgid "Updated:"
-msgstr "Frissítve"
-
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:1035
+#: client/pkgc-util.c:1076
 #, fuzzy
 msgid "Transaction:"
 msgstr "Tranzakció"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:1039
+#: client/pkgc-util.c:1080
 #, fuzzy
 msgid "System time:"
 msgstr "Rendszeridő"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1043
+#: client/pkgc-util.c:1084
 #, fuzzy
 msgid "Succeeded:"
 msgstr "Sikeres"
 
-#: client/pkgc-util.c:1047
+#: client/pkgc-util.c:1088
 msgid "True"
 msgstr "Igaz"
 
-#: client/pkgc-util.c:1048
+#: client/pkgc-util.c:1089
 msgid "False"
 msgstr "Hamis"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1052
+#: client/pkgc-util.c:1093
 #, fuzzy
 msgid "Role:"
 msgstr "Szerep"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1059
+#: client/pkgc-util.c:1100
 #, fuzzy
 msgid "Duration:"
 msgstr "Időtartam"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1066
+#: client/pkgc-util.c:1107
 #, fuzzy
 msgid "Command line:"
 msgstr "Parancssor"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1072
+#: client/pkgc-util.c:1113
 #, fuzzy
 msgid "User ID:"
 msgstr "Felhasználóazonosító"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1081
+#: client/pkgc-util.c:1122
 #, fuzzy
 msgid "Username:"
 msgstr "Felhasználónév"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1087
+#: client/pkgc-util.c:1128
 #, fuzzy
 msgid "Real name:"
 msgstr "Valódi név"
 
 #. TRANSLATORS: Label for affected packages in transaction
-#: client/pkgc-util.c:1098 client/pkgc-util.c:1116
+#: client/pkgc-util.c:1136
 msgid "Affected packages:"
 msgstr "Érintett csomagok:"
 
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1119
-msgid "None"
-msgstr ""
-
-#: client/pkgc-util.c:1208
+#: client/pkgc-util.c:1232
 msgid "More than one package matches:"
 msgstr "Több csomag illeszkedik:"
 
 #. prompt user for selection
-#: client/pkgc-util.c:1220
+#: client/pkgc-util.c:1244
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Válassza ki a megfelelő csomagot: "
-
-#: client/pkgc-util.c:1264
-#, fuzzy, c-format
-msgid "Package not found: %s"
-msgstr "Csomag nem található"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:79
@@ -1445,7 +1467,7 @@ msgstr "Csomagok eltávolítása"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:419 lib/pk-enum.c:1237
+#: lib/pk-console-private.c:419 lib/pk-enum.c:1358
 msgid "Downloading packages"
 msgstr "Csomagok letöltése"
 
@@ -1578,277 +1600,281 @@ msgid "Show debugging options"
 msgstr "Hibakeresési lehetőségek megjelenítése"
 
 #. TRANSLATORS: The type of update
-#: lib/pk-enum.c:968
+#: lib/pk-enum.c:1089
 msgid "Blocked"
 msgstr "Blokkolt"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:972 lib/pk-enum.c:1090
+#: lib/pk-enum.c:1093 lib/pk-enum.c:1211
 msgid "Installed"
 msgstr "Telepítve"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/pk-enum.c:976
+#: lib/pk-enum.c:1097
 msgid "Available"
 msgstr "Elérhető"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
-#: lib/pk-enum.c:980
+#: lib/pk-enum.c:1101
 #, fuzzy
 msgid "Install"
 msgstr "Telepítve"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
-#: lib/pk-enum.c:984
+#: lib/pk-enum.c:1105
 #, fuzzy
 msgid "Remove"
 msgstr "Eltávolítva"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
-#: lib/pk-enum.c:988
+#: lib/pk-enum.c:1109
 #, fuzzy
 #| msgid "Reinstalled"
 msgid "Reinstall"
 msgstr "Újratelepítve"
 
 #. TRANSLATORS: The state of a package: package is obsolete
-#: lib/pk-enum.c:992
+#: lib/pk-enum.c:1113
 #, fuzzy
 msgid "Obsolete"
 msgstr "Elavulttá téve"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
-#: lib/pk-enum.c:996
+#: lib/pk-enum.c:1117
 #, fuzzy
 msgid "Downgrade"
 msgstr "Letöltve"
 
 #. TRANSLATORS: The state of a package: package is to be updated
-#: lib/pk-enum.c:1000
+#: lib/pk-enum.c:1121
 #, fuzzy
 #| msgid "Updates"
 msgid "Update"
 msgstr "Frissítések"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
-#: lib/pk-enum.c:1004
+#: lib/pk-enum.c:1125
 #, fuzzy
 #| msgid "Security"
 msgid "Security update"
 msgstr "Biztonsági"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
-#: lib/pk-enum.c:1008
+#: lib/pk-enum.c:1129
 #, fuzzy
 #| msgid "Enhancement"
 msgid "Enhancement update"
 msgstr "Bővítés"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1033
+#: lib/pk-enum.c:1154
 msgid "Downloading"
 msgstr "Letöltés"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1037
+#: lib/pk-enum.c:1158
 msgid "Updating"
 msgstr "Frissítés"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1041 lib/pk-enum.c:1176
+#: lib/pk-enum.c:1162 lib/pk-enum.c:1297
 msgid "Installing"
 msgstr "Telepítés"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1045 lib/pk-enum.c:1172
+#: lib/pk-enum.c:1166 lib/pk-enum.c:1293
 msgid "Removing"
 msgstr "Eltávolítás"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1049
+#: lib/pk-enum.c:1170
 msgid "Cleaning up"
 msgstr "Tisztítás"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1053
+#: lib/pk-enum.c:1174
 msgid "Obsoleting"
 msgstr "Elavulttá tétel"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1057
+#: lib/pk-enum.c:1178
 msgid "Reinstalling"
 msgstr "Újratelepítés"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1082
+#: lib/pk-enum.c:1203
 msgid "Downloaded"
 msgstr "Letöltve"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1086
+#: lib/pk-enum.c:1207
 msgid "Updated"
 msgstr "Frissítve"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1094
+#: lib/pk-enum.c:1215
 msgid "Removed"
 msgstr "Eltávolítva"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1098
+#: lib/pk-enum.c:1219
 msgid "Cleaned up"
 msgstr "Megtisztítva"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1102
+#: lib/pk-enum.c:1223
 msgid "Obsoleted"
 msgstr "Elavulttá téve"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1106
+#: lib/pk-enum.c:1227
 msgid "Reinstalled"
 msgstr "Újratelepítve"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1131
+#: lib/pk-enum.c:1252
 msgid "Unknown role type"
 msgstr "Ismeretlen szereptípus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1135
+#: lib/pk-enum.c:1256
 msgid "Getting dependencies"
 msgstr "Függőségek lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1139
+#: lib/pk-enum.c:1260
 msgid "Getting update details"
 msgstr "Frissítés részleteinek lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1144
+#: lib/pk-enum.c:1265
 msgid "Getting details"
 msgstr "Részletek lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1148
-msgid "Getting requires"
-msgstr "Követelmények lekérése"
+#: lib/pk-enum.c:1269
+#, fuzzy
+#| msgid "Getting dependencies"
+msgid "Getting dependents"
+msgstr "Függőségek lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1152
+#: lib/pk-enum.c:1273
 msgid "Getting updates"
 msgstr "Frissítések lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1156
+#: lib/pk-enum.c:1277
 msgid "Searching by details"
 msgstr "Keresés részletek szerint"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1160
+#: lib/pk-enum.c:1281
 msgid "Searching by file"
 msgstr "Keresés fájl szerint"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1164
+#: lib/pk-enum.c:1285
 msgid "Searching groups"
 msgstr "Csoportok keresése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1168
+#: lib/pk-enum.c:1289
 msgid "Searching by name"
 msgstr "Keresés név szerint"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1180
+#: lib/pk-enum.c:1301
 msgid "Installing files"
 msgstr "Fájlok telepítése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1184
+#: lib/pk-enum.c:1305
 msgid "Refreshing cache"
 msgstr "Gyorsítótár frissítése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1188
+#: lib/pk-enum.c:1309
 msgid "Updating packages"
 msgstr "Csomagok frissítése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1192
+#: lib/pk-enum.c:1313
 msgid "Canceling"
 msgstr "Megszakítás"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1196
+#: lib/pk-enum.c:1317
 msgid "Getting repositories"
 msgstr "Tárolók lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1200
+#: lib/pk-enum.c:1321
 msgid "Modifying repository"
 msgstr "Tároló módosítása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1204
+#: lib/pk-enum.c:1325
 msgid "Setting data"
 msgstr "Adatok beállítása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1208
+#: lib/pk-enum.c:1329
 msgid "Removing repository"
 msgstr "Tároló eltávolítása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1212
+#: lib/pk-enum.c:1333
 msgid "Resolving"
 msgstr "Feloldás"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1217
+#: lib/pk-enum.c:1338
 msgid "Getting file list"
 msgstr "Fájllista lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1221
+#: lib/pk-enum.c:1342
 msgid "Getting provides"
 msgstr "Biztosító csomagok lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1225
+#: lib/pk-enum.c:1346
 msgid "Installing signature"
 msgstr "Aláírás telepítése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1229
+#: lib/pk-enum.c:1350
 msgid "Getting packages"
 msgstr "Csomaglista lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1233
+#: lib/pk-enum.c:1354
 msgid "Accepting EULA"
 msgstr "EULA elfogadása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1241
+#: lib/pk-enum.c:1362
 msgid "Getting upgrades"
 msgstr "Frissítések lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1245
-msgid "Getting transactions"
+#: lib/pk-enum.c:1366
+#, fuzzy
+#| msgid "Getting transactions"
+msgid "Getting transaction history"
 msgstr "Tranzakciók lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1249
+#: lib/pk-enum.c:1370
 msgid "Getting system upgrades"
 msgstr "Rendszerfrissítések lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1253
+#: lib/pk-enum.c:1374
 #, fuzzy
 msgid "Repairing system"
 msgstr "Rendszer javítása"
@@ -2118,25 +2144,36 @@ msgid "Failed to load the backend: %s"
 msgstr "A háttérprogram betöltése sikertelen: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2499
+#: src/pk-transaction.c:2550
 msgid "The software is not from a trusted source."
 msgstr "A szoftver nem hiteles forrásból származik."
 
-#: src/pk-transaction.c:2507
+#: src/pk-transaction.c:2558
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
-#: src/pk-transaction.c:2509
+#: src/pk-transaction.c:2560
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
 
-#: src/pk-transaction.c:2520
+#: src/pk-transaction.c:2571
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
-#: src/pk-transaction.c:2522
+#: src/pk-transaction.c:2573
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+
+#, fuzzy
+#~ msgid "Vendor:"
+#~ msgstr "Gyártó"
+
+#, fuzzy
+#~ msgid "Updated:"
+#~ msgstr "Frissítve"
+
+#~ msgid "Getting requires"
+#~ msgstr "Követelmények lekérése"
 
 #~ msgid "Transaction"
 #~ msgstr "Tranzakció"
@@ -2272,12 +2309,6 @@ msgstr "Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztons�
 
 #~ msgid "There are no upgrades available at this time."
 #~ msgstr "Nincs elérhető frissítés."
-
-#~ msgid "Please restart the computer to complete the update."
-#~ msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez."
-
-#~ msgid "Please logout and login to complete the update."
-#~ msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
 
 #~ msgid "Please restart the computer to complete the update as important security updates have been installed."
 #~ msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."

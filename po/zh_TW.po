@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-10-10 10:05+0200\n"
+"POT-Creation-Date: 2026-10-17 10:34+0200\n"
 "PO-Revision-Date: 2026-10-03 14:35+0000\n"
 "Last-Translator: taijuin Lee <taijuin@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hant/>\n"
@@ -64,119 +64,145 @@ msgstr "正在安裝系統升級；這可能需要一段時間…"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:130
+#: client/pkgc-context.c:131
 msgid "The daemon crashed mid-transaction!"
 msgstr "常駐程式在交易過程中當機了！"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:43
+#: client/pkgc-manage.c:44
 msgid "Prepare the transaction by downloading packages only"
 msgstr "僅下載軟體包以準備交易"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:50
+#: client/pkgc-manage.c:51
 msgid "Allow package downgrades"
 msgstr "允許軟體包降級"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:57
+#: client/pkgc-manage.c:58
 msgid "Allow package re-installations"
 msgstr "允許重新安裝軟體包"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:64
+#: client/pkgc-manage.c:65
 msgid "Allow installation of untrusted packages"
 msgstr "允許安裝未受信任的軟體包"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:71
+#: client/pkgc-manage.c:72
 msgid "Do not automatically remove unused dependencies"
 msgstr "請不要自動刪除未使用的依賴項"
 
+#. TRANSLATORS: command line argument, remove configuration files too
+#: client/pkgc-manage.c:79
+msgid "Also remove residual data (config files, databases, etc.) when removing packages"
+msgstr ""
+
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:78
+#: client/pkgc-manage.c:86
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
 msgstr "元資料快取最大保留時間（秒）（預設值：3 天）"
 
-#: client/pkgc-manage.c:78
+#: client/pkgc-manage.c:86
 msgid "SECONDS"
 msgstr "秒"
 
+#: client/pkgc-manage.c:156
+#, fuzzy
+#| msgid "Please restart the computer to complete the update."
+msgid "A system restart is required to complete the changes."
+msgstr "請重新啟動電腦以完成更新。"
+
+#: client/pkgc-manage.c:161
+#, fuzzy
+#| msgid "Please logout and login to complete the update."
+msgid "You need to log out and back in to complete the changes."
+msgstr "請登出並再次登入來完成更新。"
+
+#: client/pkgc-manage.c:167
+msgid "Affected applications need to be restarted to complete the changes."
+msgstr ""
+
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:203
+#: client/pkgc-manage.c:256
 msgid "Refresh the package metadata cache."
 msgstr "重新整理軟體包元資料快取。"
 
-#: client/pkgc-manage.c:229
+#: client/pkgc-manage.c:282
 msgid "Package metadata refreshed"
 msgstr "軟體包元資料已更新"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:254
+#: client/pkgc-manage.c:307
 msgid "Install one or more packages or local package files."
 msgstr "安裝一個或多個軟體包或本機軟體包檔案。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:316 client/pkgc-manage.c:330
+#: client/pkgc-manage.c:369 client/pkgc-manage.c:383
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "找不到任何可用的軟體包：%s"
 
-#: client/pkgc-manage.c:335
+#: client/pkgc-manage.c:388
 msgid "The selected package is already installed."
 msgstr "所選軟體包已安裝。"
 
+#: client/pkgc-manage.c:444 client/pkgc-util.c:1288
+#, c-format
+msgid "Package not found: %s"
+msgstr "找不到軟體包：%s"
+
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:376
+#: client/pkgc-manage.c:485
 msgid "Remove one or more packages from the system."
 msgstr "從系統中移除一個或多個軟體包。"
 
-#: client/pkgc-manage.c:393
+#: client/pkgc-manage.c:506
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "找不到已安裝的軟體包：%s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:435
+#: client/pkgc-manage.c:548
 msgid "Download packages to the specified directory without installing."
 msgstr "將軟體包下載到指定目錄，但不進行安裝。"
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
-#: client/pkgc-manage.c:448 client/pkgc-query.c:439 client/pkgc-query.c:786
+#: client/pkgc-manage.c:561 client/pkgc-query.c:450 client/pkgc-query.c:797
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "找不到軟體包：%s"
 
-#: client/pkgc-manage.c:456
+#: client/pkgc-manage.c:569
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "目錄不存在：%s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:500
+#: client/pkgc-manage.c:613
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "將所有軟體包或特定軟體包更新至最新版本。"
 
-#: client/pkgc-manage.c:522
+#: client/pkgc-manage.c:636
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "找不到要更新的軟體包：%s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:653 client/pkgc-manage.c:885
+#: client/pkgc-manage.c:666 client/pkgc-manage.c:767 client/pkgc-manage.c:999
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "無法取得更新：%s"
 
-#: client/pkgc-manage.c:564 client/pkgc-manage.c:664 client/pkgc-manage.c:893
+#: client/pkgc-manage.c:678 client/pkgc-manage.c:778 client/pkgc-manage.c:1007
 msgid "No packages require updating"
 msgstr "沒有任何軟體包需要更新"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:604
+#: client/pkgc-manage.c:718
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -186,64 +212,64 @@ msgstr ""
 "\n"
 "類型：精簡版、預設版、完整版"
 
-#: client/pkgc-manage.c:701
+#: client/pkgc-manage.c:815
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "讀取離線更新操作失敗：%s"
 
-#: client/pkgc-manage.c:711
+#: client/pkgc-manage.c:825
 msgid "Offline update is not triggered."
 msgstr "離線更新未被觸發。"
 
-#: client/pkgc-manage.c:720
+#: client/pkgc-manage.c:834
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "已觸發離線更新。更新後的操作：%s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:731
+#: client/pkgc-manage.c:845
 msgid "Prepared packages:"
 msgstr "已準備好的軟體包："
 
-#: client/pkgc-manage.c:745
+#: client/pkgc-manage.c:859
 msgid "No offline update is prepared."
 msgstr "未準備離線更新。"
 
-#: client/pkgc-manage.c:748
+#: client/pkgc-manage.c:862
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "讀取已準備好的離線更新失敗：%s"
 
-#: client/pkgc-manage.c:759
+#: client/pkgc-manage.c:873
 msgid "No results from last offline update available."
 msgstr "沒有可用的上次離線更新結果。"
 
-#: client/pkgc-manage.c:766
+#: client/pkgc-manage.c:880
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "上次離線更新失敗：%s：%s"
 
-#: client/pkgc-manage.c:773
+#: client/pkgc-manage.c:887
 msgid "Last offline update completed successfully"
 msgstr "上次離線更新已成功完成"
 
-#: client/pkgc-manage.c:783
+#: client/pkgc-manage.c:897
 #, c-format
 msgid "Updated: %s"
 msgstr "已更新：%s"
 
-#: client/pkgc-manage.c:807
+#: client/pkgc-manage.c:921
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "無法觸發離線更新：%s"
 
-#: client/pkgc-manage.c:811
+#: client/pkgc-manage.c:925
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "已排定離線更新。系統將於下次重新啟動時進行更新。"
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:831
+#: client/pkgc-manage.c:945
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -261,91 +287,91 @@ msgstr ""
 "  cancel  - 取消已排定的離線更新\n"
 "  status  - 顯示已準備或已完成之離線更新的狀態資訊"
 
-#: client/pkgc-manage.c:853
+#: client/pkgc-manage.c:967
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "無法取消離線更新：%s"
 
-#: client/pkgc-manage.c:857
+#: client/pkgc-manage.c:971
 msgid "Offline update cancelled"
 msgstr "離線更新已取消"
 
-#: client/pkgc-manage.c:914
+#: client/pkgc-manage.c:1028
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "未知的離線更新請求：%s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:935
+#: client/pkgc-manage.c:1049
 msgid "Install a package signature for GPG verification."
 msgstr "安裝用於 GPG 驗證的軟體包簽章。"
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:971
+#: client/pkgc-manage.c:1085
 msgid "Attempt to repair the package management system."
 msgstr "嘗試修復軟體包管理系統。"
 
-#: client/pkgc-manage.c:987
+#: client/pkgc-manage.c:1101
 msgid "System repaired successfully"
 msgstr "系統已成功修復"
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:1009
+#: client/pkgc-manage.c:1123
 msgid "Safely terminate the PackageKit daemon."
 msgstr "安全地終止 PackageKit 常駐程式。"
 
-#: client/pkgc-manage.c:1015
+#: client/pkgc-manage.c:1129
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "傳送常駐程式退出請求失敗：%s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
-#: client/pkgc-manage.c:1035
+#: client/pkgc-manage.c:1149
 msgid "Refresh package metadata"
 msgstr "重新整理軟體包元資料"
 
 #. TRANSLATORS: Description for install command in pkgcli help
-#: client/pkgc-manage.c:1042
+#: client/pkgc-manage.c:1156
 msgid "Install packages"
 msgstr "安裝軟體包"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
-#: client/pkgc-manage.c:1049
+#: client/pkgc-manage.c:1163
 msgid "Remove packages"
 msgstr "移除軟體包"
 
 #. TRANSLATORS: Description for update command in pkgcli help
-#: client/pkgc-manage.c:1056
+#: client/pkgc-manage.c:1170
 msgid "Update packages"
 msgstr "更新軟體包"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
-#: client/pkgc-manage.c:1063
+#: client/pkgc-manage.c:1177
 msgid "Upgrade the system"
 msgstr "升級系統"
 
 #. TRANSLATORS: Description for download command in pkgcli help
-#: client/pkgc-manage.c:1070
+#: client/pkgc-manage.c:1184
 msgid "Download packages"
 msgstr "下載軟體包"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
-#: client/pkgc-manage.c:1077
+#: client/pkgc-manage.c:1191
 msgid "Manage offline system updates"
 msgstr "管理離線系統更新"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
-#: client/pkgc-manage.c:1084
+#: client/pkgc-manage.c:1198
 msgid "Install package signature"
 msgstr "安裝軟體包簽章"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
-#: client/pkgc-manage.c:1091
+#: client/pkgc-manage.c:1205
 msgid "Repair package system"
 msgstr "維修軟體包系統"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
-#: client/pkgc-manage.c:1098
+#: client/pkgc-manage.c:1212
 msgid "Safely stop the PackageKit daemon"
 msgstr "安全地停止 PackageKit 常駐程式"
 
@@ -368,39 +394,39 @@ msgid "Monitor PackageKit bus events"
 msgstr "監控 PackageKit bus 事件"
 
 #. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:165
+#: client/pkgc-query.c:174
 msgid "Show PackageKit backend information."
 msgstr "顯示 PackageKit 後端資訊。"
 
-#: client/pkgc-query.c:209
+#: client/pkgc-query.c:218
 #, c-format
 msgid "Backend: %s"
 msgstr "後端：%s"
 
-#: client/pkgc-query.c:212
+#: client/pkgc-query.c:221
 #, c-format
 msgid "Description: %s"
 msgstr "描述：%s"
 
-#: client/pkgc-query.c:215
+#: client/pkgc-query.c:224
 #, c-format
 msgid "Author: %s"
 msgstr "作者：%s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:221
+#: client/pkgc-query.c:230
 #, c-format
 msgid "Roles: %s"
 msgstr "任務：%s"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
+#: client/pkgc-query.c:254
 msgid "Show recent package management transactions."
 msgstr "顯示最近軟體包管理的交易。"
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
+#: client/pkgc-query.c:295
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -418,186 +444,186 @@ msgstr ""
 "  file    - 依檔案名稱搜尋\n"
 "  group   - 依軟體包群組搜尋"
 
-#: client/pkgc-query.c:312
+#: client/pkgc-query.c:323
 msgid "No search pattern specified"
 msgstr "未指定搜尋模式"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:373
+#: client/pkgc-query.c:384
 msgid "List all packages or those matching a pattern."
 msgstr "列出所有軟體包，或列出符合特定模式的軟體包。"
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:418
+#: client/pkgc-query.c:429
 msgid "Show information about one or more packages."
 msgstr "顯示一個或多個軟體包的資訊。"
 
-#: client/pkgc-query.c:477 client/pkgc-query.c:766
+#: client/pkgc-query.c:488 client/pkgc-query.c:777
 msgid "Check dependencies recursively"
 msgstr "遞迴檢查依賴關係"
 
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:488
+#. TRANSLATORS: Description for pkgcli list-dependencies
+#: client/pkgc-query.c:499
 msgid "Show dependencies for one or more packages."
 msgstr "顯示一個或多個軟體包的依賴關係。"
 
-#: client/pkgc-query.c:496 client/pkgc-query.c:580 client/pkgc-query.c:697
+#: client/pkgc-query.c:507 client/pkgc-query.c:591 client/pkgc-query.c:708
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "無法解析軟體包：%s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:529
+#: client/pkgc-query.c:540
 msgid "Show which packages provide the specified capability."
 msgstr "顯示哪些軟體包提供指定功能。"
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:561
+#: client/pkgc-query.c:572
 msgid "List all files contained in one or more packages."
 msgstr "列出一個或多個軟體包中所包含的所有檔案。"
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:657
+#: client/pkgc-query.c:668
 msgid "List all currently available package updates."
 msgstr "列出目前所有可用的軟體包更新。"
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:690
+#: client/pkgc-query.c:701
 msgid "Show detailed information about the specified package update."
 msgstr "顯示指定軟體包更新的詳細資訊。"
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:729
+#: client/pkgc-query.c:740
 msgid "Resolve package names to package IDs."
 msgstr "將軟體包名稱解析為軟體包 ID。"
 
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:777
+#. TRANSLATORS: Description for pkgcli list-requiring
+#: client/pkgc-query.c:788
 msgid "Show which packages require the specified packages."
 msgstr "顯示哪些軟體包依賴指定的軟體包。"
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:821
+#: client/pkgc-query.c:832
 #, fuzzy
 #| msgid "List all available filters, groups and categories for package organization."
 msgid "List all available filters and groups for package organization."
 msgstr "列出所有可用於軟體包組織的篩選條件、群組和類別。"
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:829
+#: client/pkgc-query.c:840
 msgid "Filters:"
 msgstr "篩選條件："
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:841
+#: client/pkgc-query.c:852
 msgid "Groups:"
 msgstr "群組："
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:864
+#: client/pkgc-query.c:875
 msgid "Show distribution version upgrades, if any are available."
 msgstr "顯示是否有可用的發行版本升級。"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkgc-query.c:896
+#: client/pkgc-query.c:907
 msgid "Failed to get the time since this action was last completed"
 msgstr "無法取得自上次完成此操作以來的時間"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:909
+#: client/pkgc-query.c:920
 msgid "Elapsed time"
 msgstr "已用時間"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
+#: client/pkgc-query.c:945
 msgid "Get time in seconds since the last specified action."
 msgstr "取得自上次特定操作以來經過的時間（以秒為單位）。"
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: client/pkgc-query.c:945
+#: client/pkgc-query.c:956
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "必須執行某項操作，例如「update-packages」"
 
 #. TRANSLATORS: The user specified an invalid action
-#: client/pkgc-query.c:953
+#: client/pkgc-query.c:964
 msgid "A correct role is required"
 msgstr "必須指定正確的作用"
 
 #. TRANSLATORS: Description for backend command in pkgcli help
-#: client/pkgc-query.c:977
+#: client/pkgc-query.c:988
 msgid "Show backend information"
 msgstr "顯示後端資訊"
 
 #. TRANSLATORS: Description for history command in pkgcli help
-#: client/pkgc-query.c:984
+#: client/pkgc-query.c:995
 msgid "Show transaction history"
 msgstr "顯示交易紀錄"
 
 #. TRANSLATORS: Description for search command in pkgcli help
-#: client/pkgc-query.c:991
+#: client/pkgc-query.c:1002
 msgid "Search for packages"
 msgstr "搜尋軟體包"
 
 #. TRANSLATORS: Description for list command in pkgcli help
-#: client/pkgc-query.c:998
+#: client/pkgc-query.c:1009
 msgid "List packages"
 msgstr "列出軟體包"
 
 #. TRANSLATORS: Description for show command in pkgcli help
-#: client/pkgc-query.c:1005
+#: client/pkgc-query.c:1016
 msgid "Show package information"
 msgstr "顯示軟體包資訊"
 
-#. TRANSLATORS: Description for list-depends command in pkgcli help
-#: client/pkgc-query.c:1012
+#. TRANSLATORS: Description for list-dependencies command in pkgcli help
+#: client/pkgc-query.c:1023
 msgid "List dependencies of the specified package(s)"
 msgstr "列出指定軟體包的依賴項"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
-#: client/pkgc-query.c:1019
+#: client/pkgc-query.c:1031
 msgid "List other packages requiring the specified package(s)"
 msgstr "列出其他需要指定軟體包的軟體包"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
-#: client/pkgc-query.c:1026
+#: client/pkgc-query.c:1039
 msgid "List packages providing a capability"
 msgstr "列出提供此功能的軟體包"
 
 #. TRANSLATORS: Description for files command in pkgcli help
-#: client/pkgc-query.c:1033
+#: client/pkgc-query.c:1046
 msgid "Show files in package"
 msgstr "顯示軟體包中的檔案"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
-#: client/pkgc-query.c:1040
+#: client/pkgc-query.c:1053
 msgid "Get available updates"
 msgstr "取得可用的更"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
-#: client/pkgc-query.c:1047
+#: client/pkgc-query.c:1060
 msgid "Get update details"
 msgstr "取得更新詳細資訊"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
-#: client/pkgc-query.c:1054
+#: client/pkgc-query.c:1067
 msgid "Resolve package names"
 msgstr "解析軟體包名稱"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
-#: client/pkgc-query.c:1061
+#: client/pkgc-query.c:1074
 #, fuzzy
 #| msgid "List available filters and categories"
 msgid "List available filters and groups"
 msgstr "列出可用的篩選條件和類別"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
-#: client/pkgc-query.c:1068
+#: client/pkgc-query.c:1081
 msgid "Show available distribution upgrades"
 msgstr "顯示可用的發行版本升級"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
-#: client/pkgc-query.c:1075
+#: client/pkgc-query.c:1088
 msgid "Get time since last action"
 msgstr "取得自上次操作以來的時間"
 
@@ -715,211 +741,210 @@ msgstr "錯誤"
 msgid "Warning:"
 msgstr "警告："
 
+#. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
+#: client/pkgc-util.c:409
+#, fuzzy, c-format
+#| msgid "Alias to %s"
+msgid "Alias: %s"
+msgstr "%s 的別名"
+
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:433 client/pkgcli.c:194
+#: client/pkgc-util.c:443 client/pkgcli.c:194
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "無法解析選項：%s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:441
+#: client/pkgc-util.c:451
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "用法：%s %s %s"
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:552
+#: client/pkgc-util.c:566
 msgid "high"
 msgstr ""
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:557
+#: client/pkgc-util.c:571
 msgid "critical"
 msgstr ""
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:673 client/pkgc-util.c:828
+#: client/pkgc-util.c:687 client/pkgc-util.c:859
 msgid "Package:"
 msgstr "軟體包："
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:677
+#: client/pkgc-util.c:691
 msgid "Version:"
 msgstr "版本："
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:683
+#: client/pkgc-util.c:697
 msgid "Summary:"
 msgstr "摘要："
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:691
+#: client/pkgc-util.c:705
 msgid "Description:"
 msgstr "描述："
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:698
+#: client/pkgc-util.c:712
 msgid "License:"
 msgstr "授權條款："
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:705
+#: client/pkgc-util.c:719
 msgid "URL:"
 msgstr "網址："
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:713
+#: client/pkgc-util.c:727
 msgid "Group:"
 msgstr "群組："
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:721
+#: client/pkgc-util.c:735
 msgid "Installed Size:"
 msgstr "安裝大小："
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:730
+#: client/pkgc-util.c:744
 msgid "Download Size:"
 msgstr "下載大小："
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:824
+#: client/pkgc-util.c:855
 msgid "Update Details:"
 msgstr "更新詳細資訊："
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:835
+#: client/pkgc-util.c:866
 msgid "Updates:"
 msgstr "更新："
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:844
+#: client/pkgc-util.c:875
 msgid "Obsoletes:"
 msgstr "廢棄："
 
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:853
-msgid "Vendor:"
-msgstr "廠商："
+#. TRANSLATORS: Label for issue tracker entries in update details
+#: client/pkgc-util.c:886
+#, fuzzy
+#| msgid "Issued:"
+msgid "Issues:"
+msgstr "已發布："
 
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:862
-msgid "Issue Tracker:"
-msgstr "問題追蹤器："
+#. TRANSLATORS: Label for CVE records in update details
+#: client/pkgc-util.c:888
+msgid "CVEs:"
+msgstr ""
 
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:871
-msgid "CVE:"
-msgstr "CVE："
+#. TRANSLATORS: Label for the distributor's advisory in update details
+#: client/pkgc-util.c:890
+msgid "Advisory:"
+msgstr ""
+
+#. TRANSLATORS: Label for references of unknown kind in update details
+#: client/pkgc-util.c:892
+msgid "References:"
+msgstr ""
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:879
+#: client/pkgc-util.c:928
 msgid "Restart:"
 msgstr "重新啟動："
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:888
+#: client/pkgc-util.c:937
 msgid "Update text:"
 msgstr "更新文字："
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:895
+#: client/pkgc-util.c:944
 msgid "Changes:"
 msgstr "變更："
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:902
+#: client/pkgc-util.c:951
 msgid "State:"
 msgstr "狀態："
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:911
+#: client/pkgc-util.c:960
 msgid "Issued:"
 msgstr "已發布："
 
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:918
-msgid "Updated:"
-msgstr "已更新："
-
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:1035
+#: client/pkgc-util.c:1076
 msgid "Transaction:"
 msgstr "交易："
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:1039
+#: client/pkgc-util.c:1080
 msgid "System time:"
 msgstr "系統時間："
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1043
+#: client/pkgc-util.c:1084
 msgid "Succeeded:"
 msgstr "已成功："
 
-#: client/pkgc-util.c:1047
+#: client/pkgc-util.c:1088
 msgid "True"
 msgstr "True"
 
-#: client/pkgc-util.c:1048
+#: client/pkgc-util.c:1089
 msgid "False"
 msgstr "False"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1052
+#: client/pkgc-util.c:1093
 msgid "Role:"
 msgstr "任務："
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1059
+#: client/pkgc-util.c:1100
 msgid "Duration:"
 msgstr "持續時間："
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1066
+#: client/pkgc-util.c:1107
 msgid "Command line:"
 msgstr "命令列："
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1072
+#: client/pkgc-util.c:1113
 msgid "User ID:"
 msgstr "使用者 ID："
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1081
+#: client/pkgc-util.c:1122
 msgid "Username:"
 msgstr "使用者名稱："
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1087
+#: client/pkgc-util.c:1128
 msgid "Real name:"
 msgstr "真實名稱："
 
 #. TRANSLATORS: Label for affected packages in transaction
-#: client/pkgc-util.c:1098 client/pkgc-util.c:1116
+#: client/pkgc-util.c:1136
 msgid "Affected packages:"
 msgstr "受影響的軟體包："
 
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1119
-msgid "None"
-msgstr "無"
-
-#: client/pkgc-util.c:1208
+#: client/pkgc-util.c:1232
 msgid "More than one package matches:"
 msgstr "符合的軟體包不只一個："
 
 #. prompt user for selection
-#: client/pkgc-util.c:1220
+#: client/pkgc-util.c:1244
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "請選擇正確的軟體包： "
-
-#: client/pkgc-util.c:1264
-#, c-format
-msgid "Package not found: %s"
-msgstr "找不到軟體包：%s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:79
@@ -1387,7 +1412,7 @@ msgstr "正在移除軟體包"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:419 lib/pk-enum.c:1237
+#: lib/pk-console-private.c:419 lib/pk-enum.c:1358
 msgid "Downloading packages"
 msgstr "正在下載軟體包"
 
@@ -1520,273 +1545,277 @@ msgid "Show debugging options"
 msgstr "顯示除錯選項"
 
 #. TRANSLATORS: The type of update
-#: lib/pk-enum.c:968
+#: lib/pk-enum.c:1089
 msgid "Blocked"
 msgstr "已阻擋"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:972 lib/pk-enum.c:1090
+#: lib/pk-enum.c:1093 lib/pk-enum.c:1211
 msgid "Installed"
 msgstr "已安裝"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/pk-enum.c:976
+#: lib/pk-enum.c:1097
 msgid "Available"
 msgstr "可用"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
-#: lib/pk-enum.c:980
+#: lib/pk-enum.c:1101
 msgid "Install"
 msgstr "安裝"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
-#: lib/pk-enum.c:984
+#: lib/pk-enum.c:1105
 msgid "Remove"
 msgstr "移除"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
-#: lib/pk-enum.c:988
+#: lib/pk-enum.c:1109
 #, fuzzy
 #| msgid "Reinstalled"
 msgid "Reinstall"
 msgstr "已重新安裝"
 
 #. TRANSLATORS: The state of a package: package is obsolete
-#: lib/pk-enum.c:992
+#: lib/pk-enum.c:1113
 msgid "Obsolete"
 msgstr "廢棄"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
-#: lib/pk-enum.c:996
+#: lib/pk-enum.c:1117
 msgid "Downgrade"
 msgstr "降級"
 
 #. TRANSLATORS: The state of a package: package is to be updated
-#: lib/pk-enum.c:1000
+#: lib/pk-enum.c:1121
 #, fuzzy
 #| msgid "Updates"
 msgid "Update"
 msgstr "更新"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
-#: lib/pk-enum.c:1004
+#: lib/pk-enum.c:1125
 #, fuzzy
 #| msgid "Security"
 msgid "Security update"
 msgstr "安全性"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
-#: lib/pk-enum.c:1008
+#: lib/pk-enum.c:1129
 #, fuzzy
 #| msgid "Enhancement"
 msgid "Enhancement update"
 msgstr "增強"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1033
+#: lib/pk-enum.c:1154
 msgid "Downloading"
 msgstr "正在下載"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1037
+#: lib/pk-enum.c:1158
 msgid "Updating"
 msgstr "正在更新"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1041 lib/pk-enum.c:1176
+#: lib/pk-enum.c:1162 lib/pk-enum.c:1297
 msgid "Installing"
 msgstr "正在安裝"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1045 lib/pk-enum.c:1172
+#: lib/pk-enum.c:1166 lib/pk-enum.c:1293
 msgid "Removing"
 msgstr "正在移除"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1049
+#: lib/pk-enum.c:1170
 msgid "Cleaning up"
 msgstr "正在清理"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1053
+#: lib/pk-enum.c:1174
 msgid "Obsoleting"
 msgstr "正在廢棄"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1057
+#: lib/pk-enum.c:1178
 msgid "Reinstalling"
 msgstr "正在重新安裝"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1082
+#: lib/pk-enum.c:1203
 msgid "Downloaded"
 msgstr "已下載"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1086
+#: lib/pk-enum.c:1207
 msgid "Updated"
 msgstr "已更新"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1094
+#: lib/pk-enum.c:1215
 msgid "Removed"
 msgstr "已移除"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1098
+#: lib/pk-enum.c:1219
 msgid "Cleaned up"
 msgstr "已清理"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1102
+#: lib/pk-enum.c:1223
 msgid "Obsoleted"
 msgstr "已廢棄"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1106
+#: lib/pk-enum.c:1227
 msgid "Reinstalled"
 msgstr "已重新安裝"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1131
+#: lib/pk-enum.c:1252
 msgid "Unknown role type"
 msgstr "未知的任務類型"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1135
+#: lib/pk-enum.c:1256
 msgid "Getting dependencies"
 msgstr "正在取得相容性"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1139
+#: lib/pk-enum.c:1260
 msgid "Getting update details"
 msgstr "正在取得更新詳細資訊"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1144
+#: lib/pk-enum.c:1265
 msgid "Getting details"
 msgstr "正在取得詳細資訊"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1148
-msgid "Getting requires"
-msgstr "正在取得需求"
+#: lib/pk-enum.c:1269
+#, fuzzy
+#| msgid "Getting dependencies"
+msgid "Getting dependents"
+msgstr "正在取得相容性"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1152
+#: lib/pk-enum.c:1273
 msgid "Getting updates"
 msgstr "正在取得更新"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1156
+#: lib/pk-enum.c:1277
 msgid "Searching by details"
 msgstr "正在依詳細資訊搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1160
+#: lib/pk-enum.c:1281
 msgid "Searching by file"
 msgstr "正在依檔案搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1164
+#: lib/pk-enum.c:1285
 msgid "Searching groups"
 msgstr "正在搜尋群組"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1168
+#: lib/pk-enum.c:1289
 msgid "Searching by name"
 msgstr "正在依名稱搜尋"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1180
+#: lib/pk-enum.c:1301
 msgid "Installing files"
 msgstr "正在安裝檔案"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1184
+#: lib/pk-enum.c:1305
 msgid "Refreshing cache"
 msgstr "正在重新整理快取"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1188
+#: lib/pk-enum.c:1309
 msgid "Updating packages"
 msgstr "正在更新軟體包"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1192
+#: lib/pk-enum.c:1313
 msgid "Canceling"
 msgstr "正在取消"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1196
+#: lib/pk-enum.c:1317
 msgid "Getting repositories"
 msgstr "正在取得軟體庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1200
+#: lib/pk-enum.c:1321
 msgid "Modifying repository"
 msgstr "正在修改軟體庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1204
+#: lib/pk-enum.c:1325
 msgid "Setting data"
 msgstr "正在設定資料"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1208
+#: lib/pk-enum.c:1329
 msgid "Removing repository"
 msgstr "正在移除軟體庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1212
+#: lib/pk-enum.c:1333
 msgid "Resolving"
 msgstr "正在解析"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1217
+#: lib/pk-enum.c:1338
 msgid "Getting file list"
 msgstr "正在取得檔案清單"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1221
+#: lib/pk-enum.c:1342
 msgid "Getting provides"
 msgstr "正在取得提供什麼"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1225
+#: lib/pk-enum.c:1346
 msgid "Installing signature"
 msgstr "正在安裝簽章"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1229
+#: lib/pk-enum.c:1350
 msgid "Getting packages"
 msgstr "正在取得軟體包"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1233
+#: lib/pk-enum.c:1354
 msgid "Accepting EULA"
 msgstr "正在接受終端使用者授權合約 (EULA)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1241
+#: lib/pk-enum.c:1362
 msgid "Getting upgrades"
 msgstr "正在取得升級"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1245
-msgid "Getting transactions"
+#: lib/pk-enum.c:1366
+#, fuzzy
+#| msgid "Getting transactions"
+msgid "Getting transaction history"
 msgstr "正在取得交易"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1249
+#: lib/pk-enum.c:1370
 msgid "Getting system upgrades"
 msgstr "正在取得系統升級"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1253
+#: lib/pk-enum.c:1374
 msgid "Repairing system"
 msgstr "正在修復系統"
 
@@ -2055,25 +2084,43 @@ msgid "Failed to load the backend: %s"
 msgstr "載入後端失敗：%s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2499
+#: src/pk-transaction.c:2550
 msgid "The software is not from a trusted source."
 msgstr "此軟體並非來自可信來源。"
 
-#: src/pk-transaction.c:2507
+#: src/pk-transaction.c:2558
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "請不要更新此軟體包，除非您確定這樣做是安全的。"
 
-#: src/pk-transaction.c:2509
+#: src/pk-transaction.c:2560
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "請不要更新這些軟體包，除非您確定這樣做是安全的。"
 
-#: src/pk-transaction.c:2520
+#: src/pk-transaction.c:2571
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "請不要安裝此軟體包，除非您確定這樣做是安全的。"
 
-#: src/pk-transaction.c:2522
+#: src/pk-transaction.c:2573
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "請不要安裝這些軟體包，除非您確定這樣做是安全的。"
+
+#~ msgid "Vendor:"
+#~ msgstr "廠商："
+
+#~ msgid "Issue Tracker:"
+#~ msgstr "問題追蹤器："
+
+#~ msgid "CVE:"
+#~ msgstr "CVE："
+
+#~ msgid "Updated:"
+#~ msgstr "已更新："
+
+#~ msgid "None"
+#~ msgstr "無"
+
+#~ msgid "Getting requires"
+#~ msgstr "正在取得需求"
 
 #~ msgid "Transaction"
 #~ msgstr "交易"
@@ -2209,12 +2256,6 @@ msgstr "請不要安裝這些軟體包，除非您確定這樣做是安全的。
 
 #~ msgid "There are no upgrades available at this time."
 #~ msgstr "目前沒有可用的升級選項。"
-
-#~ msgid "Please restart the computer to complete the update."
-#~ msgstr "請重新啟動電腦以完成更新。"
-
-#~ msgid "Please logout and login to complete the update."
-#~ msgstr "請登出並再次登入來完成更新。"
 
 #~ msgid "Please restart the computer to complete the update as important security updates have been installed."
 #~ msgstr "由於已安裝重要的安全性更新，請重新啟動電腦以完成更新。"
