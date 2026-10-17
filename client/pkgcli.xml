@@ -198,7 +198,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>list-depends</command></term>
+        <term><command>list-dependencies</command>, <command>list-deps</command></term>
         <listitem>
           <para>
             List all packages that the specified package depends on.
@@ -208,7 +208,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>list-requiring</command></term>
+        <term><command>list-requiring</command>, <command>list-rdeps</command></term>
         <listitem>
           <para>
             List packages that depend on or require the specified package.
@@ -572,7 +572,7 @@
         <term>List dependencies of a package</term>
         <listitem>
           <para>
-            <command>pkgcli list-depends inkscape</command>
+            <command>pkgcli list-dependencies inkscape</command>
           </para>
         </listitem>
       </varlistentry>

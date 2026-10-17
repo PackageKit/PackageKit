@@ -48,6 +48,7 @@ pkgc_command_free (gpointer data)
 		return;
 
 	g_free (cmd->name);
+	g_free (cmd->alias);
 	g_free (cmd->summary);
 	g_free (cmd->param_summary);
 	g_free (cmd);
@@ -276,11 +277,29 @@ pkgc_context_find_command (PkgcliContext *ctx, const char *name)
 
 	for (guint i = 0; i < ctx->commands->len; i++) {
 		PkgcliCommand *cmd = g_ptr_array_index (ctx->commands, i);
-		if (g_strcmp0 (cmd->name, name) == 0)
+		if (g_strcmp0 (cmd->name, name) == 0 || g_strcmp0 (cmd->alias, name) == 0)
 			return cmd;
 	}
 
 	return NULL;
+}
+
+/**
+ * pkgc_context_set_command_alias:
+ * @ctx: a valid #PkgctlContext
+ * @name: the canonical command name
+ * @alias: a short alternative name for the command
+ *
+ * Register an alternative name for an already registered command.
+ */
+void
+pkgc_context_set_command_alias (PkgcliContext *ctx, const gchar *name, const gchar *alias)
+{
+	PkgcliCommand *cmd = pkgc_context_find_command (ctx, name);
+
+	g_return_if_fail (cmd != NULL);
+	g_free (cmd->alias);
+	cmd->alias = g_strdup (alias);
 }
 
 /**

@@ -104,6 +104,7 @@ typedef struct PkgcliCommand PkgcliCommand;
 struct PkgcliCommand
 {
 	gchar *name;
+	gchar *alias;
 	gchar *summary;
 	gchar *param_summary;
 
@@ -129,6 +130,9 @@ void	       pkgc_context_register_command (PkgcliContext *ctx,
 					      const gchar *summary);
 PkgcliCommand *pkgc_context_find_command (PkgcliContext *ctx,
 					  const char	*name);
+void	       pkgc_context_set_command_alias (PkgcliContext *ctx,
+					       const gchar   *name,
+					       const gchar   *alias);
 void	       pkgc_context_stop_progress_bar (PkgcliContext *ctx);
 
 void	       pkgc_context_on_progress_cb (PkProgress	  *progress,

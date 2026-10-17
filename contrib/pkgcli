@@ -24,7 +24,7 @@ __pkgcli_commandlist="
     search
     list
     show
-    list-depends
+    list-dependencies
     list-requiring
     what-provides
     files

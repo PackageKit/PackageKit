@@ -468,12 +468,12 @@ pkgc_query_show (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 }
 
 /**
- * pkgc_query_list_depends:
+ * pkgc_query_list_dependencies:
  *
  * Display which other packages this package depends on.
  */
 static gint
-pkgc_query_list_depends (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
+pkgc_query_list_dependencies (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean recursive = FALSE;
 	g_auto(GStrv) package_ids = NULL;
@@ -495,7 +495,7 @@ pkgc_query_list_depends (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	    ctx,
 	    cmd,
 	    "PACKAGE...",
-	    /* TRANSLATORS: Description for pkgcli list-depends */
+	    /* TRANSLATORS: Description for pkgcli list-dependencies */
 	    _("Show dependencies for one or more packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
@@ -1017,10 +1017,11 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 
 	pkgc_context_register_command (
 	    ctx,
-	    "list-depends",
-	    pkgc_query_list_depends,
-	    /* TRANSLATORS: Description for list-depends command in pkgcli help */
+	    "list-dependencies",
+	    pkgc_query_list_dependencies,
+	    /* TRANSLATORS: Description for list-dependencies command in pkgcli help */
 	    _("List dependencies of the specified package(s)"));
+	pkgc_context_set_command_alias (ctx, "list-dependencies", "list-deps");
 
 	pkgc_context_register_command (
 	    ctx,
@@ -1028,6 +1029,7 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 	    pkgc_query_list_requiring,
 	    /* TRANSLATORS: Description for list-requiring command in pkgcli help */
 	    _("List other packages requiring the specified package(s)"));
+	pkgc_context_set_command_alias (ctx, "list-requiring", "list-rdeps");
 
 	pkgc_context_register_command (
 	    ctx,

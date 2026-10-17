@@ -399,11 +399,21 @@ pkgc_option_context_for_command (PkgcliContext *ctx,
 				 const gchar *description)
 {
 	GOptionContext *option_context = NULL;
+	g_autofree gchar *alias_note = NULL;
+	g_autofree gchar *full_description = NULL;
+
+	if (description == NULL)
+		description = cmd->summary;
+	if (cmd->alias != NULL) {
+		/* TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it */
+		alias_note = g_strdup_printf (_("Alias: %s"), cmd->alias);
+		full_description = g_strconcat (description, "\n", alias_note, NULL);
+		description = full_description;
+	}
 
 	option_context = g_option_context_new (parameter_summary);
 	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_set_description (option_context,
-					  (description != NULL) ? description : cmd->summary);
+	g_option_context_set_description (option_context, description);
 
 	if (parameter_summary == NULL)
 		parameter_summary = "";
