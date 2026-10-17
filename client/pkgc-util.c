@@ -1196,7 +1196,7 @@ pkgc_resolve_package (PkgcliContext *ctx,
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		g_set_error_literal (error,
-				     G_IO_ERROR,
+				     PKGC_ERROR,
 				     pk_error_get_code (error_code),
 				     pk_error_get_details (error_code));
 		return NULL;
@@ -1206,7 +1206,7 @@ pkgc_resolve_package (PkgcliContext *ctx,
 	array = pk_results_get_package_array (results);
 	if (array->len == 0) {
 		g_set_error (error,
-			     G_IO_ERROR,
+			     PKGC_ERROR,
 			     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 			     "Could not find package: %s",
 			     package_name);
@@ -1222,7 +1222,7 @@ pkgc_resolve_package (PkgcliContext *ctx,
 	/* multiple matches - prompt user to choose */
 	if (ctx->noninteractive) {
 		g_set_error (error,
-			     G_IO_ERROR,
+			     PKGC_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     "Multiple packages match '%s' but running non-interactively",
 			     package_name);
@@ -1244,7 +1244,7 @@ pkgc_resolve_package (PkgcliContext *ctx,
 	g_print (_("Please choose the correct package: "));
 	if (scanf ("%u", &idx) != 1 || idx < 1 || idx > array->len) {
 		g_set_error_literal (error,
-				     G_IO_ERROR,
+				     PKGC_ERROR,
 				     PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				     "User aborted selection");
 		return NULL;
