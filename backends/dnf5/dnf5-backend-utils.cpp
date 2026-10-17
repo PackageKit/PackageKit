@@ -859,8 +859,12 @@ Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)
 void
 Dnf5TransactionCallbacks::add_package(const libdnf5::base::TransactionPackage &item)
 {
+	auto action = item.get_action();
+	bool inbound = libdnf5::transaction::transaction_item_action_is_inbound(action);
+	if (!inbound && !libdnf5::transaction::transaction_item_action_is_outbound(action))
+		return;
+
 	auto pkg = item.get_package();
-	bool inbound = libdnf5::transaction::transaction_item_action_is_inbound(item.get_action());
 	add_package(pkg.get_full_nevra(), inbound, pkg.get_install_size());
 }
 
