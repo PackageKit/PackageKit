@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-13 07:51+0000\n"
+"PO-Revision-Date: 2026-10-17 10:44+0000\n"
 "Last-Translator: Anders Jonsson <haaninjo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -119,10 +119,8 @@ msgid "A system restart is required to complete the changes."
 msgstr "Starta om datorn för att färdigställa uppdateringen."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Logga ut och logga in igen för att färdigställa uppdateringen."
+msgstr "Du behöver logga ut och logga in igen för att färdigställa ändringarna."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
