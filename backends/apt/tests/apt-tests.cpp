@@ -982,7 +982,30 @@ static void apt_test_progress_hooks(void)
     g_assert_cmpuint(apt_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
 }
 
-static void apt_test_progress_post_invoke(void)
+static void apt_test_progress_after_hooks(gconstpointer data)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    const std::string nextStage = static_cast<const char *>(data);
+    apt_test_job.reset();
+    ProgressTestStream initial;
+    initial.update(progress, "processing: " + nextStage + ": small\n");
+    g_assert_true(apt_test_job.statuses.empty());
+
+    ProgressTestStream triggers;
+    triggers.update(progress, "processing: trigproc: large\n");
+    g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
+    ProgressTestStream resume;
+    resume.update(progress, "processing: " + nextStage + ": small\n");
+    g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_COMMIT);
+    ProgressTestStream finish;
+    finish.update(progress, "status: small: installed\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 10);
+}
+
+static void apt_test_progress_post_invoke(gconstpointer data)
 {
     AptTestRoot root("cache-progress");
     AptJob job(nullptr);
@@ -991,10 +1014,23 @@ static void apt_test_progress_post_invoke(void)
     apt_test_job.reset();
     ProgressTestStream stream;
     AptInstallProgress childProgress(stream.apt[1]);
+    const auto savedHooks = _config->FindVector("DPkg::Post-Invoke");
+    _config->Clear("DPkg::Post-Invoke");
+    const bool hasHooks = GPOINTER_TO_INT(data);
+    if (hasHooks)
+        _config->Set("DPkg::Post-Invoke::", "true");
     childProgress.Stop();
+    _config->Clear("DPkg::Post-Invoke");
+    for (const auto &hook : savedHooks)
+        _config->Set("DPkg::Post-Invoke::", hook);
     stream.update(progress, "", "");
-    g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
-    g_assert_cmpuint(apt_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
+    if (hasHooks) {
+        g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
+        g_assert_cmpuint(apt_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
+    } else {
+        g_assert_true(apt_test_job.statuses.empty());
+        g_assert_true(apt_test_job.percentages.empty());
+    }
 }
 
 static void apt_test_progress_fallback(void)
@@ -1093,6 +1129,45 @@ static void apt_test_cached_without_download(void)
     g_assert_true(apt_test_job.percentages.empty());
 }
 
+static void apt_test_file_repo_without_download(void)
+{
+    AptTestRoot root("cache-progress");
+    // Only acquire this archive: its contents need not be a real .deb for APT
+    // to verify the size and hash, and dpkg must not run in this test.
+    const std::string archive(1000, 'x');
+    std::ofstream(root.root / "repo/small.deb") << archive;
+    g_autofree gchar *hash = g_compute_checksum_for_string(G_CHECKSUM_SHA256, archive.c_str(), archive.size());
+    g_autofree gchar *packagesData = nullptr;
+    g_assert_true(g_file_get_contents((root.root / "repo/Packages").c_str(), &packagesData, nullptr, nullptr));
+    std::string packages = packagesData;
+    packages.replace(packages.find(std::string(64, '0')), 64, hash);
+    const std::string repoUri = "file:" + (root.root / "repo").string();
+    std::ofstream(root.root / "var/lib/apt/lists" / URItoFileName(repoUri + "/./Packages")) << packages;
+    std::ofstream(root.root / "var/lib/dpkg/status", std::ios::trunc).close();
+    fs::permissions(
+        root.root,
+        fs::perms::group_read | fs::perms::group_exec | fs::perms::others_read | fs::perms::others_exec,
+        fs::perm_options::add);
+
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    TransactionRequest request;
+    const auto pkg = (*job.aptCacheFile())->FindPkg("small");
+    g_assert_false(pkg.end());
+    g_assert_true(pkg.CurrentVer().end());
+    request.install.append(job.aptCacheFile()->findCandidateVer(pkg));
+    request.flags = pk_bitfield_value(PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
+    apt_test_job.reset();
+    g_assert_true(job.runTransaction(request));
+    g_assert_true(apt_test_job.errors.empty());
+    g_assert_true(
+        std::find(apt_test_job.statuses.begin(), apt_test_job.statuses.end(), PK_STATUS_ENUM_SIG_CHECK)
+        != apt_test_job.statuses.end());
+    g_assert_true(
+        std::find(apt_test_job.statuses.begin(), apt_test_job.statuses.end(), PK_STATUS_ENUM_DOWNLOAD)
+        == apt_test_job.statuses.end());
+}
+
 static void apt_test_deb_file_open_error(void)
 {
     const std::string missing = testdata_dir + "/does-not-exist.deb";
@@ -1139,13 +1214,17 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/progress/purge", apt_test_progress_purge);
     g_test_add_func("/apt/progress/initial-state", apt_test_progress_initial_state);
     g_test_add_func("/apt/progress/hooks", apt_test_progress_hooks);
-    g_test_add_func("/apt/progress/post-invoke", apt_test_progress_post_invoke);
+    g_test_add_data_func("/apt/progress/after-hooks/install", "install", apt_test_progress_after_hooks);
+    g_test_add_data_func("/apt/progress/after-hooks/configure", "configure", apt_test_progress_after_hooks);
+    g_test_add_data_func("/apt/progress/post-invoke", GINT_TO_POINTER(true), apt_test_progress_post_invoke);
+    g_test_add_data_func("/apt/progress/no-post-invoke", GINT_TO_POINTER(false), apt_test_progress_post_invoke);
     g_test_add_func("/apt/progress/fallback", apt_test_progress_fallback);
     g_test_add_func("/apt/progress/zero-sizes", apt_test_progress_zero_sizes);
     g_test_add_func("/apt/progress/unplanned", apt_test_progress_unplanned);
     g_test_add_func("/apt/progress/error", apt_test_progress_error);
     g_test_add_func("/apt/progress/removal-without-download", apt_test_removal_without_download);
     g_test_add_func("/apt/progress/cached-without-download", apt_test_cached_without_download);
+    g_test_add_func("/apt/progress/file-repo-without-download", apt_test_file_repo_without_download);
 
     return g_test_run();
 }
