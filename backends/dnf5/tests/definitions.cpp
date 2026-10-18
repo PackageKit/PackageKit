@@ -78,6 +78,11 @@ pk_backend_job_files(PkBackendJob *job, const gchar *package_id, GPtrArray *file
 }
 
 void
+pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...)
+{
+}
+
+void
 pk_backend_job_packages(PkBackendJob *job, GPtrArray *packages)
 {
 }
