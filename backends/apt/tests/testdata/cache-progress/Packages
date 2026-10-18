@@ -1,0 +1,34 @@
+Package: small
+Version: 1.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 10
+Filename: ./small.deb
+Size: 1000
+SHA256: 0000000000000000000000000000000000000000000000000000000000000000
+Description: Small progress test package
+
+Package: large
+Version: 1.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 90
+Filename: ./large.deb
+Size: 9000
+SHA256: 0000000000000000000000000000000000000000000000000000000000000000
+Description: Large progress test package
+
+Package: remove-small
+Version: 1.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 1
+Description: Small removal test package
+
+Package: remove-large
+Version: 1.0
+Architecture: amd64
+Maintainer: PackageKit Tests <packagekit@example.org>
+Installed-Size: 100000
+Description: Large removal test package
+
