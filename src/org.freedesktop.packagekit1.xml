@@ -98,22 +98,6 @@
 
     <!--*********************************************************************-->
     <!--
-      NetworkState:
-
-      Gets the network state from the daemon. This is provided as some clients
-      may not want to use NetworkManager if the system daemon is configured to
-      use something else.
-
-      If the system is managed using NetworkManager then the following states
-      are supported: `unknown`, `offline`, `online`, `wifi`, `mobile` or
-      `wired`. If the system is configured for legacy UNIX network fallback,
-      or NetworkManager is not running then the folowing states are supported:
-      `unknown`, `offline` or `online`.
-    -->
-    <property name="NetworkState" type="u" access="read"/>
-
-    <!--*********************************************************************-->
-    <!--
       DistroId:
 
       The distribution identification, in the distro;version;arch form e.g.

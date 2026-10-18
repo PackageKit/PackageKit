@@ -99,22 +99,6 @@ pkgc_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer d
 }
 
 static void
-pkgc_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
-{
-	PkgcliContext *ctx = g_context;
-	PkNetworkEnum state;
-	const gchar *color;
-	g_object_get (control, "network-state", &state, NULL);
-	color = (state == PK_NETWORK_ENUM_ONLINE) ? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN)
-						  : pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
-	g_print ("%s%s● Network:%s %s\n",
-		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
-		 color,
-		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
-		 pk_network_enum_to_string (state));
-}
-
-static void
 pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
 	PkgcliContext *ctx = g_context;
@@ -555,10 +539,6 @@ pkgc_cmd_monitor (PkgcliContext *ctx, PkgcliCommand *cmd, int argc, char **argv)
 	g_signal_connect (ctx->control,
 			  "notify::connected",
 			  G_CALLBACK (pkgc_monitor_notify_connected_cb),
-			  NULL);
-	g_signal_connect (ctx->control,
-			  "notify::network-state",
-			  G_CALLBACK (pkgc_monitor_notify_network_status_cb),
 			  NULL);
 	pk_control_get_properties_async (ctx->control,
 					 NULL,

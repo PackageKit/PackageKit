@@ -102,9 +102,6 @@ pk_backend_protocol_build_ctx (PkBackendJob *job)
 
 	json_object_set_new (ctx, "locale", json_string (pk_backend_job_get_locale (job)));
 	json_object_set_new (ctx, "uid", json_integer (pk_backend_job_get_uid (job)));
-	json_object_set_new (ctx,
-			     "network",
-			     json_boolean (backend != NULL && pk_backend_is_online (backend)));
 	json_object_set_new (ctx, "background", json_boolean (pk_backend_job_get_background (job)));
 	json_object_set_new (ctx,
 			     "interactive",

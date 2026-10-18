@@ -143,6 +143,13 @@ main (int argc, char *argv[])
 	};
 	/* clang-format on */
 
+#ifdef __linux__
+	/* GLib's NetworkManager monitor reports "offline" whenever NetworkManager
+	 * manages none of the interfaces (servers on networkd/netplan). The route
+	 * table is the right answer for a system daemon (admins can still override). */
+	g_setenv ("GIO_USE_NETWORK_MONITOR", "netlink", FALSE);
+#endif
+
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");

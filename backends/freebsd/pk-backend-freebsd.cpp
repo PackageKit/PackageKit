@@ -796,11 +796,6 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
 
     PKJobCanceller jc (job);
 
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline");
-        return;
-    }
-
     PkBitfield transaction_flags;
     gchar **package_ids = NULL;
     g_variant_get (params, "(t^a&s)",
@@ -950,11 +945,6 @@ static void
 pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PKJobCanceller jc (job);
-
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update repositories when offline");
-        return;
-    }
 
     gboolean force;
     g_variant_get (params, "(b)", &force);
@@ -1240,11 +1230,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 
     // GOS-394: Check the cache first
 
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot download packages when offline");
-        return;
-    }
-
     gchar **package_ids = NULL;
     gchar *directory0 = NULL;
     g_variant_get (params, "(^ass)", // he he
@@ -1395,10 +1380,6 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
     }
     case PK_ROLE_ENUM_INSTALL_PACKAGES:
         // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
-        if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-            pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install packages when offline");
-            break;
-        }
         pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
         break;
     case PK_ROLE_ENUM_INSTALL_SIGNATURE:

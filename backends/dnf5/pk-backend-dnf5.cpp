@@ -152,7 +152,7 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 	}
 
 	try {
-		dnf5_setup_base(priv, FALSE, FALSE, nullptr, pk_backend_is_online(backend));
+		dnf5_setup_base(priv);
 		g_signal_connect(backend, "updates-changed", G_CALLBACK(pk_backend_context_invalidate_cb), backend);
 	} catch (const std::exception &e) {
 		g_warning("Init failed: %s", e.what());
@@ -193,7 +193,7 @@ pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer us
 	try {
 		dnf5_refresh_cache(priv, job, force);
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_INTERNAL_ERROR);
 	}
 }
 

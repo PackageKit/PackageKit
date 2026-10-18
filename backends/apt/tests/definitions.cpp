@@ -131,8 +131,3 @@ GType pk_backend_get_type()
 {
     return G_TYPE_RESERVED_USER_FIRST;
 }
-
-gboolean pk_backend_is_online(PkBackend *backend)
-{
-    return TRUE;
-}

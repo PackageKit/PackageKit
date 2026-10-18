@@ -858,19 +858,16 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
         srcpkg = rec.SourcePkg();
     }
 
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
-    if (pk_backend_is_online(backend)) {
-        // Create the download object
-        AcqPackageKitStatus Stat(this);
+    // Create the download object
+    AcqPackageKitStatus Stat(this);
 
-        // get a fetcher
-        pkgAcquire fetcher;
-        fetcher.SetLog(&Stat);
+    // get a fetcher
+    pkgAcquire fetcher;
+    fetcher.SetLog(&Stat);
 
-        // fetch the changelog
-        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
-        changelog = fetchChangelogData(*m_cache, fetcher, candver, currver, &update_text, &time_issued);
-    }
+    // fetch the changelog
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD_CHANGELOG);
+    changelog = fetchChangelogData(*m_cache, fetcher, candver, currver, &update_text, &time_issued);
 
     // Build a package_id from the update version
     string archive = safeStr(vf.File().Archive());
@@ -2180,7 +2177,7 @@ bool AptJob::installPackages(PkBitfield flags)
         return false;
     }
 
-    if (!checkDownloadRequirements(fetcher, simulate))
+    if (!checkDownloadRequirements(fetcher))
         return false;
 
     // Make sure we are not installing any untrusted package is untrusted is not set
@@ -2224,10 +2221,8 @@ bool AptJob::installPackages(PkBitfield flags)
     return runDpkg(*PM);
 }
 
-bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher, bool simulate)
+bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher)
 {
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
-
     // Display statistics
     unsigned long long FetchBytes = fetcher.FetchNeeded();
     unsigned long long FetchPBytes = fetcher.PartialPresent();
@@ -2243,13 +2238,6 @@ bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher, bool simulate)
     if (FetchBytes != 0) {
         // Emit the remainig download size
         pk_backend_job_set_download_size_remaining(m_job, FetchBytes);
-
-        // check network state if we are going to download
-        // something or if we are not simulating
-        if (!simulate && !pk_backend_is_online(backend)) {
-            pk_backend_job_error_code(m_job, PK_ERROR_ENUM_NO_NETWORK, "Cannot download packages whilst offline");
-            return false;
-        }
     }
 
     /* Check for enough free space */

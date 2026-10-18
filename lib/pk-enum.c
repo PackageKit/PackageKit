@@ -360,16 +360,6 @@ static const PkEnumMatch enum_upgrade[] = {
 	{0, NULL}
 };
 
-static const PkEnumMatch enum_network[] = {
-	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
-	{PK_NETWORK_ENUM_ONLINE,		"online"},
-	{PK_NETWORK_ENUM_WIRED,			"wired"},
-	{PK_NETWORK_ENUM_WIFI,			"wifi"},
-	{PK_NETWORK_ENUM_MOBILE,		"mobile"},
-	{0, NULL}
-};
-
 static const PkEnumMatch enum_authorize_type[] = {
 	{PK_AUTHORIZE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_AUTHORIZE_ENUM_YES,			"yes"},
@@ -619,38 +609,6 @@ const gchar *
 pk_exit_enum_to_string (PkExitEnum exit_enum)
 {
 	return pk_enum_find_string (enum_exit, exit_enum);
-}
-
-/**
- * pk_network_enum_from_string:
- * @network: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- *
- * Since: 0.5.0
- **/
-PkNetworkEnum
-pk_network_enum_from_string (const gchar *network)
-{
-	return pk_enum_find_value (enum_network, network);
-}
-
-/**
- * pk_network_enum_to_string:
- * @network: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- *
- * Since: 0.5.0
- **/
-const gchar *
-pk_network_enum_to_string (PkNetworkEnum network)
-{
-	return pk_enum_find_string (enum_network, network);
 }
 
 /**

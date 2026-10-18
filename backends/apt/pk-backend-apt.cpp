@@ -416,85 +416,79 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
         return;
     }
 
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
-    if (pk_backend_is_online(backend)) {
-        pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-        // Create the progress
-        AcqPackageKitStatus Stat(apt);
+    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+    // Create the progress
+    AcqPackageKitStatus Stat(apt);
 
-        // get a fetcher
-        pkgAcquire fetcher(&Stat);
-        gchar *pi;
+    // get a fetcher
+    pkgAcquire fetcher(&Stat);
+    gchar *pi;
 
-        // TODO this might be useful when the item is in the cache
-        // 	for (pkgAcquire::ItemIterator I = fetcher.ItemsBegin(); I < fetcher.ItemsEnd();)
-        // 	{
-        // 		if ((*I)->Local == true)
-        // 		{
-        // 			I++;
-        // 			continue;
-        // 		}
-        //
-        // 		// Close the item and check if it was found in cache
-        // 		(*I)->Finished();
-        // 		if ((*I)->Complete == false) {
-        // 			Transient = true;
-        // 		}
-        //
-        // 		// Clear it out of the fetch list
-        // 		delete *I;
-        // 		I = fetcher.ItemsBegin();
-        // 	}
+    // TODO this might be useful when the item is in the cache
+    // 	for (pkgAcquire::ItemIterator I = fetcher.ItemsBegin(); I < fetcher.ItemsEnd();)
+    // 	{
+    // 		if ((*I)->Local == true)
+    // 		{
+    // 			I++;
+    // 			continue;
+    // 		}
+    //
+    // 		// Close the item and check if it was found in cache
+    // 		(*I)->Finished();
+    // 		if ((*I)->Complete == false) {
+    // 			Transient = true;
+    // 		}
+    //
+    // 		// Clear it out of the fetch list
+    // 		delete *I;
+    // 		I = fetcher.ItemsBegin();
+    // 	}
 
-        for (uint i = 0; i < g_strv_length(package_ids); ++i) {
-            pi = package_ids[i];
-            if (pk_package_id_check(pi) == false) {
-                pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "%s", pi);
-                return;
-            }
-
-            if (apt->cancelled()) {
-                break;
-            }
-
-            const PkgInfo &pkInfo = apt->aptCacheFile()->resolvePkgID(pi);
-            // Ignore packages that could not be found or that exist only due to dependencies.
-            if (pkInfo.ver.end()) {
-                _error->Error("Can't find this package id \"%s\".", pi);
-                continue;
-            } else {
-                if (!pkInfo.ver.Downloadable()) {
-                    _error->Error(
-                        "No downloadable files for %s,"
-                        "perhaps it is a local or obsolete"
-                        "package?",
-                        pi);
-                    continue;
-                }
-
-                string storeFileName;
-                if (!apt->getArchive(&fetcher, pkInfo.ver, directory, storeFileName)) {
-                    return;
-                }
-
-                g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
-                g_autofree gchar *path = g_strdup_printf(
-                    "%s/%s",
-                    directory.c_str(),
-                    std::string{flNotDir(storeFileName)}.c_str());
-                g_ptr_array_add(files, pk_file_new(path, PK_FILE_KIND_ENUM_REGULAR));
-                pk_backend_job_files(job, pi, files);
-            }
-        }
-
-        if (fetcher.Run() != pkgAcquire::Continue && apt->cancelled() == false) {
-            // We failed and we did not cancel
-            show_errors(job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
+    for (uint i = 0; i < g_strv_length(package_ids); ++i) {
+        pi = package_ids[i];
+        if (pk_package_id_check(pi) == false) {
+            pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "%s", pi);
             return;
         }
 
-    } else {
-        pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_NETWORK, "Cannot download packages whilst offline");
+        if (apt->cancelled()) {
+            break;
+        }
+
+        const PkgInfo &pkInfo = apt->aptCacheFile()->resolvePkgID(pi);
+        // Ignore packages that could not be found or that exist only due to dependencies.
+        if (pkInfo.ver.end()) {
+            _error->Error("Can't find this package id \"%s\".", pi);
+            continue;
+        } else {
+            if (!pkInfo.ver.Downloadable()) {
+                _error->Error(
+                    "No downloadable files for %s,"
+                    "perhaps it is a local or obsolete"
+                    "package?",
+                    pi);
+                continue;
+            }
+
+            string storeFileName;
+            if (!apt->getArchive(&fetcher, pkInfo.ver, directory, storeFileName)) {
+                return;
+            }
+
+            g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func((GDestroyNotify)pk_file_free);
+            g_autofree gchar *path = g_strdup_printf(
+                "%s/%s",
+                directory.c_str(),
+                std::string{flNotDir(storeFileName)}.c_str());
+            g_ptr_array_add(files, pk_file_new(path, PK_FILE_KIND_ENUM_REGULAR));
+            pk_backend_job_files(job, pi, files);
+        }
+    }
+
+    if (fetcher.Run() != pkgAcquire::Continue && apt->cancelled() == false) {
+        // We failed and we did not cancel
+        show_errors(job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
+        return;
     }
 }
 
@@ -508,15 +502,10 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
         return;
     }
 
-    PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
-    if (pk_backend_is_online(backend)) {
-        apt->refreshCache();
+    apt->refreshCache();
 
-        if (_error->PendingError() == true) {
-            show_errors(job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
-        }
-    } else {
-        pk_backend_job_error_code(job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+    if (_error->PendingError() == true) {
+        show_errors(job, PK_ERROR_ENUM_CANNOT_FETCH_SOURCES, true);
     }
 }
 

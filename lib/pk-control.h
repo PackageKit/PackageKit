@@ -75,7 +75,6 @@ struct _PkControlClass
 					  gchar	   **transaction_ids);
 	void (*updates_changed) (PkControl *control);
 	void (*repo_list_changed) (PkControl *control);
-	void (*network_state_changed) (PkControl *control);
 	void (*restart_schedule) (PkControl *control);
 	void (*locked) (PkControl *control,
 			gboolean   is_locked);

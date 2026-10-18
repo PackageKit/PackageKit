@@ -3206,14 +3206,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 static void
 backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NO_NETWORK,
-					   "Cannot install package when offline!");
-		pk_backend_job_finished (job);
-		return;
-	}
-
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
 	pb_error_clean ();
 
@@ -3276,14 +3268,6 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 static void
 backend_refresh_cache (PkBackend *backend, PkBackendJob *job)
 {
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NO_NETWORK,
-					   "Cannot refresh cache when offline!");
-		pk_backend_job_finished (job);
-		return;
-	}
-
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
 	pb_error_clean ();
@@ -3370,14 +3354,6 @@ backend_search (PkBackend *backend, PkBackendJob *job)
 static void
 backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NO_NETWORK,
-					   "Cannot update packages when offline!");
-		pk_backend_job_finished (job);
-		return;
-	}
-
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
 	pb_error_clean ();
 

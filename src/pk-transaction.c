@@ -597,6 +597,16 @@ pk_transaction_error_code_cb (PkBackendJob *job, PkError *item, PkTransaction *t
 			   pk_role_enum_to_string (transaction->role));
 	}
 
+	/* A fetch that failed while we have no network is likely due to that, so we
+	 * can give a better answer in those cases. We only check the monitor after
+	 * a real failure, so we never block a system in case its answer is wrong. */
+	if ((code == PK_ERROR_ENUM_CANNOT_FETCH_SOURCES ||
+	     code == PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED) &&
+	    !g_network_monitor_get_network_available (g_network_monitor_get_default ())) {
+		code = PK_ERROR_ENUM_NO_NETWORK;
+		g_object_set (item, "code", code, NULL);
+	}
+
 	/* add to results */
 	pk_results_set_error_code (transaction->results, item);
 

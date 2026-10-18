@@ -666,14 +666,6 @@ backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NO_NETWORK,
-					   "Cannot check when offline");
-		pk_backend_job_finished (job);
-		return;
-	}
 	job_data->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, job);
 }
 

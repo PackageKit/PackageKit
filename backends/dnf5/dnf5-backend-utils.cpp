@@ -27,6 +27,8 @@
 #include <libdnf5/logger/logger.hpp>
 #include <libdnf5/rpm/arch.hpp>
 #include <libdnf5/repo/package_downloader.hpp>
+#include <libdnf5/repo/package_downloader_errors.hpp>
+#include <libdnf5/repo/repo_errors.hpp>
 #include <libdnf5/base/goal.hpp>
 #include <libdnf5/advisory/advisory_query.hpp>
 #include <libdnf5/rpm/reldep_list.hpp>
@@ -73,13 +75,7 @@ dnf5_releasever_is_valid(const char *releasever)
 }
 
 void
-dnf5_setup_base(
-	PkBackendDnf5Private *priv,
-	gboolean refresh,
-	gboolean force,
-	const char *releasever,
-	gboolean online,
-	PkBackendJob *job)
+dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, PkBackendJob *job)
 {
 	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
 		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
@@ -157,13 +153,6 @@ dnf5_setup_base(
 		}
 	}
 
-	// online defaults to TRUE. Only change the configuration if the caller passed FALSE
-	if (!online) {
-		// When offline, use cache-only mode to avoid network errors
-		g_debug("Using cache-only mode (not refreshing metadata)");
-		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
-	}
-
 	auto repo_sack = priv->base->get_repo_sack();
 	repo_sack->create_repos_from_system_configuration();
 	repo_sack->get_system_repo();
@@ -195,22 +184,22 @@ dnf5_setup_base(
 }
 
 void
-dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online)
-{
-	auto &config = priv->base->get_config();
-	if (online) {
-		g_debug("Clearing cache-only mode (online)");
-		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "none");
-	} else {
-		g_debug("Setting cache-only mode (offline)");
-		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
-	}
-}
-
-void
 dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force)
 {
-	dnf5_setup_base(priv, TRUE, force, nullptr, TRUE, job);
+	dnf5_setup_base(priv, TRUE, force, nullptr, job);
+}
+
+// Download failures get their own codes so the daemon can report "no network"
+// when the monitor says we are offline; everything else uses the fallback.
+void
+dnf5_job_error_from_exception(PkBackendJob *job, const std::exception &e, PkErrorEnum fallback)
+{
+	PkErrorEnum code = fallback;
+	if (dynamic_cast<const libdnf5::repo::RepoDownloadError *>(&e) != nullptr)
+		code = PK_ERROR_ENUM_CANNOT_FETCH_SOURCES;
+	else if (dynamic_cast<const libdnf5::repo::PackageDownloadError *>(&e) != nullptr)
+		code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
+	pk_backend_job_error_code(job, code, "%s", e.what());
 }
 
 PkInfoEnum

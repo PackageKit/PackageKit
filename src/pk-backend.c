@@ -701,14 +701,6 @@ pk_backend_bool_to_string (gboolean value)
 	return "no";
 }
 
-gboolean
-pk_backend_is_online (PkBackend *backend)
-{
-	GNetworkMonitor *network_monitor;
-	network_monitor = g_network_monitor_get_default ();
-	return g_network_monitor_get_network_available (network_monitor);
-}
-
 /**
  * pk_backend_convert_uri:
  *

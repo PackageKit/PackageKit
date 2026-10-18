@@ -76,7 +76,6 @@ struct _PkEngine
 	PkScheduler *scheduler;
 	PkTransactionDb *transaction_db;
 	PkBackend *backend;
-	GNetworkMonitor *network_monitor;
 	GKeyFile *conf;
 	PkDbus *dbus;
 	GFileMonitor *monitor_conf;
@@ -96,7 +95,6 @@ struct _PkEngine
 	guint timeout_normal_id;
 	PolkitAuthority *authority;
 	gboolean locked;
-	PkNetworkEnum network_state;
 	guint owner_id;
 	GDBusNodeInfo *introspection;
 	GDBusConnection *connection;
@@ -399,12 +397,6 @@ pk_engine_state_changed_cb (gpointer data)
 	/* we're done something low-level */
 	if (!pk_offline_auth_invalidate (&error))
 		g_warning ("failed to invalidate: %s", error->message);
-
-	/* if network is not up, then just reschedule */
-	if (!g_network_monitor_get_network_available (engine->network_monitor)) {
-		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
-		return TRUE;
-	}
 
 	pk_backend_updates_changed (engine->backend);
 
@@ -893,36 +885,6 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 	pk_engine_emit_offline_property_changed (engine, "PreparedUpgrade", prepared_upgrade);
 }
 
-static PkNetworkEnum
-pk_engine_get_network_state (GNetworkMonitor *network_monitor)
-{
-	if (!g_network_monitor_get_network_available (network_monitor))
-		return PK_NETWORK_ENUM_OFFLINE;
-	/* this isn't exactly true, but it's what the UI expects */
-	if (g_network_monitor_get_network_metered (network_monitor))
-		return PK_NETWORK_ENUM_MOBILE;
-	return PK_NETWORK_ENUM_ONLINE;
-}
-
-static void
-pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
-				    gboolean available,
-				    PkEngine *engine)
-{
-	PkNetworkEnum network_state;
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	network_state = pk_engine_get_network_state (network_monitor);
-	if (network_state == engine->network_state)
-		return;
-	engine->network_state = network_state;
-
-	/* emit */
-	pk_engine_emit_property_changed (engine,
-					 "NetworkState",
-					 g_variant_new_uint32 (network_state));
-}
-
 static void
 pk_engine_setup_file_monitors (PkEngine *engine)
 {
@@ -1124,8 +1086,6 @@ pk_engine_daemon_get_property (GDBusConnection *connection_,
 		return g_variant_new_strv ((const gchar *const *) engine->mime_types, -1);
 	if (g_strcmp0 (property_name, "Locked") == 0)
 		return g_variant_new_boolean (engine->locked);
-	if (g_strcmp0 (property_name, "NetworkState") == 0)
-		return g_variant_new_uint32 (engine->network_state);
 	if (g_strcmp0 (property_name, "DistroId") == 0)
 		return _g_variant_new_maybe_string (engine->distro_id);
 	if (g_strcmp0 (property_name, "RebootRequired") == 0)
@@ -1782,14 +1742,6 @@ pk_engine_init (PkEngine *engine)
 	if (engine->introspection == NULL) {
 		g_error ("PkEngine: failed to load daemon introspection: %s", error->message);
 	}
-
-	/* proxy the network state */
-	engine->network_monitor = g_network_monitor_get_default ();
-	g_signal_connect (engine->network_monitor,
-			  "network-changed",
-			  G_CALLBACK (pk_engine_network_state_changed_cb),
-			  engine);
-	engine->network_state = pk_engine_get_network_state (engine->network_monitor);
 
 	/* try to get the distro id */
 	engine->distro_id = pk_get_distro_id ();

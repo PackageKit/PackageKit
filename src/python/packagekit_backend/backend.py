@@ -58,7 +58,6 @@ ROLE_ARGS = {
 _CTX_DEFAULTS = {
     'locale': None,
     'uid': 0,
-    'network': False,
     'background': False,
     'interactive': False,
     'cache_age': None,

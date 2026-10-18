@@ -45,9 +45,6 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
-	// Update cache-only mode based on current network state
-	dnf5_update_network_state(priv, pk_backend_is_online(backend));
-
 	try {
 		if (role == PK_ROLE_ENUM_SEARCH_NAME || role == PK_ROLE_ENUM_SEARCH_DETAILS
 		    || role == PK_ROLE_ENUM_SEARCH_FILE || role == PK_ROLE_ENUM_RESOLVE
@@ -391,7 +388,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			}
 		}
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 	}
 	pk_backend_job_finished(job);
 }
@@ -405,9 +402,6 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
-	// Update cache-only mode based on current network state
-	dnf5_update_network_state(priv, pk_backend_is_online(backend));
-
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			gchar *distro_id = NULL;
@@ -416,7 +410,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			g_variant_get(params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
 			if (distro_id) {
 				pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-				dnf5_setup_base(priv, TRUE, TRUE, distro_id, TRUE, job);
+				dnf5_setup_base(priv, TRUE, TRUE, distro_id, job);
 
 				g_debug("Checking repositories for system upgrade to %s:", distro_id);
 				// ... logging code ...
@@ -726,7 +720,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			pk_backend_job_set_percentage(job, 100);
 
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 		// we may have been interrupted after mutating the shared base, so rebuild it
 		// rather than leave the leftovers visible to the next transaction
 		try {
@@ -746,9 +740,6 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkRoleEnum role = pk_backend_job_get_role(job);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
-
-	// Update cache-only mode based on current network state
-	dnf5_update_network_state(priv, pk_backend_is_online(backend));
 
 	try {
 		if (role == PK_ROLE_ENUM_REPO_ENABLE || role == PK_ROLE_ENUM_REPO_SET_DATA) {
@@ -956,7 +947,7 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		}
 	} catch (const std::exception &e) {
 		g_warning("Exception in dnf5_repo_thread: %s", e.what());
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 	}
 	g_debug("Calling pk_backend_job_finished in dnf5_repo_thread");
 	pk_backend_job_finished(job);

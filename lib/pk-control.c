@@ -65,7 +65,6 @@ struct _PkControlPrivate
 	gchar **mime_types;
 	gboolean connected;
 	gboolean locked;
-	PkNetworkEnum network_state;
 	gchar *distro_id;
 	PkRestartEnum reboot_required;
 	gchar **reboot_required_package_ids;
@@ -95,7 +94,6 @@ enum {
 	PROP_PROVIDES,
 	PROP_MIME_TYPES,
 	PROP_LOCKED,
-	PROP_NETWORK_STATE,
 	PROP_CONNECTED,
 	PROP_DISTRO_ID,
 	PROP_REBOOT_REQUIRED,
@@ -273,14 +271,6 @@ pk_control_set_property_value (PkControl *control, const gchar *key, GVariant *v
 			return;
 		priv->locked = tmp_bool;
 		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_LOCKED]);
-		return;
-	}
-	if (g_strcmp0 (key, "NetworkState") == 0) {
-		tmp_uint = g_variant_get_uint32 (value);
-		if (priv->network_state == tmp_uint)
-			return;
-		priv->network_state = tmp_uint;
-		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_NETWORK_STATE]);
 		return;
 	}
 	if (g_strcmp0 (key, "DistroId") == 0) {
@@ -1727,9 +1717,6 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_LOCKED:
 		g_value_set_boolean (value, priv->locked);
 		break;
-	case PROP_NETWORK_STATE:
-		g_value_set_enum (value, priv->network_state);
-		break;
 	case PROP_DISTRO_ID:
 		g_value_set_string (value, priv->distro_id);
 		break;
@@ -1929,19 +1916,6 @@ pk_control_class_init (PkControlClass *klass)
 							    FALSE,
 							    G_PARAM_READWRITE |
 								G_PARAM_STATIC_STRINGS);
-
-	/**
-	 * PkControl:network-state:
-	 *
-	 * Since: 0.5.3
-	 */
-	obj_properties[PROP_NETWORK_STATE] = g_param_spec_enum ("network-state",
-								NULL,
-								NULL,
-								PK_TYPE_NETWORK_ENUM,
-								PK_NETWORK_ENUM_UNKNOWN,
-								G_PARAM_READWRITE |
-								    G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkControl:reboot-required:
@@ -2156,7 +2130,6 @@ static void
 pk_control_init (PkControl *control)
 {
 	PkControlPrivate *priv = GET_PRIVATE(control);
-	priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
 	priv->reboot_required = PK_RESTART_ENUM_NONE;
 	priv->version_major = G_MAXUINT;
 	priv->version_minor = G_MAXUINT;

@@ -242,28 +242,6 @@ typedef enum {
 } PkExitEnum;
 
 /**
- * PkNetworkEnum:
- * @PK_NETWORK_ENUM_UNKNOWN: Unknown network
- * @PK_NETWORK_ENUM_OFFLINE: Offline (no network)
- * @PK_NETWORK_ENUM_ONLINE: Online (network type unknown)
- * @PK_NETWORK_ENUM_WIRED: Wired network
- * @PK_NETWORK_ENUM_WIFI: WiFi network
- * @PK_NETWORK_ENUM_MOBILE: Mobile network
- *
- * Network type
- **/
-typedef enum {
-	PK_NETWORK_ENUM_UNKNOWN,
-	PK_NETWORK_ENUM_OFFLINE,
-	PK_NETWORK_ENUM_ONLINE,
-	PK_NETWORK_ENUM_WIRED,
-	PK_NETWORK_ENUM_WIFI,
-	PK_NETWORK_ENUM_MOBILE,
-	/*< private >*/
-	PK_NETWORK_ENUM_LAST
-} PkNetworkEnum;
-
-/**
  * PkFilterEnum:
  * @PK_FILTER_ENUM_UNKNOWN: Unknown filter
  * @PK_FILTER_ENUM_NONE: No filter
@@ -882,9 +860,6 @@ const gchar	     *pk_file_kind_enum_to_string (PkFileKindEnum file_kind);
 
 PkExitEnum	      pk_exit_enum_from_string (const gchar *exit);
 const gchar	     *pk_exit_enum_to_string (PkExitEnum exit);
-
-PkNetworkEnum	      pk_network_enum_from_string (const gchar *network);
-const gchar	     *pk_network_enum_to_string (PkNetworkEnum network);
 
 PkStatusEnum	      pk_status_enum_from_string (const gchar *status);
 const gchar	     *pk_status_enum_to_string (PkStatusEnum status);

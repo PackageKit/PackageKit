@@ -289,7 +289,7 @@ private:
      * require a network connection if anything is left to fetch, and make
      * sure the archive directory has enough free space.
      */
-    bool checkDownloadRequirements(pkgAcquire &fetcher, bool simulate);
+    bool checkDownloadRequirements(pkgAcquire &fetcher);
 
     /**
      * Fork dpkg via the package manager, relay its progress and conffile
