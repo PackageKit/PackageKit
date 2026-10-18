@@ -19,6 +19,8 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <algorithm>
+#include <unistd.h>
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/pkgsystem.h>
@@ -31,6 +33,9 @@
 #include "apt-sourceslist.h"
 #include "apt-utils.h"
 #include "gst-matcher.h"
+#include "dpkg-progress.h"
+#include "acqpkitstatus.h"
+#include "apt-test-job.hpp"
 
 namespace fs = std::filesystem;
 
@@ -797,6 +802,297 @@ static void apt_test_purge_residual_package(void)
     }
 }
 
+class ProgressTestStream
+{
+public:
+    ProgressTestStream()
+    {
+        g_assert_cmpint(pipe(apt), ==, 0);
+        g_assert_cmpint(pipe(dpkg), ==, 0);
+    }
+    ~ProgressTestStream()
+    {
+        for (int fd : {apt[0], apt[1], dpkg[0], dpkg[1]})
+            if (fd >= 0)
+                close(fd);
+    }
+    void update(
+        DpkgProgress &progress,
+        const std::string &dpkgLines,
+        const std::string &aptLines = "pmstatus:dpkg:99:Installing\n")
+    {
+        g_assert_cmpint(write(dpkg[1], dpkgLines.data(), dpkgLines.size()), ==, static_cast<ssize_t>(dpkgLines.size()));
+        g_assert_cmpint(write(apt[1], aptLines.data(), aptLines.size()), ==, static_cast<ssize_t>(aptLines.size()));
+        close(apt[1]);
+        close(dpkg[1]);
+        apt[1] = dpkg[1] = -1;
+        progress.update(apt[0], dpkg[0], -1);
+    }
+    int apt[2];
+    int dpkg[2];
+};
+
+static PkgInfo progress_test_package(AptJob &job, const char *name)
+{
+    const auto pkg = (*job.aptCacheFile())->FindPkg(name);
+    g_assert_false(pkg.end());
+    const auto ver = pkg.CurrentVer();
+    g_assert_false(ver.end());
+    return PkgInfo(ver);
+}
+
+static PkgList progress_test_packages(AptJob &job, bool mixed = false, bool removalsOnly = false)
+{
+    PkgList packages;
+    if (!removalsOnly) {
+        packages.append(progress_test_package(job, "small"));
+        packages.append(progress_test_package(job, "large"));
+    }
+    if (mixed || removalsOnly) {
+        for (const char *name : {"remove-small", "remove-large"}) {
+            auto package = progress_test_package(job, name);
+            (*job.aptCacheFile())->MarkDelete(package.ver.ParentPkg(), false);
+            packages.append(package);
+        }
+    }
+    return packages;
+}
+
+static void apt_test_progress_weighted(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(
+        progress,
+        "processing: install: small\n"
+        "status: small: half-installed\n"
+        "status: small: unpacked\n"
+        "processing: configure: small\n"
+        "status: small: half-configured\n"
+        "status: small: installed\n"
+        "processing: install: large:amd64\n"
+        "status: large:amd64: half-installed\n"
+        "status: large:amd64: unpacked\n");
+    // The small package accounts for 10%, half of the large one for another 45%.
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 55);
+    g_assert_cmpuint(apt_test_job.items.back().percentage, ==, 50);
+    g_assert_cmpint(apt_test_job.items.back().status, ==, PK_STATUS_ENUM_INSTALL);
+    g_assert_true(std::is_sorted(apt_test_job.percentages.begin(), apt_test_job.percentages.end()));
+}
+
+static void apt_test_progress_mixed(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job, true));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(
+        progress,
+        "processing: configure: small\nstatus: small: installed\n"
+        "processing: configure: large\nstatus: large: installed\n"
+        "processing: remove: remove-large\nstatus: remove-large: not-installed\n");
+    // Installs share half by size, removals get 25% each regardless of size.
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 75);
+    g_assert_cmpint(apt_test_job.items.back().status, ==, PK_STATUS_ENUM_FINISHED);
+}
+
+static void apt_test_progress_upgrade(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    // These are the old version's states before dpkg starts unpacking the upgrade.
+    stream.update(
+        progress,
+        "processing: upgrade: large\nstatus: large: half-configured\n"
+        "status: large: unpacked\nstatus: large: half-installed\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 22);
+    g_assert_cmpuint(apt_test_job.items.back().percentage, ==, 25);
+}
+
+static void apt_test_progress_removal(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job, false, true));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(
+        progress,
+        "processing: remove: remove-large\nstatus: remove-large: config-files\n"
+        "processing: remove: remove-small\nstatus: remove-small: not-installed\n");
+    g_assert_cmpuint(apt_test_job.percentages[1], ==, 50);
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 100);
+    g_assert_cmpint(apt_test_job.items.back().status, ==, PK_STATUS_ENUM_FINISHED);
+}
+
+static void apt_test_progress_purge(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    const auto packages = progress_test_packages(job, false, true);
+    (*job.aptCacheFile())->MarkDelete(packages[0].ver.ParentPkg(), true);
+    DpkgProgress progress(job, 0, packages);
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(progress, "processing: purge: remove-small\nstatus: remove-small: config-files\n");
+    g_assert_cmpuint(apt_test_job.items.back().percentage, ==, 75);
+    g_assert_cmpint(apt_test_job.items.back().status, ==, PK_STATUS_ENUM_REMOVE);
+}
+
+static void apt_test_progress_initial_state(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job, false, true));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(
+        progress,
+        "status: remove-large: installed\n"
+        "processing: remove: remove-large\n"
+        "status: remove-large: half-configured\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 12);
+    g_assert_cmpuint(apt_test_job.items.back().percentage, ==, 25);
+    g_assert_cmpint(apt_test_job.items.front().status, ==, PK_STATUS_ENUM_REMOVE);
+}
+
+static void apt_test_progress_hooks(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(progress, "processing: trigproc: small\nstatus: small: installed\n");
+    g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
+}
+
+static void apt_test_progress_post_invoke(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    AptInstallProgress childProgress(stream.apt[1]);
+    childProgress.Stop();
+    stream.update(progress, "", "");
+    g_assert_cmpint(apt_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
+}
+
+static void apt_test_progress_fallback(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, {});
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(progress, "", "pmstatus:dpkg:42:Repairing\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 42);
+}
+
+static void apt_test_progress_zero_sizes(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    auto packages = progress_test_packages(job);
+    for (auto &package : packages)
+        package.ver->InstalledSize = 0;
+    DpkgProgress progress(job, 0, packages);
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(progress, "processing: configure: small\nstatus: small: installed\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 50);
+}
+
+static void apt_test_progress_unplanned(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    PkgList packages;
+    packages.append(progress_test_package(job, "small"));
+    DpkgProgress progress(job, 0, packages);
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(
+        progress,
+        "processing: configure: large\nstatus: large: installed\n"
+        "processing: configure: small\nstatus: small: half-configured\n");
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 75);
+}
+
+static void apt_test_progress_error(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    DpkgProgress progress(job, 0, progress_test_packages(job));
+    apt_test_job.reset();
+    ProgressTestStream stream;
+    stream.update(progress, "", "pmerror:small:100:Fixture failure\n");
+    g_assert_cmpuint(apt_test_job.errors.size(), ==, 1);
+    g_assert_cmpint(apt_test_job.errors[0], ==, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL);
+    g_assert_true(apt_test_job.percentages.empty());
+}
+
+static void apt_test_removal_without_download(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    TransactionRequest request;
+    request.remove.append(progress_test_package(job, "remove-small"));
+    // APT's own dry-run mode exercises the real transaction path without invoking dpkg.
+    _config->Set("Debug::pkgDPkgPM", true);
+    apt_test_job.reset();
+    const bool result = job.runTransaction(request);
+    _config->Clear("Debug::pkgDPkgPM");
+    g_assert_true(result);
+    g_assert_true(apt_test_job.errors.empty());
+    g_assert_true(
+        std::find(apt_test_job.statuses.begin(), apt_test_job.statuses.end(), PK_STATUS_ENUM_DOWNLOAD)
+        == apt_test_job.statuses.end());
+    g_assert_true(
+        std::find(apt_test_job.statuses.begin(), apt_test_job.statuses.end(), PK_STATUS_ENUM_SIG_CHECK)
+        == apt_test_job.statuses.end());
+    g_assert_cmpuint(apt_test_job.percentages.back(), ==, 100);
+}
+
+static void apt_test_cached_without_download(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    AcqPackageKitStatus status(&job, false);
+    pkgAcquire fetcher;
+    apt_test_job.reset();
+    status.Start();
+    g_assert_true(status.Pulse(&fetcher));
+    status.Stop();
+    g_assert_true(apt_test_job.statuses.empty());
+    g_assert_true(apt_test_job.percentages.empty());
+}
+
 static void apt_test_deb_file_open_error(void)
 {
     const std::string missing = testdata_dir + "/does-not-exist.deb";
@@ -836,6 +1132,20 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/residual/state", apt_test_residual_state);
     g_test_add_func("/apt/purge/remove-flag", apt_test_purge_remove_flag);
     g_test_add_func("/apt/purge/residual-package", apt_test_purge_residual_package);
+    g_test_add_func("/apt/progress/weighted", apt_test_progress_weighted);
+    g_test_add_func("/apt/progress/mixed", apt_test_progress_mixed);
+    g_test_add_func("/apt/progress/upgrade", apt_test_progress_upgrade);
+    g_test_add_func("/apt/progress/removal", apt_test_progress_removal);
+    g_test_add_func("/apt/progress/purge", apt_test_progress_purge);
+    g_test_add_func("/apt/progress/initial-state", apt_test_progress_initial_state);
+    g_test_add_func("/apt/progress/hooks", apt_test_progress_hooks);
+    g_test_add_func("/apt/progress/post-invoke", apt_test_progress_post_invoke);
+    g_test_add_func("/apt/progress/fallback", apt_test_progress_fallback);
+    g_test_add_func("/apt/progress/zero-sizes", apt_test_progress_zero_sizes);
+    g_test_add_func("/apt/progress/unplanned", apt_test_progress_unplanned);
+    g_test_add_func("/apt/progress/error", apt_test_progress_error);
+    g_test_add_func("/apt/progress/removal-without-download", apt_test_removal_without_download);
+    g_test_add_func("/apt/progress/cached-without-download", apt_test_cached_without_download);
 
     return g_test_run();
 }

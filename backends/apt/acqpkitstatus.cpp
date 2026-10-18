@@ -26,9 +26,10 @@
 
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor
 // ---------------------------------------------------------------------
-AcqPackageKitStatus::AcqPackageKitStatus(AptJob *apt)
+AcqPackageKitStatus::AcqPackageKitStatus(AptJob *apt, bool reportDownloads)
     : m_lastPercent(PK_BACKEND_PERCENTAGE_INVALID),
       m_lastCPS(0),
+      m_reportDownloads(reportDownloads),
       m_apt(apt),
       m_job(apt->pkJob())
 {
@@ -38,6 +39,9 @@ AcqPackageKitStatus::AcqPackageKitStatus(AptJob *apt)
 // ---------------------------------------------------------------------
 void AcqPackageKitStatus::Start()
 {
+    pkgAcquireStatus::Start();
+    if (!m_reportDownloads)
+        return;
     PkRoleEnum role = pk_backend_job_get_role(m_job);
     PkStatusEnum status;
 
@@ -52,15 +56,14 @@ void AcqPackageKitStatus::Start()
         status = PK_STATUS_ENUM_DOWNLOAD;
     }
     pk_backend_job_set_status(m_job, status);
-
-    pkgAcquireStatus::Start();
 }
 
 // AcqPackageKitStatus::Stop - Downloading has stopped
 // ---------------------------------------------------------------------
 void AcqPackageKitStatus::Stop()
 {
-    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_RUNNING);
+    if (m_reportDownloads)
+        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_RUNNING);
     pkgAcquireStatus::Stop();
 }
 
@@ -131,6 +134,8 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
 bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 {
     pkgAcquireStatus::Pulse(Owner);
+    if (!m_reportDownloads)
+        return !m_apt->cancelled();
 
     unsigned long percent_done;
     percent_done = long(double((CurrentBytes + CurrentItems) * 100.0) / double(TotalBytes + TotalItems));
@@ -198,6 +203,8 @@ bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 
 void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc &Itm, int status)
 {
+    if (!m_reportDownloads)
+        return;
     PkRoleEnum role = pk_backend_job_get_role(m_job);
     if ((role == PK_ROLE_ENUM_REFRESH_CACHE) || (role == PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
         // Ignore package update when refreshing the cache or fetching update details

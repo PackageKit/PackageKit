@@ -33,7 +33,7 @@ class AptJob;
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
-    AcqPackageKitStatus(AptJob *apt);
+    AcqPackageKitStatus(AptJob *apt, bool reportDownloads = true);
 
     bool MediaChange(string Media, string Drive) override;
     void IMSHit(pkgAcquire::ItemDesc &Itm) override;
@@ -50,6 +50,7 @@ private:
 
     unsigned long m_lastPercent;
     double m_lastCPS;
+    bool m_reportDownloads;
 
     AptJob *m_apt;
     PkBackendJob *m_job;
