@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-13 07:51+0000\n"
+"PO-Revision-Date: 2026-10-18 19:51+0000\n"
 "Last-Translator: Martin Srebotnjak <filmsi@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
@@ -94,7 +94,7 @@ msgstr "Samodejno ne odstrani neuporabljene odvisnosti"
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Ob odstranjevanju paketov odstrani tudi ostanke podatkov (prilagoditvene datoteke, zbirke podatkov itn.)"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -106,20 +106,16 @@ msgid "SECONDS"
 msgstr "SEKUNDE"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Znova zaženite računalnik za dokončanje posodobitve."
+msgstr "Za dokončanje posodobitve je potreben ponoven zagon računalnika."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Odjavite se in se znova prijavite za dokončanje posodobitve."
+msgstr "Za dokončanje posodobitve je potrebna odjava in ponovna prijava."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Prizadete programe je potrebno ponovno zagnati, da zaključite spremembe."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
@@ -737,10 +733,9 @@ msgstr "Opozorilo:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "Vzdevek za %s"
+msgstr "Vzdevek: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
@@ -827,25 +822,23 @@ msgstr "Opuščeni:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
-#| msgid "Issued:"
 msgid "Issues:"
-msgstr "Izdano:"
+msgstr "Težave:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE-ji:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "Priporočila:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "Sklici:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
@@ -1683,10 +1676,8 @@ msgstr "Pridobivanje podrobnosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Pridobivanje odvisnosti"
+msgstr "Pridobivanje odvisnih"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1790,10 +1781,8 @@ msgstr "Pridobivanje posodobitev"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "Pridobivanje prenosov"
+msgstr "Pridobivanje zgodovine prenosov"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
