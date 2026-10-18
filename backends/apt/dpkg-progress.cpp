@@ -63,7 +63,8 @@ DpkgProgress::DpkgProgress(AptJob &job, pid_t childPid, const PkgList &packages)
 void AptInstallProgress::Stop()
 {
     PackageManagerProgressFd::Stop();
-    WriteToStatusFd("pkpostinvoke:::Running post-installation hooks\n");
+    if (!_config->FindVector("DPkg::Post-Invoke").empty())
+        WriteToStatusFd("pkpostinvoke:::Running post-installation hooks\n");
 }
 
 void DpkgProgress::startHooks()
@@ -233,7 +234,10 @@ void DpkgProgress::handleDpkgLine(const std::string &line)
             return;
         }
 
-        m_runningHooks = false;
+        if (m_runningHooks) {
+            m_runningHooks = false;
+            pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_COMMIT);
+        }
 
         const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
         if (ver.end())
