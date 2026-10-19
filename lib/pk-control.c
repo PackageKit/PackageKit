@@ -73,7 +73,7 @@ struct _PkControlPrivate
 
 enum {
 	SIGNAL_TRANSACTION_LIST_CHANGED,
-	SIGNAL_RESTART_SCHEDULE,
+	SIGNAL_DAEMON_RESTARTING,
 	SIGNAL_INSTALLED_CHANGED,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
@@ -369,9 +369,9 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		g_signal_emit (control, signals[SIGNAL_REPO_LIST_CHANGED], 0);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "RestartSchedule") == 0) {
-		g_debug ("emit restart-schedule");
-		g_signal_emit (control, signals[SIGNAL_RESTART_SCHEDULE], 0);
+	if (g_strcmp0 (signal_name, "DaemonRestarting") == 0) {
+		g_debug ("emit daemon-restarting");
+		g_signal_emit (control, signals[SIGNAL_DAEMON_RESTARTING], 0);
 		return;
 	}
 }
@@ -2028,19 +2028,20 @@ pk_control_class_init (PkControlClass *klass)
 	    G_TYPE_NONE,
 	    0);
 	/**
-	 * PkControl::restart-schedule:
+	 * PkControl::daemon-restarting:
 	 * @control: the #PkControl instance that emitted the signal
 	 *
-	 * The ::restart_schedule signal is emitted when the packagekitd service
-	 * has been restarted because it has been upgraded.
+	 * The ::daemon-restarting signal is emitted when the packagekitd binary
+	 * has been upgraded and the running daemon is about to exit. The new
+	 * version is started on the next request.
 	 * Client programs should reload themselves when it is convenient to
 	 * do so, as old client tools may not be compatible with the new daemon.
 	 **/
-	signals[SIGNAL_RESTART_SCHEDULE] = g_signal_new (
-	    "restart-schedule",
+	signals[SIGNAL_DAEMON_RESTARTING] = g_signal_new (
+	    "daemon-restarting",
 	    G_TYPE_FROM_CLASS (object_class),
 	    G_SIGNAL_RUN_LAST,
-	    G_STRUCT_OFFSET (PkControlClass, restart_schedule),
+	    G_STRUCT_OFFSET (PkControlClass, daemon_restarting),
 	    NULL,
 	    NULL,
 	    g_cclosure_marshal_VOID__VOID,

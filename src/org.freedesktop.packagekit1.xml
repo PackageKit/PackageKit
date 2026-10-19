@@ -263,11 +263,17 @@
 
     <!--*********************************************************************-->
     <!--
-      RestartSchedule:
+      DaemonRestarting:
 
-      A system restart has been sceduled
+      The PackageKit daemon binary has been upgraded on disk and the
+      running daemon is about to exit. It is emitted once no transactions
+      are running, right before the daemon quits; the new version is
+      started through D-Bus activation on the next method call.
+
+      If the daemon idle shutdown is disabled (a ShutdownTimeout of 0), this
+      signal is never emitted and the old daemon keeps running.
     -->
-    <signal name="RestartSchedule"/>
+    <signal name="DaemonRestarting"/>
 
     <!--*********************************************************************-->
     <!--

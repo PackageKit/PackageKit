@@ -411,16 +411,16 @@ pk_engine_state_changed_cb (gpointer data)
 }
 
 static void
-pk_engine_emit_restart_schedule (PkEngine *engine)
+pk_engine_emit_daemon_restarting (PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("emitting RestartSchedule");
+	g_debug ("emitting DaemonRestarting");
 	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
-				       "RestartSchedule",
+				       "DaemonRestarting",
 				       NULL,
 				       NULL);
 }
@@ -444,7 +444,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 
 	/* have we been updated? */
 	if (engine->notify_clients_of_upgrade) {
-		pk_engine_emit_restart_schedule (engine);
+		pk_engine_emit_daemon_restarting (engine);
 		return G_MAXUINT;
 	}
 
