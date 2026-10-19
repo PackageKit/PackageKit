@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-13 20:51+0000\n"
+"PO-Revision-Date: 2026-10-19 11:12+0000\n"
 "Last-Translator: Oğuz Ersen <ersen@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/packagekit/translations/tr/>\n"
 "Language: tr\n"
@@ -101,7 +101,7 @@ msgstr "Kullanılmayan bağımlılıkları kendiliğinden kaldırma"
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Paketleri kaldırırken kalan verileri (yapılandırma dosyaları, veri tabanları vb.) de kaldır"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -113,20 +113,16 @@ msgid "SECONDS"
 msgstr "SANİYE"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Lütfen güncelleme işlemini tamamlamak için bilgisayarınızı yeniden başlatın."
+msgstr "Değişikliklerin tamamlanması için sistemin yeniden başlatılması gerekiyor."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Lütfen güncelleme işlemini tamamlamak için oturumu kapatıp açın."
+msgstr "Değişiklikleri tamamlamak için oturumunuzu kapatıp yeniden oturum açmanız gerekiyor."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Değişikliklerin tamamlanması için etkilenen uygulamaların yeniden başlatılması gerekiyor."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
@@ -744,10 +740,9 @@ msgstr "Uyarı:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "%s için arma"
+msgstr "Takma ad: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
@@ -834,25 +829,23 @@ msgstr "Eskimişler:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
-#| msgid "Issued:"
 msgid "Issues:"
-msgstr "Çıkış:"
+msgstr "Sorunlar:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE'ler:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "Tavsiye:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "Referanslar:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
@@ -1690,10 +1683,8 @@ msgstr "Ayrıntılar alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Bağımlılıklar alınıyor"
+msgstr "Bağımlılar alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1797,10 +1788,8 @@ msgstr "Yükseltmeler alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "İşlemler alınıyor"
+msgstr "İşlem geçmişi alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
@@ -1947,7 +1936,7 @@ msgstr "İşlem sürdürülemedi."
 #: src/pk-direct.c:98
 #, c-format
 msgid "Alias to %s"
-msgstr "%s için arma"
+msgstr "%s için takma ad"
 
 #: src/pk-direct.c:165
 msgid "Command not found, valid commands are:"
