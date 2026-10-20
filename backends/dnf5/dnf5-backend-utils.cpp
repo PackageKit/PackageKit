@@ -455,7 +455,7 @@ dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs)
 			return a.get_name() < b.get_name();
 		if (a.get_arch() != b.get_arch())
 			return a.get_arch() < b.get_arch();
-		return a.get_evr() < b.get_evr();
+		return a.get_evr() > b.get_evr();
 	});
 
 	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
