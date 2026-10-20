@@ -9,20 +9,21 @@
 # Terry Chuang <tchuang@redhat.com>, 2008-2009
 # xiezhihai <xiezhihai7321@outlook.com>, 2026.
 # taijuin Lee <taijuin@gmail.com>, 2026.
+# taijuin Lee <taijuin@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-03 14:35+0000\n"
-"Last-Translator: taijuin Lee <taijuin@gmail.com>\n"
+"PO-Revision-Date: 2026-10-20 07:42+0000\n"
+"Last-Translator: taijuin Lee <taijuin@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hant/>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.10.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:165
@@ -96,7 +97,7 @@ msgstr "請不要自動刪除未使用的依賴項"
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "在移除軟體包時，也請一併移除殘留資料（設定檔、資料庫等）"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -108,20 +109,16 @@ msgid "SECONDS"
 msgstr "秒"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "請重新啟動電腦以完成更新。"
+msgstr "需要重新啟動系統才能完成變更。"
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "請登出並再次登入來完成更新。"
+msgstr "您需要登出並重新登入才能完成變更。"
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "受影響的應用程式需要重新啟動才能完成變更。"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
@@ -504,10 +501,8 @@ msgstr "顯示哪些軟體包依賴指定的軟體包。"
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:832
-#, fuzzy
-#| msgid "List all available filters, groups and categories for package organization."
 msgid "List all available filters and groups for package organization."
-msgstr "列出所有可用於軟體包組織的篩選條件、群組和類別。"
+msgstr "列出所有可用於軟體包組織的篩選條件與群組。"
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:840
@@ -612,10 +607,8 @@ msgstr "解析軟體包名稱"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1074
-#, fuzzy
-#| msgid "List available filters and categories"
 msgid "List available filters and groups"
-msgstr "列出可用的篩選條件和類別"
+msgstr "列出可用的篩選條件和群組"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1081
@@ -743,10 +736,9 @@ msgstr "警告："
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "%s 的別名"
+msgstr "別名：%s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
@@ -763,12 +755,12 @@ msgstr "用法：%s %s %s"
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:566
 msgid "high"
-msgstr ""
+msgstr "高"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:571
 msgid "critical"
-msgstr ""
+msgstr "關鍵的"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
@@ -833,25 +825,23 @@ msgstr "廢棄："
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
-#| msgid "Issued:"
 msgid "Issues:"
-msgstr "已發布："
+msgstr "問題："
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE："
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "注意事項："
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "參考文獻："
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
@@ -1572,10 +1562,8 @@ msgstr "移除"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
 #: lib/pk-enum.c:1109
-#, fuzzy
-#| msgid "Reinstalled"
 msgid "Reinstall"
-msgstr "已重新安裝"
+msgstr "重新安裝"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/pk-enum.c:1113
@@ -1589,24 +1577,18 @@ msgstr "降級"
 
 #. TRANSLATORS: The state of a package: package is to be updated
 #: lib/pk-enum.c:1121
-#, fuzzy
-#| msgid "Updates"
 msgid "Update"
 msgstr "更新"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
 #: lib/pk-enum.c:1125
-#, fuzzy
-#| msgid "Security"
 msgid "Security update"
-msgstr "安全性"
+msgstr "安全性更新"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
 #: lib/pk-enum.c:1129
-#, fuzzy
-#| msgid "Enhancement"
 msgid "Enhancement update"
-msgstr "增強"
+msgstr "增強更新"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1154
@@ -1697,10 +1679,8 @@ msgstr "正在取得詳細資訊"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "正在取得相容性"
+msgstr "正在取得依賴項目"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1804,10 +1784,8 @@ msgstr "正在取得升級"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "正在取得交易"
+msgstr "正在取得交易紀錄"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
