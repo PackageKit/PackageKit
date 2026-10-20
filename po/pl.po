@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"PO-Revision-Date: 2026-10-17 06:05+0000\n"
+"PO-Revision-Date: 2026-10-20 02:26+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -93,7 +93,7 @@ msgstr "Nie usuwa automatycznie nieużywanych zależności"
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Usuwa także pozostałe dane (pliki konfiguracyjne, bazy danych itp.) podczas usuwania pakietów"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -105,20 +105,16 @@ msgid "SECONDS"
 msgstr "SEKUNDY"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację."
+msgstr "Aby zakończyć wprowadzanie zmian, wymagane jest ponowne uruchomienie komputera."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
+msgstr "Aby zakończyć wprowadzanie zmian, należy wylogować się i zalogować ponownie."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Aby zakończyć wprowadzanie zmian, należy ponownie uruchomić aplikacje, których one dotyczą."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
@@ -736,10 +732,9 @@ msgstr "Ostrzeżenie:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "Alias do „%s”"
+msgstr "Alias: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
@@ -826,25 +821,23 @@ msgstr "Zastępuje:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
-#| msgid "Issued:"
 msgid "Issues:"
-msgstr "Wydano:"
+msgstr "Zgłoszenia:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "Biuletyn:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "Odnośniki:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
@@ -1682,10 +1675,8 @@ msgstr "Pobieranie szczegółów"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Pobieranie zależności"
+msgstr "Pobieranie pakietów zależnych"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1789,10 +1780,8 @@ msgstr "Pobieranie aktualizacji dystrybucji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "Pobieranie transakcji"
+msgstr "Pobieranie historii transakcji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
