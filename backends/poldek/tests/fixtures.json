@@ -1,0 +1,761 @@
+{
+ "repo-a": [
+  {
+   "name": "foo",
+   "version": "1.0",
+   "requires": [
+    "libbar.so.1"
+   ],
+   "files": {
+    "/usr/bin/foo": "foo 1.0 from repo-a"
+   },
+   "changelog": [
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ],
+   "source_date_epoch": "1767312000"
+  },
+  {
+   "name": "foo",
+   "version": "1.1",
+   "requires": [
+    "libbar.so.1"
+   ],
+   "files": {
+    "/usr/bin/foo": "foo 1.1 from repo-a"
+   },
+   "source_date_epoch": "1769904000",
+   "changelog": [
+    {
+     "date": "Sun Feb 01 2026",
+     "text": [
+      "fix CVE-2026-0001 overflow"
+     ]
+    },
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "libbar",
+   "version": "1.0",
+   "arch": "x86_64",
+   "group": "Libraries",
+   "provides": [
+    "libbar.so.1"
+   ],
+   "files": {
+    "/usr/share/libbar/x86_64": "libbar x86_64"
+   }
+  },
+  {
+   "name": "libbar",
+   "version": "1.0",
+   "arch": "i686",
+   "group": "Libraries",
+   "provides": [
+    "libbar.so.1"
+   ],
+   "files": {
+    "/usr/share/libbar/i686": "libbar i686"
+   }
+  },
+  {
+   "name": "libbar-devel",
+   "version": "1.0",
+   "group": "Development/Libraries",
+   "requires": [
+    "libbar = 1.0-1"
+   ],
+   "files": {
+    "/usr/include/bar.h": "/* bar */"
+   }
+  },
+  {
+   "name": "guiapp",
+   "version": "1.0",
+   "group": "X11/Applications",
+   "license": "MIT",
+   "files": {
+    "/usr/bin/guiapp": "gui"
+   }
+  },
+  {
+   "name": "broken",
+   "version": "1.0",
+   "requires": [
+    "nonexistent-capability"
+   ],
+   "files": {
+    "/usr/bin/broken": "broken"
+   }
+  },
+  {
+   "name": "qux",
+   "version": "1.0",
+   "conflicts": [
+    "foo"
+   ],
+   "files": {
+    "/usr/bin/qux": "qux"
+   }
+  },
+  {
+   "name": "baz",
+   "version": "1.0",
+   "files": {
+    "/usr/bin/baz": "baz 1.0"
+   }
+  },
+  {
+   "name": "baz",
+   "version": "1.1",
+   "files": {
+    "/usr/bin/baz": "baz 1.1"
+   }
+  },
+  {
+   "name": "dlib",
+   "version": "1.0",
+   "files": {
+    "/usr/share/dlib/v": "dlib 1.0"
+   }
+  },
+  {
+   "name": "dlib",
+   "version": "2.0",
+   "files": {
+    "/usr/share/dlib/v": "dlib 2.0"
+   }
+  },
+  {
+   "name": "dapp",
+   "version": "1.0",
+   "requires": [
+    "dlib = 1.0-1"
+   ],
+   "files": {
+    "/usr/bin/dapp": "dapp 1.0"
+   }
+  },
+  {
+   "name": "dapp",
+   "version": "2.0",
+   "requires": [
+    "dlib >= 2.0"
+   ],
+   "files": {
+    "/usr/bin/dapp": "dapp 2.0"
+   }
+  },
+  {
+   "name": "epo",
+   "version": "1.0",
+   "epoch": "2",
+   "files": {
+    "/usr/bin/epo": "epo"
+   }
+  },
+  {
+   "name": "fooplug",
+   "version": "1.0",
+   "requires": [
+    "foo"
+   ],
+   "files": {
+    "/usr/share/fooplug/plugin": "plugin"
+   }
+  },
+  {
+   "name": "glibc",
+   "version": "1.0",
+   "files": {
+    "/usr/share/glibc/v": "glibc 1.0"
+   }
+  },
+  {
+   "name": "glibc",
+   "version": "1.1",
+   "files": {
+    "/usr/share/glibc/v": "glibc 1.1"
+   },
+   "source_date_epoch": "1770076800",
+   "changelog": [
+    {
+     "date": "Tue Feb 03 2026",
+     "text": [
+      "faster"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "big",
+   "version": "1.0",
+   "files": {
+    "/usr/share/big/blob": {
+     "random_bytes": 1048576,
+     "seed": 2
+    }
+   }
+  }
+ ],
+ "repo-b": [
+  {
+   "name": "foo",
+   "version": "1.1",
+   "requires": [
+    "libbar.so.1"
+   ],
+   "files": {
+    "/usr/bin/foo": "foo 1.1 from repo-b"
+   },
+   "source_date_epoch": "1769904000",
+   "changelog": [
+    {
+     "date": "Sun Feb 01 2026",
+     "text": [
+      "fix CVE-2026-0001 overflow"
+     ]
+    },
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "bonly",
+   "version": "1.0",
+   "files": {
+    "/usr/bin/bonly": "only in repo-b"
+   }
+  }
+ ],
+ "repo-s": [
+  {
+   "name": "strust",
+   "version": "1.0",
+   "requires": [
+    "sdep"
+   ],
+   "sign": "fixture",
+   "files": {
+    "/usr/bin/strust": "strust"
+   }
+  },
+  {
+   "name": "sdep",
+   "version": "1.0",
+   "sign": "fixture",
+   "files": {
+    "/usr/share/sdep/f": "sdep"
+   }
+  },
+  {
+   "name": "sbar",
+   "version": "1.0",
+   "requires": [
+    "udep"
+   ],
+   "sign": "fixture",
+   "files": {
+    "/usr/bin/sbar": "sbar"
+   }
+  },
+  {
+   "name": "udep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/udep/f": "udep"
+   }
+  },
+  {
+   "name": "sunsigned",
+   "version": "1.0",
+   "files": {
+    "/usr/bin/sunsigned": "sunsigned"
+   }
+  },
+  {
+   "name": "sother",
+   "version": "1.0",
+   "sign": "other",
+   "files": {
+    "/usr/bin/sother": "sother"
+   }
+  },
+  {
+   "name": "scorrupt",
+   "version": "1.0",
+   "sign": "fixture",
+   "corrupt": true,
+   "files": {
+    "/usr/share/scorrupt/f": {
+     "random_bytes": 65536,
+     "seed": 1
+    }
+   }
+  },
+  {
+   "name": "sblob",
+   "version": "1.0",
+   "sign": "fixture",
+   "files": {
+    "/usr/share/sblob/f": {
+     "random_bytes": 65536,
+     "seed": 3
+    }
+   }
+  }
+ ],
+ "repo-u": [
+  {
+   "name": "tool",
+   "version": "1.0",
+   "summary_pl": "narzędzie testowe",
+   "files": {
+    "/usr/bin/tool": "tool 1.0"
+   },
+   "subpackages": [
+    {
+     "name": "tool-doc",
+     "files": {
+      "/usr/share/doc/tool/README": "tool docs 1.0"
+     }
+    }
+   ],
+   "source_date_epoch": "1767312000",
+   "changelog": [
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "tool",
+   "version": "1.1",
+   "summary_pl": "narzędzie testowe",
+   "files": {
+    "/usr/bin/tool": "tool 1.1"
+   },
+   "subpackages": [
+    {
+     "name": "tool-doc",
+     "files": {
+      "/usr/share/doc/tool/README": "tool docs 1.1"
+     }
+    }
+   ],
+   "source_date_epoch": "1769904000",
+   "changelog": [
+    {
+     "date": "Sun Feb 01 2026",
+     "text": [
+      "fix CVE-2026-0002 in the docs viewer"
+     ]
+    },
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "pytool",
+   "version": "1.0",
+   "group": "Development/Languages/Python",
+   "files": {
+    "/usr/bin/pytool": "pytool"
+   }
+  },
+  {
+   "name": "selfy",
+   "version": "1.0",
+   "provides": [
+    "selfcap"
+   ],
+   "requires": [
+    "selfcap"
+   ],
+   "files": {
+    "/usr/bin/selfy": "selfy 1.0"
+   }
+  },
+  {
+   "name": "selfy",
+   "version": "2.0",
+   "provides": [
+    "selfcap"
+   ],
+   "requires": [
+    "selfcap"
+   ],
+   "files": {
+    "/usr/bin/selfy": "selfy 2.0"
+   }
+  },
+  {
+   "name": "kernel",
+   "version": "1.0",
+   "files": {
+    "/boot/vmlinuz-1.0": "kernel 1.0"
+   }
+  },
+  {
+   "name": "kernel",
+   "version": "1.1",
+   "files": {
+    "/boot/vmlinuz-1.1": "kernel 1.1"
+   }
+  },
+  {
+   "name": "kernel-headers",
+   "version": "1.0",
+   "files": {
+    "/usr/include/kernel/v": "headers 1.0"
+   }
+  },
+  {
+   "name": "kernel-headers",
+   "version": "1.1",
+   "files": {
+    "/usr/include/kernel/v": "headers 1.1"
+   }
+  },
+  {
+   "name": "fprov",
+   "version": "1.0",
+   "files": {
+    "/usr/bin/fprov": "fprov"
+   }
+  },
+  {
+   "name": "fdep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/fdep/v": "fdep"
+   },
+   "requires": [
+    "/usr/bin/fprov"
+   ]
+  },
+  {
+   "name": "leftdep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/leftdep/v": "leftdep"
+   }
+  },
+  {
+   "name": "rightdep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/rightdep/v": "rightdep"
+   }
+  },
+  {
+   "name": "thendep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/thendep/v": "thendep"
+   }
+  },
+  {
+   "name": "ifcond",
+   "version": "1.0",
+   "files": {
+    "/usr/share/ifcond/v": "ifcond"
+   }
+  },
+  {
+   "name": "richapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/richapp/v": "richapp"
+   },
+   "requires": [
+    "(leftdep and rightdep)"
+   ]
+  },
+  {
+   "name": "condapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/condapp/v": "condapp"
+   },
+   "requires": [
+    "(thendep if ifcond)"
+   ]
+  },
+  {
+   "name": "vprov",
+   "version": "1.0",
+   "files": {
+    "/usr/share/vprov/1.0": "vprov"
+   },
+   "provides": [
+    "/usr/bin/vfile"
+   ]
+  },
+  {
+   "name": "vdep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/vdep/1.0": "vdep"
+   },
+   "requires": [
+    "/usr/bin/vfile"
+   ]
+  },
+  {
+   "name": "rangedep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/rangedep/1.0": "rangedep"
+   }
+  },
+  {
+   "name": "rangedep",
+   "version": "2.0",
+   "files": {
+    "/usr/share/rangedep/2.0": "rangedep"
+   }
+  },
+  {
+   "name": "rangedep",
+   "version": "3.0",
+   "files": {
+    "/usr/share/rangedep/3.0": "rangedep"
+   }
+  },
+  {
+   "name": "rangeapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/rangeapp/1.0": "rangeapp"
+   },
+   "requires": [
+    "(rangedep >= 1.5 with rangedep < 2.5)"
+   ]
+  },
+  {
+   "name": "orapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/orapp/1.0": "orapp"
+   },
+   "requires": [
+    "(fprov or rightdep)"
+   ]
+  },
+  {
+   "name": "elsedep",
+   "version": "1.0",
+   "files": {
+    "/usr/share/elsedep/1.0": "elsedep"
+   }
+  },
+  {
+   "name": "elseapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/elseapp/1.0": "elseapp"
+   },
+   "requires": [
+    "(thendep if ifcond else elsedep)"
+   ]
+  },
+  {
+   "name": "mixapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/mixapp/1.0": "mixapp"
+   },
+   "requires": [
+    "fprov",
+    "leftdep"
+   ]
+  },
+  {
+   "name": "mixrichapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/mixrichapp/1.0": "mixrichapp"
+   },
+   "requires": [
+    "(fprov and leftdep)"
+   ]
+  },
+  {
+   "name": "ortwoapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/ortwoapp/1.0": "ortwoapp"
+   },
+   "requires": [
+    "(leftdep or fprov)",
+    "(rangedep >= 1.5 with rangedep < 2.5)"
+   ]
+  },
+  {
+   "name": "orwithapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/orwithapp/1.0": "orwithapp"
+   },
+   "requires": [
+    "((rangedep or leftdep) with rangedep < 2.5)"
+   ]
+  },
+  {
+   "name": "selfapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/selfapp/1.0": "selfapp"
+   },
+   "provides": [
+    "selfpart"
+   ],
+   "requires": [
+    "(selfpart and leftdep)"
+   ]
+  },
+  {
+   "name": "selfprov",
+   "version": "1.0",
+   "files": {
+    "/usr/share/selfprov/1.0": "selfprov"
+   },
+   "provides": [
+    "selfpart"
+   ]
+  },
+  {
+   "name": "rpmlibapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/rpmlibapp/1.0": "rpmlibapp"
+   },
+   "requires": [
+    "(leftdep if rpmlib(RichDependencies))"
+   ]
+  },
+  {
+   "name": "selfcondapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/selfcondapp/1.0": "selfcondapp"
+   },
+   "provides": [
+    "selfcondcap"
+   ],
+   "requires": [
+    "(leftdep if selfcondcap)"
+   ]
+  },
+  {
+   "name": "selfwithapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/selfwithapp/1.0": "selfwithapp"
+   },
+   "provides": [
+    "swcap"
+   ],
+   "requires": [
+    "(swcap with swother)"
+   ]
+  },
+  {
+   "name": "swprov",
+   "version": "1.0",
+   "files": {
+    "/usr/share/swprov/1.0": "swprov"
+   },
+   "provides": [
+    "swcap",
+    "swother"
+   ]
+  },
+  {
+   "name": "orandapp",
+   "version": "1.0",
+   "files": {
+    "/usr/share/orandapp/1.0": "orandapp"
+   },
+   "requires": [
+    "(fprov or (vprov and leftdep))"
+   ]
+  },
+  {
+   "name": "stuck",
+   "version": "1.0",
+   "files": {
+    "/usr/bin/stuck": "stuck 1.0"
+   },
+   "source_date_epoch": "1767312000",
+   "changelog": [
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "stuck",
+   "version": "1.1",
+   "requires": [
+    "nonexistent-capability"
+   ],
+   "files": {
+    "/usr/bin/stuck": "stuck 1.1"
+   },
+   "source_date_epoch": "1769904000",
+   "changelog": [
+    {
+     "date": "Sun Feb 01 2026",
+     "text": [
+      "fix CVE-2026-0003 in stuck"
+     ]
+    },
+    {
+     "date": "Thu Jan 01 2026",
+     "text": [
+      "initial"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "zfail",
+   "version": "1.0",
+   "requires": [
+    "glibc >= 1.1"
+   ],
+   "files": {
+    "/usr/bin/zfail": "zfail"
+   },
+   "scripts": {
+    "pre -p <lua>": "error(\"intentional pre failure\")"
+   }
+  }
+ ]
+}
