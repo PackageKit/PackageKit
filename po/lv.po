@@ -6,58 +6,59 @@
 # Rūdolfs Mazurs <alta.liepa@gmail.com>, 2011
 # Rūdolfs Mazurs <alta.liepa@gmail.com>, 2011
 # Rūdolfs Mazurs <alta.liepa@gmail.com>, 2012-2013
+# Rihards Prieditis <rprieditis@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-17 10:34+0200\n"
-"Language-Team: Latvian (http://app.transifex.com/freedesktop/packagekit/language/lv/)\n"
+"Language-Team: Latvian <https://hosted.weblate.org/projects/packagekit/translations/lv/>\n"
 "Language: lv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2;\n"
+"PO-Revision-Date: 2026-10-21 11:36+0000\n"
+"Last-Translator: Rihards Prieditis <rprieditis@users.noreply.hosted.weblate.org>\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:165
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:171
-#, fuzzy
 msgid "Installing System Upgrade"
-msgstr "Instalē parakstu"
+msgstr "Instalē sistēmas jauninājumu"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 #: client/pk-offline-update.c:175
-#, fuzzy
 msgid "Installing Updates"
 msgstr "Instalē atjauninājumus"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:206
-#, fuzzy
 msgid "Rebooting after installing updates…"
-msgstr "Instalē atjauninājumus"
+msgstr "Pārstartē pēc atjauninājumu instalēšanas…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:245
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Izslēdz pēc atjauninājumu instalēšanas…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:391
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instalē atjauninājumus; tas var aizņemt kādu laiku..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:429
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Instalē sistēmas jauninājumu; tas var aizņemt kādu laiku..."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -68,140 +69,130 @@ msgstr "Dēmons avarēja transakcijas laikā!"
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #: client/pkgc-manage.c:44
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Sagatavot transakciju, tikai lejupielādējot pakotnes"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:51
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Jāpazemina sekojošās pakotnes:"
+msgstr "Atļaut pakotņu pazemināšanu"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:58
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Jāpārinstalē sekojošās pakotnes:"
+msgstr "Atļaut pakotņu pārinstalēšanu"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:65
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Instalēt parakstītu pakotni"
+msgstr "Atļaut neuzticamu pakotņu instalēšanu"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:72
 msgid "Do not automatically remove unused dependencies"
-msgstr ""
+msgstr "Automātiski nenoņemt neizmantotās atkarības"
 
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Noņemot pakotnes, dzēst arī atlikušos datus (konfigurācijas failus, datubāzes utt.)"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr ""
+msgstr "Maksimālais metadatu kešatmiņas vecums sekundēs (noklusējums: 3 dienas)"
 
 #: client/pkgc-manage.c:86
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDES"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Lūdzu, pārstartējiet datoru, lai pabeigtu atjaunināšanu."
+msgstr "Lai pabeigtu izmaiņas, nepieciešams pārstartēt sistēmu."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Lūdzu, izrakstieties, lai pabeigtu atjaunināšanu."
+msgstr "Lai pabeigtu izmaiņas, nepieciešams izrakstīties un pieteikties no jauna."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Lai pabeigtu izmaiņas, ir jāpārstartē ietekmētās lietotnes."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:256
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Atsvaidzina kešu"
+msgstr "Atsvaidzināt pakotņu metadatu kešatmiņu."
 
 #: client/pkgc-manage.c:282
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Pakotņu metadati ir atsvaidzināti"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:307
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Instalēt vienu vai vairākas pakotnes vai lokālos pakotņu failus."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:369 client/pkgc-manage.c:383
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Šis rīks nevarēju atrast nevienu pieejamu pakotni: %s"
+msgstr "Neizdevās atrast nevienu pieejamu pakotni: %s"
 
 #: client/pkgc-manage.c:388
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Jāinstalē sekojošās pakotnes:"
+msgstr "Izvēlētā pakotne jau ir instalēta."
 
 #: client/pkgc-manage.c:444 client/pkgc-util.c:1288
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "komanda nav atrasta"
+msgstr "Pakotne nav atrasta: %s"
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:485
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Noņemt vienu vai vairākas pakotnes no sistēmas."
 
 #: client/pkgc-manage.c:506
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Šis rīks nevarēju atrast nevienu pakotni: %s"
+msgstr "Neizdevās atrast instalētās pakotnes: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:548
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Lejupielādēt pakotnes norādītajā direktorijā, tās neinstalējot."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:561 client/pkgc-query.c:450 client/pkgc-query.c:797
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Šis rīks nevarēju atrast nevienu pakotni: %s"
+msgstr "Neizdevās atrast pakotnes: %s"
 
 #: client/pkgc-manage.c:569
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Direktorija neeksistē: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:613
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Atjaunināt visas pakotnes vai konkrētas pakotnes uz to jaunākajām versijām."
 
 #: client/pkgc-manage.c:636
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Šis rīks nevarēju atrast nevienu pakotni: %s"
+msgstr "Neizdevās atrast atjaunināmās pakotnes: %s"
 
 #: client/pkgc-manage.c:666 client/pkgc-manage.c:767 client/pkgc-manage.c:999
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Neizdevās saņemt dēmona stāvokli"
+msgstr "Neizdevās saņemt atjauninājumus: %s"
 
 #: client/pkgc-manage.c:678 client/pkgc-manage.c:778 client/pkgc-manage.c:1007
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Neviena pakotne nav jāatjaunina uz jaunāku versiju."
+msgstr "Neviena pakotne nav jāatjaunina"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -211,66 +202,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Jaunināt visas pakotnes vai veikt distribūcijas jaunināšanu.\n"
+"\n"
+"Tipi: minimal, default, complete"
 
 #: client/pkgc-manage.c:815
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Neizdevās nolasīt nesaistes atjaunināšanas darbību: %s"
 
 #: client/pkgc-manage.c:825
-#, fuzzy
 msgid "Offline update is not triggered."
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Nesaistes atjaunināšana nav aktivizēta."
 
 #: client/pkgc-manage.c:834
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Nesaistes atjaunināšana ir aktivizēta. Darbība pēc atjaunināšanas: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:845
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Sagatavotās pakotnes:"
 
 #: client/pkgc-manage.c:859
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Nav sagatavots neviens nesaistes atjauninājums."
 
 #: client/pkgc-manage.c:862
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Neizdevās nolasīt sagatavotos bezsaistes atjauninājumus: %s"
 
 #: client/pkgc-manage.c:873
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Lejupielādē informāciju par atjauninājumu"
+msgstr "Nav pieejami pēdējā bezsaistes atjauninājuma rezultāti."
 
 #: client/pkgc-manage.c:880
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Pēdējais bezsaistes atjauninājums neizdevās: %s: %s"
 
 #: client/pkgc-manage.c:887
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Pēdējais bezsaistes atjauninājums veiksmīgi pabeigts"
 
 #: client/pkgc-manage.c:897
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Atjaunināts"
+msgstr "Atjaunināts: %s"
 
 #: client/pkgc-manage.c:921
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Neizdevās ierosināt bezsaistes atjauninājumu: %s"
 
 #: client/pkgc-manage.c:925
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Bezsaistes atjauninājums ir ieplānots. Sistēma tiks atjaunināta nākamajā restartēšanā."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -284,156 +273,151 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Ierosināt un pārvaldīt bezsaistes sistēmas atjauninājumus.\n"
+"\n"
+"Varat izvēlēties vienu no šiem pieprasījumiem:\n"
+"  prepare - sagatavot bezsaistes atjauninājumu un to ierosināt (noklusējums)\n"
+"  trigger - ierosināt (manuāli sagatavotu) bezsaistes atjauninājumu\n"
+"  cancel  - atcelt plānoto bezsaistes atjauninājumu\n"
+"  status  - parādīt statusa informāciju par sagatavotu vai pabeigtu bezsaistes atjauninājumu"
 
 #: client/pkgc-manage.c:967
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Neizdevās palaist:"
+msgstr "Neizdevās atcelt bezsaistes atjauninājumu: %s"
 
 #: client/pkgc-manage.c:971
-#, fuzzy
 msgid "Offline update cancelled"
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Bezsaistes atjauninājums atcelts"
 
 #: client/pkgc-manage.c:1028
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Nezināms bezsaistes atjaunināšanas pieprasījums: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Instalējiet pakotnes, neprasot apstiprināšanu"
+msgstr "Instalēt pakotnes parakstu GPG pārbaudei."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:1085
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Mēģināt salabot pakotņu pārvaldības sistēmu."
 
 #: client/pkgc-manage.c:1101
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Sistēma veiksmīgi salabota"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1123
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Droši apturēt PackageKit dēmonu."
 
 #: client/pkgc-manage.c:1129
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Neizdevās saņemt dēmona stāvokli"
+msgstr "Neizdevās nosūtīt dēmona apturēšanas pieprasījumu: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
 #: client/pkgc-manage.c:1149
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Atsvaidzināt pakotņu metadatus"
 
 #. TRANSLATORS: Description for install command in pkgcli help
 #: client/pkgc-manage.c:1156
-#, fuzzy
 msgid "Install packages"
-msgstr "Instalē pakotnes"
+msgstr "Instalēt pakotnes"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
 #: client/pkgc-manage.c:1163
-#, fuzzy
 msgid "Remove packages"
-msgstr "Izņemt pakotni"
+msgstr "Noņemt pakotnes"
 
 #. TRANSLATORS: Description for update command in pkgcli help
 #: client/pkgc-manage.c:1170
-#, fuzzy
 msgid "Update packages"
-msgstr "Atjaunina pakotnes"
+msgstr "Atjaunināt pakotnes"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
 #: client/pkgc-manage.c:1177
-#, fuzzy
 msgid "Upgrade the system"
-msgstr "Salabot sistēmu"
+msgstr "Uzlabot sistēmu"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1184
-#, fuzzy
 msgid "Download packages"
-msgstr "Lejupielādē pakotnes"
+msgstr "Lejupielādēt pakotnes"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1191
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Nav pakotņu, ko atjaunināt."
+msgstr "Pārvaldīt bezsaistes sistēmas atjauninājumus"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1198
-#, fuzzy
 msgid "Install package signature"
-msgstr "Instalē parakstu"
+msgstr "Instalēt pakotnes parakstu"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
 #: client/pkgc-manage.c:1205
-#, fuzzy
 msgid "Repair package system"
-msgstr "Salabot sistēmu"
+msgstr "Salabot pakotņu sistēmu"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
 #: client/pkgc-manage.c:1212
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Droši apturēt PackageKit dēmonu"
 
 #: client/pkgc-monitor.c:400
 msgid "Failed to get daemon state"
-msgstr "Neizdevās saņemt dēmona stāvokli"
+msgstr "Neizdevās iegūt dēmona stāvokli"
 
 #: client/pkgc-monitor.c:470
 msgid "Failed to get properties"
-msgstr "Neizdevās saņemt īpašības"
+msgstr "Neizdevās iegūt īpašības"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:492
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit serviss"
+msgstr "Pārraudzīt PackageKit D-Bus notikumus"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:614
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "PackageKit serviss"
+msgstr "Pārraudzīt PackageKit kopnes notikumus"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:174
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Parādīt PackageKit aizmugures informāciju."
 
 #: client/pkgc-query.c:218
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Aizmugure: %s"
 
 #: client/pkgc-query.c:221
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Distribūcija"
+msgstr "Apraksts: %s"
 
 #: client/pkgc-query.c:224
 #, c-format
 msgid "Author: %s"
-msgstr ""
+msgstr "Autors: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Loma"
+msgstr "Lomas: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:254
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Parādīt nesenās pakotņu pārvaldības transakcijas."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:295
@@ -446,108 +430,112 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Meklēt pakotnes, kas atbilst norādītajiem šabloniem. Ja MODE nav norādīts, \n"
+"tiek veikta 'details' meklēšana.\n"
+"Iespējamie meklēšanas MODE ir:\n"
+"  name    - meklēt pēc pakotnes nosaukuma\n"
+"  details - meklēt pēc pakotnes detaļām (noklusējums)\n"
+"  file    - meklēt pēc faila nosaukuma\n"
+"  group   - meklēt pēc pakotņu grupas"
 
 #: client/pkgc-query.c:323
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Vajadzīga meklēšanas frāze"
+msgstr "Nav norādīts meklēšanas šablons"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:384
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Uzskaitīt visas pakotnes vai tās, kas atbilst šablonam."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:429
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Parādīt informāciju par vienu vai vairākām pakotnēm."
 
 #: client/pkgc-query.c:488 client/pkgc-query.c:777
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Rekursīvi pārbaudīt atkarības"
 
 #. TRANSLATORS: Description for pkgcli list-dependencies
 #: client/pkgc-query.c:499
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Parādīt atkarības vienai vai vairākām pakotnēm."
 
 #: client/pkgc-query.c:507 client/pkgc-query.c:591 client/pkgc-query.c:708
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Neizdevās palaist:"
+msgstr "Neizdevās atrisināt pakotnes: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:540
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Parādīt, kuras pakotnes nodrošina norādīto spēju."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:572
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Uzskaitīt visus failus, kas ietilpst vienā vai vairākās pakotnēs."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:668
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Šis rīks nevarēju atrast nevienu pieejamu pakotni: %s"
+msgstr "Uzskaitīt visus pašlaik pieejamos pakotņu atjauninājumus."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:701
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Parādīt detalizētu informāciju par norādīto pakotnes atjauninājumu."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:740
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Pārveidot pakotņu nosaukumus par pakotņu ID."
 
 #. TRANSLATORS: Description for pkgcli list-requiring
 #: client/pkgc-query.c:788
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Parādīt, kuras pakotnes pieprasa norādītās pakotnes."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:832
 msgid "List all available filters and groups for package organization."
-msgstr ""
+msgstr "Uzskaitīt visus pieejamos filtrus un grupas pakotņu organizēšanai."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:840
 msgid "Filters:"
-msgstr ""
+msgstr "Filtri:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:852
 msgid "Groups:"
-msgstr ""
+msgstr "Grupas:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:875
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Parādīt distributīva versijas jauninājumus, ja tādi ir pieejami."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 #: client/pkgc-query.c:907
 msgid "Failed to get the time since this action was last completed"
-msgstr "Neizdevās iegūt laiku, kopš šī darbība tika pēdējo reizi izpildīta"
+msgstr "Neizdevās iegūt laiku, kopš šī darbība pēdējo reizi tika pabeigta"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:920
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Sistēmas laiks"
+msgstr "Pagājušais laiks"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:945
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Iegūt laiku sekundēs kopš pēdējās norādītās darbības."
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: client/pkgc-query.c:956
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "Ir nepieciešama darbība, piemēram 'update-packages'"
+msgstr "Nepieciešama darbība, piemēram, 'update-packages'"
 
 #. TRANSLATORS: The user specified an invalid action
 #: client/pkgc-query.c:964
@@ -556,376 +544,341 @@ msgstr "Nepieciešama pareiza loma"
 
 #. TRANSLATORS: Description for backend command in pkgcli help
 #: client/pkgc-query.c:988
-#, fuzzy
 msgid "Show backend information"
-msgstr "Iegūst informāciju"
+msgstr "Parādīt aizmugursistēmas informāciju"
 
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:995
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Transakcija neizdevās"
+msgstr "Parādīt transakciju vēsturi"
 
 #. TRANSLATORS: Description for search command in pkgcli help
 #: client/pkgc-query.c:1002
-#, fuzzy
 msgid "Search for packages"
-msgstr "Meklē pēc nosaukuma"
+msgstr "Meklēt pakotnes"
 
 #. TRANSLATORS: Description for list command in pkgcli help
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "List packages"
-msgstr "Instalē pakotnes"
+msgstr "Uzskaitīt pakotnes"
 
 #. TRANSLATORS: Description for show command in pkgcli help
 #: client/pkgc-query.c:1016
-#, fuzzy
 msgid "Show package information"
-msgstr "Lejupielādē informāciju par atjauninājumu"
+msgstr "Parādīt pakotnes informāciju"
 
 #. TRANSLATORS: Description for list-dependencies command in pkgcli help
 #: client/pkgc-query.c:1023
 msgid "List dependencies of the specified package(s)"
-msgstr ""
+msgstr "Uzskaitīt norādīto pakotņu atkarības"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1031
-#, fuzzy
 msgid "List other packages requiring the specified package(s)"
-msgstr "Pakotne, kura nodrošina šo datni:"
+msgstr "Uzskaitīt citas pakotnes, kurām nepieciešamas norādītās pakotnes"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1039
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Pakotne, kura nodrošina šo datni:"
+msgstr "Uzskaitīt pakotnes, kas nodrošina spēju"
 
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1046
-#, fuzzy
 msgid "Show files in package"
-msgstr "Atzīmē pakotnes kā novecojušas"
+msgstr "Parādīt pakotnes datnes"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
 #: client/pkgc-query.c:1053
-#, fuzzy
 msgid "Get available updates"
-msgstr "Iegūst atjauninājumus"
+msgstr "Iegūt pieejamos atjauninājumus"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
 #: client/pkgc-query.c:1060
-#, fuzzy
 msgid "Get update details"
-msgstr "Iegūst sīkāku informāciju par atjauninājumu"
+msgstr "Iegūt sīkāku informāciju par atjauninājumu"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
 #: client/pkgc-query.c:1067
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Izņemt pakotni"
+msgstr "Atrisināt pakotņu nosaukumus"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1074
 msgid "List available filters and groups"
-msgstr ""
+msgstr "Uzskaitīt pieejamos filtrus un grupas"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1081
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Parādīt pieejamos distributīva jauninājumus"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1088
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Iegūst transakcijas"
+msgstr "Iegūt laiku kopš pēdējās darbības"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Uzskaitīt visas konfigurētās pakotņu krātuves."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Iespējot norādīto krātuvi."
 
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Krātuve '%s' iespējota"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Deaktivēt brīvo taimeri"
+msgstr "Atspējot norādīto krātuvi."
 
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Krātuve '%s' atspējota"
 
 #: client/pkgc-repo.c:199
 msgid "Automatically remove orphaned packages"
-msgstr ""
+msgstr "Automātiski noņemt pamestās pakotnes"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:211
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Iegūst krātuves"
+msgstr "Noņemt norādīto krātuvi."
 
 #: client/pkgc-repo.c:231
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Jānorāda krātuves nosaukums"
+msgstr "Krātuve '%s' noņemta"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
 #: client/pkgc-repo.c:249
-#, fuzzy
 msgid "List repositories"
-msgstr "Iegūst krātuves"
+msgstr "Uzskaitīt krātuves"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
 #: client/pkgc-repo.c:256
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Iegūst krātuves"
+msgstr "Iespējot krātuvi"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
 #: client/pkgc-repo.c:263
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Iegūst krātuves"
+msgstr "Atspējot krātuvi"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
 #: client/pkgc-repo.c:270
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Iegūst krātuves"
+msgstr "Noņemt krātuvi"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Nav savienots ar PackageKit dēmonu"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(sekundes)"
+msgstr "%u sekundes"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u min %u sek"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u h %u min"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u h"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u dienas %u h"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u dienas"
 
 #: client/pkgc-util.c:278
 msgid "Error"
-msgstr ""
+msgstr "Kļūda"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:310
 msgid "Warning:"
-msgstr ""
+msgstr "Brīdinājums:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:409
-#, fuzzy, c-format
+#, c-format
 msgid "Alias: %s"
-msgstr "Loma"
+msgstr "Aizstājvārds: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:443 client/pkgcli.c:194
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Neizdevās palaist:"
+msgstr "Neizdevās parsēt opcijas: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:451
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Lietošana: %s %s %s"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:566
 msgid "high"
-msgstr ""
+msgstr "augsts"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:571
 msgid "critical"
-msgstr ""
+msgstr "kritisks"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:687 client/pkgc-util.c:859
-#, fuzzy
 msgid "Package:"
-msgstr "Pakotņu datnes"
+msgstr "Pakotne:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:691
 msgid "Version:"
-msgstr ""
+msgstr "Versija:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:697
-#, fuzzy
 msgid "Summary:"
-msgstr "Kopsavilkums"
+msgstr "Kopsavilkums:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:705
-#, fuzzy
 msgid "Description:"
-msgstr "Distribūcija"
+msgstr "Apraksts:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:712
 msgid "License:"
-msgstr ""
+msgstr "Licence:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:719
 msgid "URL:"
-msgstr ""
+msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:727
 msgid "Group:"
-msgstr ""
+msgstr "Grupa:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:735
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Instalēta"
+msgstr "Instalētais izmērs:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:744
-#, fuzzy
 msgid "Download Size:"
-msgstr "Lejupielādēta"
+msgstr "Lejupielādes izmērs:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:855
-#, fuzzy
 msgid "Update Details:"
-msgstr "Atjaunināt nākošo"
+msgstr "Atjauninājuma detaļas:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:866
-#, fuzzy
 msgid "Updates:"
-msgstr "Atjauninājumi"
+msgstr "Atjauninājumi:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Novecojušie"
+msgstr "Aizstāj:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:886
-#, fuzzy
 msgid "Issues:"
-msgstr "Izdots"
+msgstr "Problēmas:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:888
 msgid "CVEs:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:890
 msgid "Advisory:"
-msgstr ""
+msgstr "Paziņojums:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:892
 msgid "References:"
-msgstr ""
+msgstr "Atsauces:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:928
-#, fuzzy
 msgid "Restart:"
-msgstr "Pārstartēt"
+msgstr "Pārstartēšana:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:937
-#, fuzzy
 msgid "Update text:"
-msgstr "Atjaunināt nākošo"
+msgstr "Atjauninājuma teksts:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:944
-#, fuzzy
 msgid "Changes:"
-msgstr "Izmaiņas"
+msgstr "Izmaiņas:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:951
-#, fuzzy
 msgid "State:"
-msgstr "Stāvoklis"
+msgstr "Stāvoklis:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:960
-#, fuzzy
 msgid "Issued:"
-msgstr "Izdots"
+msgstr "Izdots:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1076
-#, fuzzy
 msgid "Transaction:"
-msgstr "Transakcija"
+msgstr "Transakcija:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:1080
-#, fuzzy
 msgid "System time:"
-msgstr "Sistēmas laiks"
+msgstr "Sistēmas laiks:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1084
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Izdevās"
+msgstr "Izdevās:"
 
 #: client/pkgc-util.c:1088
 msgid "True"
@@ -933,43 +886,37 @@ msgstr "Patiess"
 
 #: client/pkgc-util.c:1089
 msgid "False"
-msgstr "Aplams"
+msgstr "Nepatiess"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1093
-#, fuzzy
 msgid "Role:"
-msgstr "Loma"
+msgstr "Loma:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1100
-#, fuzzy
 msgid "Duration:"
-msgstr "Ilgums"
+msgstr "Ilgums:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1107
-#, fuzzy
 msgid "Command line:"
-msgstr "Komandrinda"
+msgstr "Komandrinda:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1113
-#, fuzzy
 msgid "User ID:"
-msgstr "Lietotāja ID"
+msgstr "Lietotāja ID:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1122
-#, fuzzy
 msgid "Username:"
-msgstr "Lietotājvārds"
+msgstr "Lietotājvārds:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1128
-#, fuzzy
 msgid "Real name:"
-msgstr "Īstais vārds"
+msgstr "Īstais vārds:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #: client/pkgc-util.c:1136
@@ -978,112 +925,110 @@ msgstr "Ietekmētās pakotnes:"
 
 #: client/pkgc-util.c:1232
 msgid "More than one package matches:"
-msgstr "Atbilst vairāk kā viena pakotne:"
+msgstr "Atbilst vairāk nekā viena pakotne:"
 
 #. prompt user for selection
 #: client/pkgc-util.c:1244
 #, c-format
 msgid "Please choose the correct package: "
-msgstr "Izvēlieties pareizo pakotni:"
+msgstr "Lūdzu, izvēlieties pareizo pakotni: "
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:79
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Rādīt versiju un iziet"
+msgstr "Parādīt pkgcli versiju"
 
 #: client/pkgcli.c:81
 msgid "Show help"
-msgstr ""
+msgstr "Parādīt palīdzību"
 
 #: client/pkgcli.c:83
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Parādīt tikai minimālu izvadi"
 
 #: client/pkgcli.c:85
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Parādīt detalizētāku izvadi"
 
 #: client/pkgcli.c:87
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Izvadīt JSON formātā"
 
 #: client/pkgcli.c:89
 msgid "Disable colored output"
-msgstr ""
+msgstr "Atspējot krāsainu izvadi"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:92
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Atbildēt ar 'jā' uz visiem jautājumiem"
 
 #: client/pkgcli.c:95
 msgid "FILTER"
-msgstr ""
+msgstr "FILTRS"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:95
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Filtrēt pakotnes (instalētās, pieejamās utt.)"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkgcli.c:98
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Izpildīt komandu, izmantojot dīkstāves tīkla platjoslu, kā arī izmantojot mazāk enerģijas"
+msgstr "Izpildīt komandu, izmantojot brīvo tīkla joslas platumu un patērējot mazāk enerģijas"
 
 #: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Komanda nav norādīta. Lietojiet --help, lai iegūtu lietošanas informāciju."
 
 #: client/pkgcli.c:130
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Nezināma komanda: %s"
 
 #: client/pkgcli.c:140
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Neizdevās sazināties ar PackageKit"
+msgstr "Neizdevās savienoties ar PackageKit: %s"
 
 #: client/pkgcli.c:202
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Versija: %s"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Pieejama"
+msgstr "Pieejamās komandas:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Lietojiet 'pkgcli COMMAND --help', lai saņemtu konkrētās komandas palīdzību."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 #: client/pkgcli.c:261
 msgid "The filter specified was invalid"
-msgstr "Norādītais filtrs nav derīgs"
+msgstr "Norādītais filtrs nebija derīgs"
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:425
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Lejupielādē informāciju par programmatūras krātuvēm."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:429
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Lejupielādē datņu sarakstus (līdz tā pabeigšanai var paiet kāds laiciņš)."
+msgstr "Lejupielādē datņu sarakstus (tas var aizņemt kādu laiku)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:433
 msgid "Waiting for package manager lock."
-msgstr "Gaida pakotņu pārvaldnieka slēgumu."
+msgstr "Gaida pakotņu pārvaldnieka bloķējumu."
 
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:437
 msgid "Loading list of packages."
-msgstr "Ielādēt pakotņu sarakstu."
+msgstr "Ielādē pakotņu sarakstu."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:501
@@ -1142,7 +1087,7 @@ msgstr "Lūdzu, izvēlieties palaižamo komandu"
 #. TRANSLATORS: tell the user what package provides the command
 #: contrib/command-not-found/pk-command-not-found.c:903
 msgid "The package providing this file is:"
-msgstr "Pakotne, kura nodrošina šo datni:"
+msgstr "Pakotne, kas nodrošina šo datni, ir:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: contrib/command-not-found/pk-command-not-found.c:912
@@ -1158,7 +1103,7 @@ msgstr "Pakotnes, kas nodrošina šo datni, ir:"
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: contrib/command-not-found/pk-command-not-found.c:949
 msgid "Suitable packages are:"
-msgstr "Piemērotas pakotnes ir:"
+msgstr "Piemērotās pakotnes ir:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 #: contrib/command-not-found/pk-command-not-found.c:957
@@ -1167,7 +1112,7 @@ msgstr "Lūdzu, izvēlieties instalējamo pakotni"
 
 #: contrib/command-not-found/pk-command-not-found.c:960
 msgid "User aborted selection"
-msgstr "Lietotājs apturēja izvēli"
+msgstr "Lietotājs atcēla izvēli"
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -1175,11 +1120,11 @@ msgstr "Lietotājs apturēja izvēli"
 #. to cancel another users task.
 #: data/policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
-msgstr "Atcelt ārējo uzdevumu"
+msgstr "Atcelt cita lietotāja uzdevumu"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Nepieciešama autentifikācija, lai apturētu uzdevumu, kuru jūs neesat uzdevis"
+msgstr "Nepieciešama autentifikācija, lai atceltu uzdevumu, kuru neesat uzsācis pats"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -1191,9 +1136,8 @@ msgid "Install signed package"
 msgstr "Instalēt parakstītu pakotni"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:40
-#, fuzzy
 msgid "Authentication is required to install software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai instalētu programmatūru"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1205,9 +1149,8 @@ msgid "Install untrusted local file"
 msgstr "Instalēt neuzticamu vietējo datni"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:57
-#, fuzzy
 msgid "Authentication is required to install untrusted software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai instalētu neuzticamu programmatūru"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1216,14 +1159,12 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: data/policy/org.freedesktop.packagekit.policy.in:75
-#, fuzzy
 msgid "Install already installed package again"
-msgstr "Instalēt parakstītu pakotni"
+msgstr "Vēlreiz instalēt jau instalētu pakotni"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:76
-#, fuzzy
 msgid "Authentication is required to reinstall software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai pārinstalētu programmatūru"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1232,14 +1173,12 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: data/policy/org.freedesktop.packagekit.policy.in:93
-#, fuzzy
 msgid "Install older version of installed package"
-msgstr "Instalēt parakstītu pakotni"
+msgstr "Instalēt instalētās pakotnes vecāku versiju"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:94
-#, fuzzy
 msgid "Authentication is required to downgrade software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai pazeminātu programmatūras versiju"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1248,12 +1187,11 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #. - This is not kept as each package should be authenticated.
 #: data/policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Uzticēties atslēgai, ko izmanto programmatūras parakstīšanai"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:112
-#, fuzzy
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai programmatūras parakstīšanai izmantoto atslēgu uzskatītu par uzticamu"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1279,12 +1217,11 @@ msgstr "Nepieciešama autentifikācija, lai pieņemtu licences līgumu"
 #. TRANSLATORS: command description
 #: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:462
 msgid "Remove package"
-msgstr "Izņemt pakotni"
+msgstr "Noņemt pakotni"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:149
-#, fuzzy
 msgid "Authentication is required to remove software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai noņemtu programmatūru"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1293,14 +1230,12 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #: data/policy/org.freedesktop.packagekit.policy.in:167
-#, fuzzy
 msgid "Update software"
-msgstr "Atjaunināt nākošo"
+msgstr "Atjaunināt programmatūru"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:168
-#, fuzzy
 msgid "Authentication is required to update software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai atjauninātu programmatūru"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1308,25 +1243,22 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #. install different versions of software.
 #: data/policy/org.freedesktop.packagekit.policy.in:183
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Mainīt programmatūras krātuvju parametrus"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:184
-#, fuzzy
 msgid "Authentication is required to change software repository parameters"
-msgstr "Lai palaistu nesaistes atjauninājumus, jāautentificējas"
+msgstr "Nepieciešama autentifikācija, lai mainītu programmatūras krātuvju parametrus"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: data/policy/org.freedesktop.packagekit.policy.in:198
-#, fuzzy
 msgid "Refresh system repositories"
-msgstr "Iegūst krātuves"
+msgstr "Atsvaidzināt sistēmas krātuves"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:199
-#, fuzzy
 msgid "Authentication is required to refresh the system repositories"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai atsvaidzinātu sistēmas krātuves"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1336,23 +1268,20 @@ msgid "Set network proxy"
 msgstr "Iestatīt tīkla starpniekserveri"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:214
-#, fuzzy
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai iestatītu tīkla starpniekserveri, ko izmanto programmatūras lejupielādei"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 #: data/policy/org.freedesktop.packagekit.policy.in:229
-#, fuzzy
 msgid "Upgrade System"
-msgstr "Salabot sistēmu"
+msgstr "Jaunināt sistēmu"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:230
-#, fuzzy
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai jauninātu operētājsistēmu"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1364,7 +1293,7 @@ msgstr "Salabot sistēmu"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
+msgstr "Nepieciešama autentifikācija, lai salabotu instalēto programmatūru"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1376,62 +1305,62 @@ msgstr "Vajag autentificēties, lai salabotu un instalētu programmatūru"
 #: data/policy/org.freedesktop.packagekit.policy.in:260
 #: data/policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr "Izpildīt nesaistes atjauninājumus"
+msgstr "Ierosināt nesaistes atjauninājumus"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:261
 #: data/policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr "Lai palaistu nesaistes atjauninājumus, jāautentificējas"
+msgstr "Lai ierosinātu nesaistes atjauninājumus, nepieciešama autentifikācija"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: data/policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr "Attīrīt nesaistes atjaunināšanas ziņojumus"
+msgstr "Notīrīt nesaistes atjauninājumu ziņojumu"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Lai attīrītu nesaistes atjaunināšanas ziņojumus, jāautentificējas"
+msgstr "Lai notīrītu nesaistes atjauninājumu ziņojumu, nepieciešama autentifikācija"
 
 #: lib/pk-console-private.c:227
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Ievadiet skaitli no 1 līdz %i: "
+msgstr "Lūdzu, ievadiet skaitli no 1 līdz %i: "
 
 #: lib/pk-console-private.c:334
 msgid "[N/y]"
-msgstr ""
+msgstr "[N/j]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
 #: lib/pk-console-private.c:334
 msgid "[Y/n]"
-msgstr ""
+msgstr "[J/n]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
 #: lib/pk-console-private.c:351
 msgctxt "Answer"
 msgid "y"
-msgstr ""
+msgstr "j"
 
 #. TRANSLATORS: full "yes" answer
 #: lib/pk-console-private.c:355
 msgctxt "Answer"
 msgid "yes"
-msgstr ""
+msgstr "jā"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
 #: lib/pk-console-private.c:362
 msgctxt "Answer"
 msgid "n"
-msgstr ""
+msgstr "n"
 
 #. TRANSLATORS: full "no" answer
 #: lib/pk-console-private.c:366
 msgctxt "Answer"
 msgid "no"
-msgstr ""
+msgstr "nē"
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/pk-console-private.c:391
@@ -1441,7 +1370,7 @@ msgstr "Nezināms stāvoklis"
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: lib/pk-console-private.c:395
 msgid "Starting"
-msgstr "Startējas"
+msgstr "Startē"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: lib/pk-console-private.c:399
@@ -1466,7 +1395,7 @@ msgstr "Iegūst informāciju"
 #. TRANSLATORS: transaction state, removing packages
 #: lib/pk-console-private.c:415
 msgid "Removing packages"
-msgstr "Izņem pakotnes"
+msgstr "Noņem pakotnes"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
@@ -1492,7 +1421,7 @@ msgstr "Instalē atjauninājumus"
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/pk-console-private.c:435
 msgid "Cleaning up packages"
-msgstr "Sattīra pakotnes"
+msgstr "Attīra pakotnes"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/pk-console-private.c:439
@@ -1517,7 +1446,7 @@ msgstr "Testē izmaiņas"
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: lib/pk-console-private.c:455
 msgid "Committing changes"
-msgstr "Nosūta izmaiņas"
+msgstr "Ievieš izmaiņas"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: lib/pk-console-private.c:459
@@ -1542,7 +1471,7 @@ msgstr "Lejupielādē informāciju par krātuvēm"
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:475
 msgid "Downloading list of packages"
-msgstr "Lejupielādē pakotņu sarakstus"
+msgstr "Lejupielādē pakotņu sarakstu"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:479
@@ -1557,7 +1486,7 @@ msgstr "Lejupielādē izmaiņu sarakstus"
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:487
 msgid "Downloading update information"
-msgstr "Lejupielādē informāciju par atjauninājumu"
+msgstr "Lejupielādē atjauninājumu informāciju"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 #: lib/pk-console-private.c:491
@@ -1567,17 +1496,17 @@ msgstr "Pārpako datnes"
 #. TRANSLATORS: transaction state, loading databases
 #: lib/pk-console-private.c:495
 msgid "Loading cache"
-msgstr "Ielādē kešu"
+msgstr "Ielādē kešatmiņu"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: lib/pk-console-private.c:499
 msgid "Waiting for package manager lock"
-msgstr "Gaida pakotņu pārvaldnieka slēgumu"
+msgstr "Gaida pakotņu pārvaldnieka bloķējumu"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 #: lib/pk-console-private.c:503
 msgid "Waiting for authentication"
-msgstr "Gaida lietotāja autentifikāciju"
+msgstr "Gaida autentifikāciju"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: lib/pk-console-private.c:507
@@ -1586,14 +1515,13 @@ msgstr "Kopē datnes"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/pk-console-private.c:511
-#, fuzzy
 msgid "Running hooks"
-msgstr "Darbojas"
+msgstr "Izpilda āķus"
 
 #. TRANSLATORS: turn on all debugging
 #: lib/pk-debug.c:148
 msgid "Show debugging information for all files"
-msgstr "Rādīt informāciju par atkļūdošanu visām datnēm"
+msgstr "Parādīt atkļūdošanas informāciju visām datnēm"
 
 #: lib/pk-debug.c:229
 msgid "Debugging Options"
@@ -1601,7 +1529,7 @@ msgstr "Atkļūdošanas opcijas"
 
 #: lib/pk-debug.c:230
 msgid "Show debugging options"
-msgstr "Rādīt atkļūdošanas opcijas"
+msgstr "Parādīt atkļūdošanas opcijas"
 
 #. TRANSLATORS: The type of update
 #: lib/pk-enum.c:1089
@@ -1621,55 +1549,43 @@ msgstr "Pieejama"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/pk-enum.c:1101
-#, fuzzy
 msgid "Install"
-msgstr "Instalēta"
+msgstr "Instalēt"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/pk-enum.c:1105
-#, fuzzy
 msgid "Remove"
-msgstr "Izņēmta"
+msgstr "Noņemt"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
 #: lib/pk-enum.c:1109
-#, fuzzy
-#| msgid "Reinstalled"
 msgid "Reinstall"
-msgstr "Pārinstalēta"
+msgstr "Pārinstalēt"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/pk-enum.c:1113
-#, fuzzy
 msgid "Obsolete"
-msgstr "Atzīmēta kā novecojuša"
+msgstr "Novecojusi"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/pk-enum.c:1117
-#, fuzzy
 msgid "Downgrade"
-msgstr "Lejupielādēta"
+msgstr "Pazemināt"
 
 #. TRANSLATORS: The state of a package: package is to be updated
 #: lib/pk-enum.c:1121
-#, fuzzy
-#| msgid "Updates"
 msgid "Update"
-msgstr "Atjauninājumi"
+msgstr "Atjaunināt"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
 #: lib/pk-enum.c:1125
-#, fuzzy
-#| msgid "Security"
 msgid "Security update"
-msgstr "Drošības"
+msgstr "Drošības atjauninājums"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
 #: lib/pk-enum.c:1129
-#, fuzzy
-#| msgid "Enhancement"
 msgid "Enhancement update"
-msgstr "Uzlabojums"
+msgstr "Uzlabojumu atjauninājums"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1154
@@ -1691,17 +1607,17 @@ msgstr "Instalē"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1166 lib/pk-enum.c:1293
 msgid "Removing"
-msgstr "Izņem"
+msgstr "Noņem"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1170
 msgid "Cleaning up"
-msgstr "Uzkopj"
+msgstr "Attīra"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1174
 msgid "Obsoleting"
-msgstr "Atzīmē kā novecojušas"
+msgstr "Atzīmē kā novecojušu"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1178
@@ -1716,22 +1632,22 @@ msgstr "Lejupielādēta"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1207
 msgid "Updated"
-msgstr "Atjaunināts"
+msgstr "Atjaunināta"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1215
 msgid "Removed"
-msgstr "Izņēmta"
+msgstr "Noņemta"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1219
 msgid "Cleaned up"
-msgstr "Satirīta"
+msgstr "Attīrīta"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1223
 msgid "Obsoleted"
-msgstr "Atzīmēta kā novecojuša"
+msgstr "Atzīmēta kā novecojusi"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1227
@@ -1751,19 +1667,17 @@ msgstr "Iegūst atkarības"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1260
 msgid "Getting update details"
-msgstr "Iegūst sīkāku informāciju par atjauninājumu"
+msgstr "Iegūst atjauninājuma informāciju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1265
 msgid "Getting details"
-msgstr "Iegūst sīkāku informāciju par pakotni"
+msgstr "Iegūst sīkāku informāciju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Iegūst atkarības"
+msgstr "Iegūst atkarīgos"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1798,7 +1712,7 @@ msgstr "Instalē datnes"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1305
 msgid "Refreshing cache"
-msgstr "Atsvaidzina kešu"
+msgstr "Atsvaidzina kešatmiņu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1309
@@ -1817,9 +1731,8 @@ msgstr "Iegūst krātuves"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1321
-#, fuzzy
 msgid "Modifying repository"
-msgstr "Iegūst krātuves"
+msgstr "Modificē krātuvi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1325
@@ -1828,9 +1741,8 @@ msgstr "Iestata datus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1329
-#, fuzzy
 msgid "Removing repository"
-msgstr "Iegūst krātuves"
+msgstr "Noņem krātuvi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1333
@@ -1860,31 +1772,27 @@ msgstr "Iegūst pakotnes"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1354
 msgid "Accepting EULA"
-msgstr "Apstiprina EULA"
+msgstr "Pieņem EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1362
 msgid "Getting upgrades"
-msgstr "Iegūst uzlabojumus"
+msgstr "Iegūst jauninājumus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1366
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "Iegūst transakcijas"
+msgstr "Iegūst transakciju vēsturi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1370
-#, fuzzy
 msgid "Getting system upgrades"
-msgstr "Iegūst uzlabojumus"
+msgstr "Iegūst sistēmas jauninājumus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1374
-#, fuzzy
 msgid "Repairing system"
-msgstr "Salabot sistēmu"
+msgstr "Labo sistēmu"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/pk-task-text.c:52
@@ -1894,7 +1802,7 @@ msgstr "Vai vēlaties atļaut neparakstītas programmatūras instalēšanu?"
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/pk-task-text.c:58
 msgid "The unsigned software will not be installed."
-msgstr "Neparakstīta programmatūra netiks instalēta."
+msgstr "Neparakstītā programmatūra netiks instalēta."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
 #: lib/pk-task-text.c:110
@@ -1904,9 +1812,8 @@ msgstr "Nepieciešams programmatūras avota paraksts"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #: lib/pk-task-text.c:113 lib/pk-task-text.c:184
-#, fuzzy
 msgid "Package"
-msgstr "Pakotņu datnes"
+msgstr "Pakotne"
 
 #. TRANSLATORS: the package repository name
 #: lib/pk-task-text.c:116
@@ -1936,22 +1843,22 @@ msgstr "Atslēgas nospiedums"
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: lib/pk-task-text.c:131
 msgid "Key Timestamp"
-msgstr "Atslēgas laika spiedogs"
+msgstr "Atslēgas laika zīmogs"
 
 #. TRANSLATORS: ask the user if they want to import
 #: lib/pk-task-text.c:144
 msgid "Do you accept this signature?"
-msgstr "Vai vēlaties pieņemt šo parakstu?"
+msgstr "Vai pieņemat šo parakstu?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/pk-task-text.c:149
 msgid "The signature was not accepted."
-msgstr "Paraksts nav apstiprināts."
+msgstr "Paraksts netika pieņemts."
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/pk-task-text.c:181
 msgid "End user licence agreement required"
-msgstr "Nepieciešams lietotāja licences līgums"
+msgstr "Nepieciešams gala lietotāja licences līgums"
 
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 #: lib/pk-task-text.c:187
@@ -1966,169 +1873,156 @@ msgstr "Vienošanās"
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: lib/pk-task-text.c:195
 msgid "Do you accept this agreement?"
-msgstr "Vai jūs pieņemat šo vienošanos?"
+msgstr "Vai pieņemat šo vienošanos?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/pk-task-text.c:200
 msgid "The agreement was not accepted."
-msgstr "Vienošanās nav pieņemta."
+msgstr "Vienošanās netika pieņemta."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/pk-task-text.c:215
 msgid "The following packages have to be removed:"
-msgstr "Jāizņem sekojošās pakotnes:"
+msgstr "Jānoņem šādas pakotnes:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: lib/pk-task-text.c:220
 msgid "The following packages have to be installed:"
-msgstr "Jāinstalē sekojošās pakotnes:"
+msgstr "Jāinstalē šādas pakotnes:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: lib/pk-task-text.c:226
 msgid "The following packages have to be updated:"
-msgstr "Jāuzlabo sekojošās pakotnes:"
+msgstr "Jāatjaunina šādas pakotnes:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: lib/pk-task-text.c:231
 msgid "The following packages have to be reinstalled:"
-msgstr "Jāpārinstalē sekojošās pakotnes:"
+msgstr "Jāpārinstalē šādas pakotnes:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/pk-task-text.c:236
 msgid "The following packages have to be downgraded:"
-msgstr "Jāpazemina sekojošās pakotnes:"
+msgstr "Jāpazemina šādas pakotnes:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/pk-task-text.c:241
-#, fuzzy
 msgid "The following packages have to be obsoleted:"
-msgstr "Jāinstalē sekojošās pakotnes:"
+msgstr "Par novecojušām jāatzīst šādas pakotnes:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/pk-task-text.c:246
 msgid "The following packages are untrusted:"
-msgstr "Sekojošās pakotnes nav uzticamas:"
+msgstr "Šādas pakotnes nav uzticamas:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:379
 msgid "Proceed with changes?"
-msgstr "Turpināt veikt izmaiņas?"
+msgstr "Vai turpināt veikt izmaiņas?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: lib/pk-task-text.c:384
 msgid "The transaction did not proceed."
-msgstr "Transakcija nenoritēja."
+msgstr "Transakcija netika turpināta."
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:98
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Aizstājvārds uz %s"
 
 #: src/pk-direct.c:165
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Komanda nav atrasta, derīgās komandas ir:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 #: src/pk-direct.c:410 src/pk-main.c:123
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Izmantojamā pakošanas aizmugure, piemēram, dummy"
+msgstr "Izmantojamā pakošanas aizmugursistēma, piemēram, dummy"
 
 #: src/pk-direct.c:413 src/pk-main.c:141
 msgid "FILE"
-msgstr ""
+msgstr "DATNE"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:413 src/pk-main.c:141
 msgid "Use this configuration file instead of the default"
-msgstr ""
+msgstr "Izmantot šo konfigurācijas datni noklusējuma vietā"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
-#, fuzzy
 msgid "Refresh the cache"
-msgstr "Atsvaidzina kešu"
+msgstr "Atsvaidzināt kešatmiņu"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:437
-#, fuzzy
 msgid "Refresh the cache (forced)"
-msgstr "Atsvaidzina kešu"
+msgstr "Atsvaidzināt kešatmiņu (piespiedu)"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:442
-#, fuzzy
 msgid "Search by names"
-msgstr "Meklē pēc nosaukuma"
+msgstr "Meklēt pēc nosaukuma"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:447
-#, fuzzy
 msgid "Search by details"
-msgstr "Meklē pēc sīkākas informācijas"
+msgstr "Meklēt pēc detalizētas informācijas"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
-#, fuzzy
 msgid "Search by files"
-msgstr "Meklē pēc datnes"
+msgstr "Meklēt pēc datnēm"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:457
-#, fuzzy
 msgid "Install package"
-msgstr "Instalē pakotnes"
+msgstr "Instalēt pakotni"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:467
-#, fuzzy
 msgid "Set repository options"
-msgstr "Iegūst krātuves"
+msgstr "Iestatīt krātuves opcijas"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:478
-#, fuzzy
 msgid "PackageKit"
-msgstr "PackageKit pārraugs"
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:484
-#, fuzzy
 msgid "Failed to parse arguments"
-msgstr "Neizdevās apstrādāt komandrindu"
+msgstr "Neizdevās apstrādāt argumentus"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:493
-#, fuzzy
 msgid "Failed to load the config file"
-msgstr "Neizdevās meklēt datni"
+msgstr "Neizdevās ielādēt konfigurācijas datni"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:525
-#, fuzzy
 msgid "Failed to load the backend"
-msgstr "Neizdevās sazināties ar PackageKit"
+msgstr "Neizdevās ielādēt aizmugursistēmu"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:576
-#, fuzzy
 msgid "Failed to unload the backend"
-msgstr "Neizdevās sazināties ar PackageKit"
+msgstr "Neizdevās izlādēt aizmugursistēmu"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:126
 msgid "Disable the idle timer"
-msgstr "Deaktivēt brīvo taimeri"
+msgstr "Deaktivizēt dīkstāves taimeri"
 
 #. TRANSLATORS: show version
 #: src/pk-main.c:129
 msgid "Show version and exit"
-msgstr "Rādīt versiju un iziet"
+msgstr "Parādīt versiju un iziet"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: src/pk-main.c:132
 msgid "Exit after a small delay"
-msgstr "Iziet pēc neilgas pauzes"
+msgstr "Iziet pēc nelielas aiztures"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:135
@@ -2138,52 +2032,52 @@ msgstr "Iziet pēc dziņa ielādes"
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:138
 msgid "Don't clear environment on startup"
-msgstr "Startējoties nevar attīrīt vidi"
+msgstr "Startējoties neattīrīt vidi"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:156
 msgid "PackageKit service"
-msgstr "PackageKit serviss"
+msgstr "PackageKit pakalpojums"
 
 #. TRANSLATORS: The placeholder is an error message
 #: src/pk-main.c:185
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Neizdevās meklēt datni"
+msgstr "Neizdevās ielādēt konfigurācijas datni: %s"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Neizdevās palaist:"
+msgstr "Neizdevās atrisināt auto: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:249
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Neizdevās sazināties ar PackageKit"
+msgstr "Neizdevās ielādēt aizmugursistēmu: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2550
 msgid "The software is not from a trusted source."
-msgstr "Programma nav no uzticama avota."
+msgstr "Programmatūra nav no uzticama avota."
 
 #: src/pk-transaction.c:2558
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Neatjauniniet šo pakotni, ja vien jūs esat droši, ka to var darīt."
+msgstr "Neatjauniniet šo pakotni, ja vien neesat pārliecināti, ka tas ir droši."
 
 #: src/pk-transaction.c:2560
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Neatjauniniet šīs pakotnes, ja vien esat droši, ka to var droši darīt."
+msgstr "Neatjauniniet šīs pakotnes, ja vien neesat pārliecināti, ka tas ir droši."
 
 #: src/pk-transaction.c:2571
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Neinstalējiet šo pakotni, ja vien jūs esat droši, ka to var darīt."
+msgstr "Neinstalējiet šo pakotni, ja vien neesat pārliecināti, ka tas ir droši."
 
 #: src/pk-transaction.c:2573
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Neinstalējiet šīs pakotnes, ja vien esat droši, ka to var droši darīt."
+msgstr "Neinstalējiet šīs pakotnes, ja vien neesat pārliecināti, ka tas ir droši."
 
 #, fuzzy
 #~ msgid "Vendor:"
