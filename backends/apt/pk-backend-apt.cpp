@@ -404,7 +404,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 {
     g_autofree gchar **package_ids = nullptr;
     const gchar *tmpDir;
-    string directory;
+    std::string directory;
 
     g_variant_get(params, "(^a&s&s)", &package_ids, &tmpDir);
     directory = _config->FindDir("Dir::Cache::archives");
@@ -470,7 +470,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                 continue;
             }
 
-            string storeFileName;
+            std::string storeFileName;
             if (!apt->getArchive(&fetcher, pkInfo.ver, directory, storeFileName)) {
                 return;
             }
@@ -581,7 +581,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     g_autofree gchar **values = nullptr;
     PkBitfield filters;
     PkRoleEnum role;
-    vector<string> queries;
+    vector<std::string> queries;
 
     g_variant_get(params, "(t^a&s)", &filters, &values);
 
@@ -804,9 +804,9 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
             continue;
         }
 
-        string sections = sourceRecord->joinedSections();
+        std::string sections = sourceRecord->joinedSections();
 
-        string repoId = sourceRecord->repoId();
+        std::string repoId = sourceRecord->repoId();
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)

@@ -26,16 +26,13 @@
 
 #include "pkg-list.h"
 
-using std::set;
-using std::string;
-
 class AptJob;
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
     AcqPackageKitStatus(AptJob *apt);
 
-    bool MediaChange(string Media, string Drive) override;
+    bool MediaChange(std::string Media, std::string Drive) override;
     void IMSHit(pkgAcquire::ItemDesc &Itm) override;
     void Fetch(pkgAcquire::ItemDesc &Itm) override;
     void Done(pkgAcquire::ItemDesc &Itm) override;
@@ -47,9 +44,12 @@ public:
 
 private:
     void updateStatus(pkgAcquire::ItemDesc &Itm, int status);
+    void reportRefreshedItem(pkgAcquire::ItemDesc &Itm, bool success);
 
     unsigned long m_lastPercent;
     double m_lastCPS;
+
+    std::set<std::string> m_reportedItems;
 
     AptJob *m_apt;
     PkBackendJob *m_job;

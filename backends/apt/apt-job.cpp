@@ -573,7 +573,7 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters, bool blocked)
 // search packages which provide a codec (specified in "values")
 void AptJob::providesCodec(PkgList &output, gchar **values)
 {
-    string arch;
+    std::string arch;
     GstMatcher matcher(values);
     if (!matcher.hasMatches()) {
         return;
@@ -605,14 +605,14 @@ void AptJob::providesCodec(PkgList &output, gchar **values)
             continue;
         }
 
-        arch = string(ver.Arch());
+        arch = std::string(ver.Arch());
         bool native = arch == "all" || arch == m_cache->GetPkgCache()->NativeArch();
 
         pkgCache::VerFileIterator vf = ver.FileList();
         pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(vf);
         const char *start, *stop;
         rec.GetRec(start, stop);
-        string record(start, stop - start);
+        std::string record(start, stop - start);
         if (matcher.matches(record, native)) {
             output.append(ver);
         }
@@ -648,11 +648,11 @@ void AptJob::providesLibrary(PkgList &output, gchar **values)
         value = values[i];
         regmatch_t matches[2];
         if (regexec(&libreg, value, 2, matches, 0) != REG_NOMATCH) {
-            string libPkgName = string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
+            std::string libPkgName = std::string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
 
-            string strvalue = string(value);
+            std::string strvalue = std::string(value);
             ssize_t pos = strvalue.find(".so.");
-            if ((pos > 0) && ((size_t)pos != string::npos)) {
+            if ((pos > 0) && ((size_t)pos != std::string::npos)) {
                 // If last char is a number, add a "-" (to be policy-compliant)
                 if (g_ascii_isdigit(libPkgName.at(libPkgName.length() - 1))) {
                     libPkgName.append("-");
@@ -749,7 +749,7 @@ bool AptJob::getArchive(
             return false;
         }
 
-        const string PkgFile = Parse.FileName();
+        const std::string PkgFile = Parse.FileName();
         const HashStringList hashes = Parse.Hashes();
         if (PkgFile.empty() == true) {
             return _error->Error(
@@ -758,7 +758,7 @@ bool AptJob::getArchive(
                 Version.ParentPkg().Name());
         }
 
-        string DestFile = directory + "/" + std::string{flNotDir(StoreFilename)};
+        std::string DestFile = directory + "/" + std::string{flNotDir(StoreFilename)};
 
         // Create the item
         new pkgAcqFile(
@@ -845,13 +845,13 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     gchar *current_package_id = m_cache->buildPackageId(currver);
 
     pkgCache::VerFileIterator vf = candver.FileList();
-    string origin = safeStr(vf.File().Origin());
+    std::string origin = safeStr(vf.File().Origin());
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(candver.FileList());
 
-    string changelog;
-    string update_text;
-    string time_issued;
-    string srcpkg;
+    std::string changelog;
+    std::string update_text;
+    std::string time_issued;
+    std::string srcpkg;
     if (rec.SourcePkg().empty()) {
         srcpkg = pkg.Name();
     } else {
@@ -870,7 +870,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     changelog = fetchChangelogData(*m_cache, fetcher, candver, currver, &update_text, &time_issued);
 
     // Build a package_id from the update version
-    string archive = safeStr(vf.File().Archive());
+    std::string archive = safeStr(vf.File().Archive());
     g_autofree gchar *package_id = m_cache->buildPackageId(candver);
 
     // assume stable updates for all but some special suites
@@ -1100,7 +1100,7 @@ PkgList AptJob::getPackagesFromGroup(gchar **values)
         // Ignore virtual packages
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
         if (!ver.end()) {
-            string section = safeStr(pkg.VersionList().Section());
+            std::string section = safeStr(pkg.VersionList().Section());
 
             size_t found;
             found = section.find_last_of("/");
@@ -1118,9 +1118,9 @@ PkgList AptJob::getPackagesFromGroup(gchar **values)
     return output;
 }
 
-bool AptJob::matchesQueries(const vector<string> &queries, string s)
+bool AptJob::matchesQueries(const vector<std::string> &queries, std::string s)
 {
-    for (string query : queries) {
+    for (std::string query : queries) {
         // Case insensitive "string.contains"
         auto it = std::search(s.begin(), s.end(), query.begin(), query.end(), [](unsigned char ch1, unsigned char ch2) {
             return std::tolower(ch1) == std::tolower(ch2);
@@ -1133,7 +1133,7 @@ bool AptJob::matchesQueries(const vector<string> &queries, string s)
     return false;
 }
 
-PkgList AptJob::searchPackageName(const vector<string> &queries)
+PkgList AptJob::searchPackageName(const vector<std::string> &queries)
 {
     PkgList output;
 
@@ -1169,7 +1169,7 @@ PkgList AptJob::searchPackageName(const vector<string> &queries)
     return output;
 }
 
-PkgList AptJob::searchPackageDetails(const vector<string> &queries)
+PkgList AptJob::searchPackageDetails(const vector<std::string> &queries)
 {
     PkgList output;
 
@@ -1212,8 +1212,8 @@ PkgList AptJob::searchPackageDetails(const vector<string> &queries)
 PkgList AptJob::searchPackageFiles(gchar **values)
 {
     PkgList output;
-    vector<string> packages;
-    string search;
+    vector<std::string> packages;
+    std::string search;
     regex_t re;
 
     for (uint i = 0; i < g_strv_length(values); ++i) {
@@ -1249,15 +1249,15 @@ PkgList AptJob::searchPackageFiles(gchar **values)
         return output;
     }
 
-    string line;
+    std::string line;
     while ((dirp = readdir(dp)) != nullptr) {
         if (m_cancel) {
             break;
         }
 
         if (ends_with(dirp->d_name, ".list")) {
-            string file(dirp->d_name);
-            string f = "/var/lib/dpkg/info/" + file;
+            std::string file(dirp->d_name);
+            std::string f = "/var/lib/dpkg/info/" + file;
             std::ifstream in(f.c_str());
             if (!in) {
                 continue;
@@ -1276,7 +1276,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
     regfree(&re);
 
     // Resolve the package names now
-    for (const string &name : packages) {
+    for (const std::string &name : packages) {
         if (m_cancel) {
             break;
         }
@@ -1439,7 +1439,7 @@ AsPool *AptJob::loadAppStreamPool()
 void AptJob::providesMimeType(PkgList &output, gchar **values)
 {
     g_autoptr(AsPool) pool = loadAppStreamPool();
-    std::vector<string> pkg_names;
+    std::vector<std::string> pkg_names;
 
     if (pool == nullptr)
         return;
@@ -1504,15 +1504,15 @@ bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 void AptJob::emitPackageFiles(const gchar *pi)
 {
     GPtrArray *files;
-    string line;
+    std::string line;
 
     g_auto(GStrv) parts = pk_package_id_split(pi);
-    string fName;
-    fName = "/var/lib/dpkg/info/" + string(parts[PK_PACKAGE_ID_NAME]) + ":" + string(parts[PK_PACKAGE_ID_ARCH])
-            + ".list";
+    std::string fName;
+    fName = "/var/lib/dpkg/info/" + std::string(parts[PK_PACKAGE_ID_NAME]) + ":"
+            + std::string(parts[PK_PACKAGE_ID_ARCH]) + ".list";
     if (!FileExists(fName)) {
         // if the file was not found try without the arch field
-        fName = "/var/lib/dpkg/info/" + string(parts[PK_PACKAGE_ID_NAME]) + ".list";
+        fName = "/var/lib/dpkg/info/" + std::string(parts[PK_PACKAGE_ID_NAME]) + ".list";
     }
 
     if (FileExists(fName)) {
@@ -1563,9 +1563,9 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
 /**
  * Check if package is officially supported by the current distribution
  */
-bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, string component)
+bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, std::string component)
 {
-    string origin;
+    std::string origin;
     if (!verIter.end()) {
         pkgCache::VerFileIterator vf = verIter.FileList();
         origin = safeStr(vf.File().Origin());
@@ -1595,7 +1595,7 @@ bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, string com
 
 bool AptJob::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
 {
-    string UntrustedList;
+    std::string UntrustedList;
     PkgList untrusted;
     for (pkgAcquire::ItemIterator I = fetcher.ItemsBegin(); I < fetcher.ItemsEnd(); ++I) {
         if (!(*I)->IsTrusted()) {
@@ -1607,7 +1607,7 @@ bool AptJob::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
             }
             untrusted.append(archive->version());
 
-            UntrustedList += string((*I)->ShortDesc()) + " ";
+            UntrustedList += std::string((*I)->ShortDesc()) + " ";
         }
     }
 
@@ -1787,7 +1787,7 @@ PkgList AptJob::resolvePackageIds(gchar **package_ids, PkBitfield filters)
         }
 
         // Not a valid package id, try to find it by name
-        string name(pkgid);
+        std::string name(pkgid);
         // Check if the package name didn't contains the arch field
         if (name.find(':') == std::string::npos) {
             // OK FindPkg is not suitable on muitarch without ":arch"
@@ -2242,7 +2242,7 @@ bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher)
 
     /* Check for enough free space */
     struct statvfs Buf;
-    string OutputDir = _config->FindDir("Dir::Cache::Archives");
+    std::string OutputDir = _config->FindDir("Dir::Cache::Archives");
     if (statvfs(OutputDir.c_str(), &Buf) != 0) {
         return _error->Errno("statvfs", "Couldn't determine free space in %s", OutputDir.c_str());
     }

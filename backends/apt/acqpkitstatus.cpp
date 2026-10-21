@@ -70,7 +70,7 @@ void AcqPackageKitStatus::IMSHit(pkgAcquire::ItemDesc &Itm)
 {
     PkRoleEnum role = pk_backend_job_get_role(m_job);
     if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-        pk_backend_job_repo_detail(m_job, "", Itm.Description.c_str(), true);
+        reportRefreshedItem(Itm, true);
     } else {
         updateStatus(Itm, 100);
     }
@@ -92,7 +92,7 @@ void AcqPackageKitStatus::Done(pkgAcquire::ItemDesc &Itm)
 {
     PkRoleEnum role = pk_backend_job_get_role(m_job);
     if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-        pk_backend_job_repo_detail(m_job, "", Itm.Description.c_str(), true);
+        reportRefreshedItem(Itm, true);
     }
     // Download completed
     updateStatus(Itm, 100);
@@ -114,7 +114,7 @@ void AcqPackageKitStatus::Fail(pkgAcquire::ItemDesc &Itm)
     if (Itm.Owner->Status == pkgAcquire::Item::StatDone) {
         PkRoleEnum role = pk_backend_job_get_role(m_job);
         if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
-            pk_backend_job_repo_detail(m_job, "", Itm.Description.c_str(), false);
+            reportRefreshedItem(Itm, false);
         }
     } else {
         // an error was found (maybe 404, 403...)
@@ -182,7 +182,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 // AcqPackageKitStatus::MediaChange - Media need to be swapped
 // ---------------------------------------------------------------------
 /* Prompt for a media swap */
-bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
+bool AcqPackageKitStatus::MediaChange(std::string Media, std::string Drive)
 {
     pk_backend_job_error_code(
         m_job,
@@ -224,4 +224,17 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc &Itm, int status)
         // Emit the individual progress
         m_apt->emitPackageProgress(ver, PK_STATUS_ENUM_DOWNLOAD, status);
     }
+}
+
+// AcqPackageKitStatus::reportRefreshedItem - Report an item fetched while refreshing
+// ---------------------------------------------------------------------
+/* apt can notify about the same item more than once, e.g. when it passes
+   through several acquire methods. Only report the first notification, so
+   every source is listed once. */
+void AcqPackageKitStatus::reportRefreshedItem(pkgAcquire::ItemDesc &Itm, bool success)
+{
+    if (!m_reportedItems.insert(Itm.Description).second) {
+        return;
+    }
+    pk_backend_job_repo_detail(m_job, "", Itm.Description.c_str(), success);
 }
