@@ -132,6 +132,57 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
 }
 
 /**
+ * pk_package_compare:
+ * @package1: a valid #PkPackage instance
+ * @package2: a valid #PkPackage instance
+ *
+ * Compare two packages to sort them for display, by name, then version and
+ * then architecture.
+ *
+ * Versions are compared with numbers in them ordered by value, so "1.9" sorts
+ * before "1.10". This is a heuristic for presenting packages to users, it does
+ * not implement the version comparison rules of any particular package manager.
+ *
+ * Returns: a negative value if @package1 sorts before @package2, zero if they
+ *   sort equally, and a positive value otherwise.
+ *
+ * Since: 2.0.0
+ **/
+gint
+pk_package_compare (PkPackage *package1, PkPackage *package2)
+{
+	const gchar *version1;
+	const gchar *version2;
+	gint ret;
+
+	g_return_val_if_fail (PK_IS_PACKAGE (package1), 0);
+	g_return_val_if_fail (PK_IS_PACKAGE (package2), 0);
+
+	ret = g_strcmp0 (pk_package_get_name (package1), pk_package_get_name (package2));
+	if (ret != 0)
+		return ret;
+
+	version1 = pk_package_get_version (package1);
+	version2 = pk_package_get_version (package2);
+	if (g_strcmp0 (version1, version2) != 0) {
+		g_autofree gchar *key1 = NULL;
+		g_autofree gchar *key2 = NULL;
+
+		if (version1 == NULL || version2 == NULL)
+			return version1 == NULL ? -1 : 1;
+
+		/* the filename collation compares numbers by value */
+		key1 = g_utf8_collate_key_for_filename (version1, -1);
+		key2 = g_utf8_collate_key_for_filename (version2, -1);
+		ret = g_strcmp0 (key1, key2);
+		if (ret != 0)
+			return ret;
+	}
+
+	return g_strcmp0 (pk_package_get_arch (package1), pk_package_get_arch (package2));
+}
+
+/**
  * pk_package_equal_id:
  * @package1: a valid #PkPackage instance
  * @package2: a valid #PkPackage instance

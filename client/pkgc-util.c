@@ -48,6 +48,23 @@
 #define SYMBOL_UP      "▲"
 #define SYMBOL_DOWN    "▼"
 
+/* values longer than this do not widen their column in package lists */
+#define PKGC_NAME_WIDTH_MAX    30
+#define PKGC_VERSION_WIDTH_MAX 20
+#define PKGC_ARCH_WIDTH_MAX    8
+
+/* indentation of the text below a "Description:" label */
+#define PKGC_TEXT_INDENT 2
+
+/* the update details are indented by one, so text below their labels by one more */
+#define PKGC_UPDATE_TEXT_INDENT (PKGC_TEXT_INDENT + 1)
+
+/* longer text lines are wrapped even on wide terminals, to stay readable */
+#define PKGC_TEXT_WIDTH_MAX 100
+
+/* indentation of the detail line below a package or repository */
+#define PKGC_DETAIL_INDENT 4
+
 /* Emoji symbols - no single-cell width, so we can only use them sparingly */
 #define SYMBOL_PACKAGE_EMOJI "📦"
 
@@ -99,6 +116,68 @@ pkgc_util_check_connection (PkgcliContext *ctx, GError **error)
 	}
 
 	return TRUE;
+}
+
+/**
+ * pkgc_util_make_sorted_shallow_copy:
+ * @array: an array of objects
+ * @func: the function to sort by
+ *
+ * Get a sorted copy of @array, without changing the order of the original.
+ *
+ * Returns: (transfer container): a sorted shallow copy, @array keeps owning the elements
+ */
+GPtrArray *
+pkgc_util_make_sorted_shallow_copy (GPtrArray *array, GCompareFunc func)
+{
+	GPtrArray *sorted = g_ptr_array_copy (array, NULL, NULL);
+
+	g_ptr_array_set_free_func (sorted, NULL);
+	g_ptr_array_sort (sorted, func);
+	return sorted;
+}
+
+/**
+ * pkgc_util_get_wrap_width:
+ *
+ * Get the line width to wrap text at, which is the console width, but
+ * never more than PKGC_TEXT_WIDTH_MAX columns of text.
+ */
+static guint
+pkgc_util_get_wrap_width (guint indent)
+{
+	return MIN (pk_console_get_width (), PKGC_TEXT_WIDTH_MAX + indent);
+}
+
+/**
+ * pkgc_util_dedent:
+ *
+ * Remove the leading spaces all non-empty lines of a text have in common,
+ * so it can be indented consistently.
+ *
+ * Returns: (transfer full): the dedented text
+ */
+static gchar *
+pkgc_util_dedent (const gchar *text)
+{
+	g_auto(GStrv) lines = g_strsplit (text, "\n", -1);
+	GString *str = g_string_new (NULL);
+	guint common = G_MAXUINT;
+
+	for (guint i = 0; lines[i] != NULL; i++) {
+		guint n = strspn (lines[i], " ");
+		if (lines[i][n] != '\0')
+			common = MIN (common, n);
+	}
+
+	for (guint i = 0; lines[i] != NULL; i++) {
+		/* blank lines may be shorter than the common indentation */
+		if (i > 0)
+			g_string_append_c (str, '\n');
+		g_string_append (str, lines[i] + MIN (strlen (lines[i]), common));
+	}
+
+	return g_string_free (str, FALSE);
 }
 
 /**
@@ -166,24 +245,33 @@ pkgc_util_format_time (guint seconds)
 }
 
 /**
- * get_color:
+ * pkgc_can_use_colors:
+ */
+static gboolean
+pkgc_can_use_colors (PkgcliContext *ctx)
+{
+	return !ctx->no_color && ctx->is_tty;
+}
+
+/**
+ * pkgc_get_color:
  */
 static const gchar *
-get_color (PkgcliContext *ctx, const gchar *color)
+pkgc_get_color (PkgcliContext *ctx, const gchar *color)
 {
-	if (ctx->no_color || !ctx->is_tty)
+	if (!pkgc_can_use_colors (ctx))
 		return "";
 
 	return color;
 }
 
 /**
- * get_reset_color:
+ * pkgc_get_reset_color:
  */
 static const gchar *
-get_reset_color (PkgcliContext *ctx)
+pkgc_get_reset_color (PkgcliContext *ctx)
 {
-	return get_color (ctx, COLOR_RESET);
+	return pkgc_get_color (ctx, COLOR_RESET);
 }
 
 /**
@@ -196,23 +284,23 @@ pkgc_get_ansi_color (PkgcliContext *ctx, PkgcColor color)
 {
 	switch (color) {
 	case PKGC_COLOR_RESET:
-		return get_reset_color (ctx);
+		return pkgc_get_reset_color (ctx);
 	case PKGC_COLOR_BOLD:
-		return get_color (ctx, COLOR_BOLD);
+		return pkgc_get_color (ctx, COLOR_BOLD);
 	case PKGC_COLOR_RED:
-		return get_color (ctx, COLOR_RED);
+		return pkgc_get_color (ctx, COLOR_RED);
 	case PKGC_COLOR_GREEN:
-		return get_color (ctx, COLOR_GREEN);
+		return pkgc_get_color (ctx, COLOR_GREEN);
 	case PKGC_COLOR_YELLOW:
-		return get_color (ctx, COLOR_YELLOW);
+		return pkgc_get_color (ctx, COLOR_YELLOW);
 	case PKGC_COLOR_BLUE:
-		return get_color (ctx, COLOR_BLUE);
+		return pkgc_get_color (ctx, COLOR_BLUE);
 	case PKGC_COLOR_MAGENTA:
-		return get_color (ctx, COLOR_MAGENTA);
+		return pkgc_get_color (ctx, COLOR_MAGENTA);
 	case PKGC_COLOR_CYAN:
-		return get_color (ctx, COLOR_CYAN);
+		return pkgc_get_color (ctx, COLOR_CYAN);
 	case PKGC_COLOR_GRAY:
-		return get_color (ctx, COLOR_GRAY);
+		return pkgc_get_color (ctx, COLOR_GRAY);
 	default:
 		return "";
 	}
@@ -248,7 +336,7 @@ print_colored (PkgcliContext *ctx, const gchar *color, const gchar *format, va_l
 		return;
 	}
 
-	g_print ("%s%s%s\n", get_color (ctx, color), message, get_reset_color (ctx));
+	g_print ("%s%s%s\n", pkgc_get_color (ctx, color), message, pkgc_get_reset_color (ctx));
 }
 
 /**
@@ -273,9 +361,9 @@ pkgc_print_error (PkgcliContext *ctx, const gchar *format, ...)
 		pkgc_print_json (root);
 	} else {
 		g_printerr ("%s%s%s:%s %s\n",
-			    get_color (ctx, COLOR_BOLD),
-			    get_color (ctx, COLOR_RED),
-			    _("Error"), get_reset_color (ctx), message);
+			    pkgc_get_color (ctx, COLOR_BOLD),
+			    pkgc_get_color (ctx, COLOR_RED),
+			    _("Error"), pkgc_get_reset_color (ctx), message);
 	}
 }
 
@@ -304,10 +392,10 @@ pkgc_print_warning (PkgcliContext *ctx, const gchar *format, ...)
 	}
 
 	g_print ("%s%s %s%s %s\n",
-		 get_color (ctx, COLOR_BOLD),
-		 get_color (ctx, COLOR_YELLOW),
+		 pkgc_get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_YELLOW),
 		 /* TRANSLATORS: A warning message prefix, displayed on the command-line */
-		 _("Warning:"), get_reset_color (ctx), message);
+		 _("Warning:"), pkgc_get_reset_color (ctx), message);
 }
 
 /**
@@ -362,9 +450,9 @@ pkgc_print_success (PkgcliContext *ctx, const gchar *format, ...)
 		pkgc_print_json (root);
 	} else if (ctx->output_mode != PKGCLI_MODE_QUIET) {
 		g_print ("%s%s%s %s\n",
-			 get_color (ctx, COLOR_GREEN),
+			 pkgc_get_color (ctx, COLOR_GREEN),
 			 SYMBOL_CHECK,
-			 get_reset_color (ctx),
+			 pkgc_get_reset_color (ctx),
 			 message);
 	}
 }
@@ -477,146 +565,229 @@ pkgc_is_local_package (const gchar *package_name)
 }
 
 /**
- * pkgc_print_package:
+ * pkgc_package_get_style:
  *
- * Print package information based on the output mode.
+ * Get the color and symbol representing the state of a package, and the
+ * color and label of its update severity.
  */
-void
-pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
+static void
+pkgc_package_get_style (PkPackage *package,
+			const gchar **info_color,
+			const gchar **info_symbol,
+			const gchar **severity_color,
+			const gchar **severity_text)
 {
-	const gchar *package_id;
-	PkInfoEnum info;
-	PkSeverityEnum severity;
-	g_auto(GStrv) split = NULL;
-	const gchar *name, *version, *arch, *origin, *data;
-	const gchar *info_color = COLOR_RESET;
-	const gchar *info_symbol = SYMBOL_PACKAGE;
-	const gchar *severity_color = NULL;
-	const gchar *severity_text = NULL;
+	PkInfoEnum info = pk_package_get_info (package);
+	PkSeverityEnum severity = pk_package_get_update_severity (package);
 
-	if (!package)
-		return;
-
-	package_id = pk_package_get_id (package);
-	info = pk_package_get_info (package);
-	severity = pk_package_get_update_severity (package);
-	split = pk_package_id_split (package_id);
-
-	if (split == NULL || split[0] == NULL)
-		return;
-
-	name = split[PK_PACKAGE_ID_NAME];
-	version = split[PK_PACKAGE_ID_VERSION];
-	arch = split[PK_PACKAGE_ID_ARCH];
-	origin = split[PK_PACKAGE_ID_ORIGIN];
-	data = split[PK_PACKAGE_ID_DATA];
+	*info_color = COLOR_RESET;
+	*info_symbol = SYMBOL_PACKAGE;
+	*severity_color = NULL;
+	*severity_text = NULL;
 
 	/* set color & symbol based on package state */
 	switch (info) {
 	case PK_INFO_ENUM_INSTALLED:
-		info_color = COLOR_GREEN;
-		info_symbol = SYMBOL_CHECK;
+		*info_color = COLOR_GREEN;
+		*info_symbol = SYMBOL_CHECK;
 		break;
 	case PK_INFO_ENUM_AVAILABLE:
-		info_color = COLOR_BLUE;
-		info_symbol = SYMBOL_PACKAGE;
+		*info_color = COLOR_BLUE;
+		*info_symbol = SYMBOL_PACKAGE;
 		break;
 	case PK_INFO_ENUM_RESIDUAL:
-		info_color = COLOR_YELLOW;
-		info_symbol = SYMBOL_PACKAGE;
+		*info_color = COLOR_YELLOW;
+		*info_symbol = SYMBOL_PACKAGE;
 		break;
 	case PK_INFO_ENUM_UPDATE:
 	case PK_INFO_ENUM_UPDATE_SECURITY:
 	case PK_INFO_ENUM_UPDATE_ENHANCEMENT:
 	case PK_INFO_ENUM_UPDATING:
-		info_color = COLOR_CYAN;
-		info_symbol = SYMBOL_UP;
+		*info_color = COLOR_CYAN;
+		*info_symbol = SYMBOL_UP;
 		break;
 	case PK_INFO_ENUM_DOWNGRADE:
-		info_color = COLOR_RED;
-		info_symbol = SYMBOL_DOWN;
+		*info_color = COLOR_RED;
+		*info_symbol = SYMBOL_DOWN;
 		break;
 	case PK_INFO_ENUM_INSTALL:
 	case PK_INFO_ENUM_INSTALLING:
-		info_color = COLOR_CYAN;
-		info_symbol = SYMBOL_DOT;
+		*info_color = COLOR_CYAN;
+		*info_symbol = SYMBOL_DOT;
 		break;
 	case PK_INFO_ENUM_REMOVE:
 	case PK_INFO_ENUM_REMOVING:
-		info_color = COLOR_RED;
-		info_symbol = SYMBOL_CROSS;
+		*info_color = COLOR_RED;
+		*info_symbol = SYMBOL_CROSS;
 		break;
 	case PK_INFO_ENUM_BLOCKED:
-		info_color = COLOR_GRAY;
-		info_symbol = SYMBOL_CROSS;
+		*info_color = COLOR_GRAY;
+		*info_symbol = SYMBOL_CROSS;
 		break;
 	default:
-		info_color = COLOR_RESET;
 		break;
 	}
 
 	/* the severity of an update is shown by color, urgent ones are labeled as well */
 	switch (severity) {
 	case PK_SEVERITY_ENUM_LOW:
-		severity_color = COLOR_GRAY;
+		*severity_color = COLOR_GRAY;
 		break;
 	case PK_SEVERITY_ENUM_HIGH:
-		severity_color = COLOR_YELLOW;
+		*severity_color = COLOR_YELLOW;
 		/* TRANSLATORS: the severity of a package update, keep this short */
-		severity_text = _("high");
+		*severity_text = _("high");
 		break;
 	case PK_SEVERITY_ENUM_CRITICAL:
-		severity_color = COLOR_RED;
+		*severity_color = COLOR_RED;
 		/* TRANSLATORS: the severity of a package update, keep this short */
-		severity_text = _("critical");
+		*severity_text = _("critical");
 		break;
 	default:
 		break;
 	}
-	if (severity_color != NULL && info != PK_INFO_ENUM_BLOCKED)
-		info_color = severity_color;
+	if (*severity_color != NULL && info != PK_INFO_ENUM_BLOCKED)
+		*info_color = *severity_color;
+}
+
+/**
+ * pkgc_print_package_json:
+ */
+static void
+pkgc_print_package_json (PkPackage *package)
+{
+	PkInfoEnum info = pk_package_get_info (package);
+	PkSeverityEnum severity = pk_package_get_update_severity (package);
+	g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
+	g_autoptr(json_t) root = NULL;
+
+	if (split == NULL)
+		return;
+
+	root = json_object ();
+	json_object_set_new (root, "name", json_string (split[PK_PACKAGE_ID_NAME]));
+	json_object_set_new (root, "version", json_string (split[PK_PACKAGE_ID_VERSION]));
+	json_object_set_new (root, "arch", json_string (split[PK_PACKAGE_ID_ARCH]));
+	json_object_set_new (root, "repo", json_string (split[PK_PACKAGE_ID_ORIGIN]));
+	json_object_set_new (root, "data", json_string (split[PK_PACKAGE_ID_DATA]));
+	json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
+	if (severity != PK_SEVERITY_ENUM_NONE)
+		json_object_set_new (root,
+				     "severity",
+				     json_string (pk_severity_enum_to_string (severity)));
+	pkgc_print_json (root);
+}
+
+/**
+ * pkgc_print_packages:
+ *
+ * Print a list of packages sorted by name, one line per package with an
+ * optional summary line below, or one JSON object per package in JSON mode.
+ */
+void
+pkgc_print_packages (PkgcliContext *ctx, GPtrArray *packages, gboolean show_summary)
+{
+	g_autoptr(GPtrArray) sorted = NULL;
+	/* clang-format off */
+	const struct {
+		guint field;
+		guint max_width;
+	} columns[] = {
+		{ PK_PACKAGE_ID_NAME,    PKGC_NAME_WIDTH_MAX },
+		{ PK_PACKAGE_ID_VERSION, PKGC_VERSION_WIDTH_MAX },
+		{ PK_PACKAGE_ID_ARCH,    PKGC_ARCH_WIDTH_MAX },
+		{ PK_PACKAGE_ID_ORIGIN,  0 },
+	};
+	/* clang-format on */
+	guint widths[G_N_ELEMENTS (columns)] = { 0 };
+	guint wrap_width = pkgc_util_get_wrap_width (PKGC_DETAIL_INDENT);
+
+	if (packages == NULL || packages->len == 0)
+		return;
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		g_autoptr(json_t) root = json_object ();
-		json_object_set_new (root, "name", json_string (name));
-		json_object_set_new (root, "version", json_string (version));
-		json_object_set_new (root, "arch", json_string (arch));
-		json_object_set_new (root, "repo", json_string (origin));
-		json_object_set_new (root, "data", json_string (data));
-		json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
-		if (severity != PK_SEVERITY_ENUM_NONE)
-			json_object_set_new (root,
-					     "severity",
-					     json_string (pk_severity_enum_to_string (severity)));
-		pkgc_print_json (root);
-
+		for (guint i = 0; i < packages->len; i++)
+			pkgc_print_package_json (g_ptr_array_index (packages, i));
 		return;
 	}
 
-	/* print package info */
-	g_print ("%s%s%s %s%s%s",
-		 get_color (ctx, info_color),
-		 info_symbol,
-		 get_reset_color (ctx),
-		 get_color (ctx, COLOR_BOLD),
-		 name,
-		 get_reset_color (ctx));
+	sorted = pkgc_util_make_sorted_shallow_copy (packages, pk_console_package_sort_func);
 
-	g_print (" %s%s%s", get_color (ctx, COLOR_GRAY), version, get_reset_color (ctx));
+	/* pad the fields to align the rest of the line, but do not let a few very
+	 * long values push everything else far to the right */
+	for (guint i = 0; i < sorted->len; i++) {
+		g_auto(GStrv) split = pk_package_id_split (
+		    pk_package_get_id (g_ptr_array_index (sorted, i)));
+		if (split == NULL)
+			continue;
+		for (guint c = 0; c < G_N_ELEMENTS (columns); c++)
+			widths[c] = MAX (widths[c], pk_console_str_width (split[columns[c].field]));
+	}
+	for (guint c = 0; c < G_N_ELEMENTS (columns); c++)
+		widths[c] = MIN (widths[c], columns[c].max_width);
 
-	if (g_strcmp0 (arch, "") != 0)
-		g_print (".%s%s%s", get_color (ctx, COLOR_GRAY), arch, get_reset_color (ctx));
+	for (guint i = 0; i < sorted->len; i++) {
+		PkPackage *package = g_ptr_array_index (sorted, i);
+		g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
+		g_autoptr(GString) line = NULL;
+		const gchar *summary;
+		const gchar *info_color, *info_symbol, *severity_color, *severity_text;
 
-	if (g_strcmp0 (origin, "") != 0)
-		g_print (" [%s%s%s]", get_color (ctx, COLOR_GRAY), origin, get_reset_color (ctx));
+		if (split == NULL)
+			continue;
 
-	if (severity_text != NULL)
-		g_print (" %s%s%s",
-			 get_color (ctx, severity_color),
-			 severity_text,
-			 get_reset_color (ctx));
+		pkgc_package_get_style (package,
+					&info_color,
+					&info_symbol,
+					&severity_color,
+					&severity_text);
 
-	g_print ("\n");
+		line = g_string_new (NULL);
+		g_string_append_printf (line,
+					"%s%s%s",
+					pkgc_get_color (ctx, info_color),
+					info_symbol,
+					pkgc_get_reset_color (ctx));
+
+		for (guint c = 0; c < G_N_ELEMENTS (columns); c++) {
+			const gchar *text = split[columns[c].field];
+			guint text_width = pk_console_str_width (text);
+
+			if (widths[c] == 0 && text_width == 0)
+				continue;
+
+			/* pad outside of the color codes, so they do not count towards the width */
+			g_string_append_printf (
+			    line,
+			    "%s%s%s%s",
+			    c == 0 ? " " : "  ",
+			    pkgc_get_color (ctx, c == 0 ? COLOR_BOLD : COLOR_GRAY),
+			    text,
+			    pkgc_get_reset_color (ctx));
+			for (guint w = text_width; w < widths[c]; w++)
+				g_string_append_c (line, ' ');
+		}
+
+		if (severity_text != NULL)
+			g_string_append_printf (line,
+						"  %s%s%s",
+						pkgc_get_color (ctx, severity_color),
+						severity_text,
+						pkgc_get_reset_color (ctx));
+
+		/* never leave trailing whitespace from the padding */
+		while (line->len > 0 && line->str[line->len - 1] == ' ')
+			g_string_truncate (line, line->len - 1);
+		g_print ("%s\n", line->str);
+
+		summary = pk_package_get_summary (package);
+		if (show_summary && summary != NULL && summary[0] != '\0') {
+			g_autofree gchar *wrapped = pk_console_text_wrap (summary,
+									  wrap_width,
+									  PKGC_DETAIL_INDENT);
+			g_print ("%*s%s\n", PKGC_DETAIL_INDENT, "", wrapped);
+		}
+	}
 }
 
 /**
@@ -682,66 +853,75 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		pkgc_print_json (root);
 	} else {
 		g_print ("%s%s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for the package name in package details */
-			 _("Package:"), get_reset_color (ctx), split[PK_PACKAGE_ID_NAME]);
+			 _("Package:"), pkgc_get_reset_color (ctx), split[PK_PACKAGE_ID_NAME]);
 		g_print ("%s%s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for the package version in package details */
-			 _("Version:"), get_reset_color (ctx), split[PK_PACKAGE_ID_VERSION]);
+			 _("Version:"), pkgc_get_reset_color (ctx), split[PK_PACKAGE_ID_VERSION]);
 
 		if (summary && summary[0] != '\0') {
 			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for the package summary in package details */
-				 _("Summary:"), get_reset_color (ctx), summary);
+				 _("Summary:"), pkgc_get_reset_color (ctx), summary);
 		}
 
 		if (description && description[0] != '\0') {
+			g_autofree gchar *wrapped = pk_console_text_wrap (
+			    description,
+			    pkgc_util_get_wrap_width (PKGC_TEXT_INDENT),
+			    PKGC_TEXT_INDENT);
 			g_print (
-			    "%s%s%s %s\n",
-			    get_color (ctx, COLOR_BOLD),
+			    "%s%s%s\n%*s%s\n",
+			    pkgc_get_color (ctx, COLOR_BOLD),
 			    /* TRANSLATORS: Label for the package description in package details */
-			    _("Description:"), get_reset_color (ctx), description);
+			    _("Description:"),
+			      pkgc_get_reset_color (ctx),
+			      PKGC_TEXT_INDENT,
+			      "",
+			      wrapped);
 		}
 
 		if (license && license[0] != '\0') {
 			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for the package license in package details */
-				 _("License:"), get_reset_color (ctx), license);
+				 _("License:"), pkgc_get_reset_color (ctx), license);
 		}
 
 		if (url && url[0] != '\0') {
 			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for the package URL in package details */
-				 _("URL:"), get_reset_color (ctx), url);
+				 _("URL:"), pkgc_get_reset_color (ctx), url);
 		}
 
 		if (group != PK_GROUP_ENUM_UNKNOWN) {
-			g_print (
-			    "%s%s%s %s\n",
-			    get_color (ctx, COLOR_BOLD),
-			    /* TRANSLATORS: Label for the package group in package details */
-			    _("Group:"), get_reset_color (ctx), pk_group_enum_to_string (group));
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the package group in package details */
+				 _("Group:"),
+				   pkgc_get_reset_color (ctx),
+				   pk_group_enum_to_string (group));
 		}
 
 		if (install_size > 0) {
 			g_autofree gchar *size_str = pkgc_util_format_size (install_size);
 			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for the package size in package details */
-				 _("Installed Size:"), get_reset_color (ctx), size_str);
+				 _("Installed Size:"), pkgc_get_reset_color (ctx), size_str);
 		}
 
 		if (download_size > 0) {
 			g_autofree gchar *size_str = pkgc_util_format_size (download_size);
 			g_print (
 			    "%s%s%s %s\n",
-			    get_color (ctx, COLOR_BOLD),
+			    pkgc_get_color (ctx, COLOR_BOLD),
 			    /* TRANSLATORS: Label for the package download size in package details */
-			    _("Download Size:"), get_reset_color (ctx), size_str);
+			    _("Download Size:"), pkgc_get_reset_color (ctx), size_str);
 		}
 	}
 }
@@ -850,29 +1030,29 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 		pkgc_print_json (root);
 	} else {
 		g_print ("%s%s%s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Header for the update details section */
-			 _("Update Details:"), get_reset_color (ctx));
+			 _("Update Details:"), pkgc_get_reset_color (ctx));
 		g_print (" %s%s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for package update infos */
-			 _("Package:"), get_reset_color (ctx), package);
+			 _("Package:"), pkgc_get_reset_color (ctx), package);
 
 		if (updates && updates[0]) {
 			tmp = g_strjoinv (", ", updates);
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for update details */
-				 _("Updates:"), get_reset_color (ctx), tmp);
+				 _("Updates:"), pkgc_get_reset_color (ctx), tmp);
 			g_free (tmp);
 		}
 
 		if (obsoletes && obsoletes[0]) {
 			tmp = g_strjoinv (", ", obsoletes);
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for obsoleted packages in update details */
-				 _("Obsoletes:"), get_reset_color (ctx), tmp);
+				 _("Obsoletes:"), pkgc_get_reset_color (ctx), tmp);
 			g_free (tmp);
 		}
 
@@ -902,8 +1082,9 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 						continue;
 					if (first) {
 						g_print (" %s%s%s",
-							 get_color (ctx, COLOR_BOLD),
-							 _(groups[g].label), get_reset_color (ctx));
+							 pkgc_get_color (ctx, COLOR_BOLD),
+							 _(groups[g].label),
+							   pkgc_get_reset_color (ctx));
 						first = FALSE;
 					} else {
 						g_print (",");
@@ -923,98 +1104,199 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 
 		if (restart != PK_RESTART_ENUM_NONE) {
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for restart information in update details */
 				 _("Restart:"),
-				   get_reset_color (ctx),
+				   pkgc_get_reset_color (ctx),
 				   pk_restart_enum_to_string (restart));
 		}
 
 		if (update_text && update_text[0] != '\0') {
-			g_print (" %s%s%s\n%s\n",
-				 get_color (ctx, COLOR_BOLD),
+			g_autofree gchar *dedented = pkgc_util_dedent (g_strchomp (update_text));
+			g_autofree gchar *wrapped = NULL;
+
+			wrapped = pk_console_text_wrap (
+			    dedented,
+			    pkgc_util_get_wrap_width (PKGC_UPDATE_TEXT_INDENT),
+			    PKGC_UPDATE_TEXT_INDENT);
+			g_print (" %s%s%s\n%*s%s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for update text in update details */
-				 _("Update text:"), get_reset_color (ctx), update_text);
+				 _("Update text:"),
+				   pkgc_get_reset_color (ctx),
+				   PKGC_UPDATE_TEXT_INDENT,
+				   "",
+				   wrapped);
 		}
 
 		if (changelog && changelog[0] != '\0') {
-			g_print (" %s%s%s\n%s\n",
-				 get_color (ctx, COLOR_BOLD),
+			g_autofree gchar *dedented = pkgc_util_dedent (g_strchomp (changelog));
+			g_autofree gchar *wrapped = NULL;
+
+			wrapped = pk_console_text_wrap (
+			    dedented,
+			    pkgc_util_get_wrap_width (PKGC_UPDATE_TEXT_INDENT),
+			    PKGC_UPDATE_TEXT_INDENT);
+			g_print (" %s%s%s\n%*s%s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for changelog in update details */
-				 _("Changes:"), get_reset_color (ctx), changelog);
+				 _("Changes:"),
+				   pkgc_get_reset_color (ctx),
+				   PKGC_UPDATE_TEXT_INDENT,
+				   "",
+				   wrapped);
 		}
 
 		if (state != PK_UPDATE_STATE_ENUM_UNKNOWN) {
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for update state in update details */
 				 _("State:"),
-				   get_reset_color (ctx),
+				   pkgc_get_reset_color (ctx),
 				   pk_update_state_enum_to_string (state));
 		}
 
 		if (time_issued && time_issued[0] != '\0') {
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for issued date in update details */
-				 _("Issued:"), get_reset_color (ctx), time_issued);
+				 _("Issued:"), pkgc_get_reset_color (ctx), time_issued);
+		}
+	}
+}
+
+static gint
+pkgc_repo_sort_func (gconstpointer a, gconstpointer b)
+{
+	return g_strcmp0 (pk_repo_detail_get_id (*(PkRepoDetail **) a),
+			  pk_repo_detail_get_id (*(PkRepoDetail **) b));
+}
+
+/**
+ * pkgc_repo_get_name:
+ *
+ * Get the name to show for a repository, falling back to its ID.
+ */
+static const gchar *
+pkgc_repo_get_name (PkRepoDetail *repo)
+{
+	const gchar *description = pk_repo_detail_get_description (repo);
+
+	if (description == NULL || description[0] == '\0')
+		return pk_repo_detail_get_id (repo);
+	return description;
+}
+
+/**
+ * pkgc_print_repos_json:
+ */
+static void
+pkgc_print_repos_json (GPtrArray *repos)
+{
+	for (guint i = 0; i < repos->len; i++) {
+		PkRepoDetail *repo = g_ptr_array_index (repos, i);
+		const gchar *description = pk_repo_detail_get_description (repo);
+		g_autoptr(json_t) root = json_object ();
+
+		json_object_set_new (root, "id", json_string (pk_repo_detail_get_id (repo)));
+		json_object_set_new (root,
+				     "description",
+				     json_string (description ? description : ""));
+		json_object_set_new (root,
+				     "enabled",
+				     json_boolean (pk_repo_detail_get_enabled (repo)));
+		pkgc_print_json (root);
+	}
+}
+
+/**
+ * pkgc_print_repos:
+ *
+ * Print a list of repositories sorted by ID, with the name and status on
+ * one line and the ID below, or one JSON object per repository in JSON mode.
+ */
+void
+pkgc_print_repos (PkgcliContext *ctx, GPtrArray *repos)
+{
+	g_autoptr(GPtrArray) sorted = NULL;
+
+	if (repos == NULL || repos->len == 0)
+		return;
+
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
+		pkgc_print_repos_json (repos);
+		return;
+	}
+
+	sorted = pkgc_util_make_sorted_shallow_copy (repos, pkgc_repo_sort_func);
+
+	for (guint i = 0; i < sorted->len; i++) {
+		PkRepoDetail *repo = g_ptr_array_index (sorted, i);
+		gboolean enabled = pk_repo_detail_get_enabled (repo);
+		const gchar *status;
+
+		if (enabled)
+			/* TRANSLATORS: state of a repository in the repository list */
+			status = _("enabled");
+		else
+			/* TRANSLATORS: state of a repository in the repository list */
+			status = _("disabled");
+
+		g_print ("%s%s%s [%s%s%s]\n",
+			 pkgc_get_color (ctx, COLOR_BOLD),
+			 pkgc_repo_get_name (repo),
+			 pkgc_get_reset_color (ctx),
+			 pkgc_get_color (ctx, enabled ? COLOR_GREEN : COLOR_RED),
+			 status,
+			 pkgc_get_reset_color (ctx));
+		if (g_strcmp0 (pk_repo_detail_get_id (repo), "") != 0) {
+			g_print ("%*s%s%s%s\n",
+				 PKGC_DETAIL_INDENT,
+				 "",
+				 pkgc_get_color (ctx, COLOR_GRAY),
+				 pk_repo_detail_get_id (repo),
+				 pkgc_get_reset_color (ctx));
 		}
 	}
 }
 
 /**
- * pkgc_print_repo:
+ * pkgc_print_refreshed_repos:
  *
- * Print repository information based on the output mode.
+ * Print the sources that were processed while refreshing the metadata,
+ * in the order the backend reported them, marked by whether that worked.
  */
 void
-pkgc_print_repo (PkgcliContext *ctx, PkRepoDetail *repo)
+pkgc_print_refreshed_repos (PkgcliContext *ctx, GPtrArray *repos)
 {
-	const gchar *repo_id;
-	const gchar *description;
-	gboolean enabled;
-
-	if (!repo)
+	if (repos == NULL || repos->len == 0)
 		return;
 
-	g_object_get (repo,
-		      "repo-id",
-		      &repo_id,
-		      "description",
-		      &description,
-		      "enabled",
-		      &enabled,
-		      NULL);
-
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		g_autoptr(json_t) root = json_object ();
-		json_object_set_new (root, "id", json_string (repo_id));
-		json_object_set_new (root,
-				     "description",
-				     json_string (description ? description : ""));
-		json_object_set_new (root, "enabled", json_boolean (enabled));
-		pkgc_print_json (root);
-	} else {
-		const gchar *status_color = enabled ? COLOR_GREEN : COLOR_RED;
-		const gchar *status_text = enabled ? "enabled" : "disabled";
+		pkgc_print_repos_json (repos);
+		return;
+	}
+	if (ctx->output_mode == PKGCLI_MODE_QUIET)
+		return;
 
-		g_print ("%s%-30s%s [%s%s%s] %s\n",
-			 get_color (ctx, COLOR_BOLD),
-			 description ? description : repo_id,
-			 get_reset_color (ctx),
-			 get_color (ctx, status_color),
-			 status_text,
-			 get_reset_color (ctx),
-			 repo_id);
+	for (guint i = 0; i < repos->len; i++) {
+		PkRepoDetail *repo = g_ptr_array_index (repos, i);
+		gboolean ok = pk_repo_detail_get_enabled (repo);
+
+		g_print ("%s%s%s %s\n",
+			 pkgc_get_color (ctx, ok ? COLOR_GREEN : COLOR_RED),
+			 ok ? SYMBOL_CHECK : SYMBOL_CROSS,
+			 pkgc_get_reset_color (ctx),
+			 pkgc_repo_get_name (repo));
 	}
 }
 
 /**
  * pkgc_print_transaction:
  *
- * Print transaction information based on the output mode.
+ * Print all information about a transaction, as JSON in JSON mode.
  */
-void
+static void
 pkgc_print_transaction (PkgcliContext *ctx, PkHistoryItem *transaction)
 {
 	PkRoleEnum role;
@@ -1071,71 +1353,75 @@ pkgc_print_transaction (PkgcliContext *ctx, PkHistoryItem *transaction)
 		return;
 	}
 	g_print ("%s%s%s %s\n",
-		 get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for transaction information */
-		 _("Transaction:"), get_reset_color (ctx), tid);
+		 _("Transaction:"), pkgc_get_reset_color (ctx), tid);
 	g_print (" %s%s%s %s\n",
-		 get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for system time of the transaction */
-		 _("System time:"), get_reset_color (ctx), time_started ? time_started : "");
+		 _("System time:"), pkgc_get_reset_color (ctx), time_started ? time_started : "");
 	g_print (" %s%s%s %s%s%s\n",
-		 get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for transaction success status */
 		 _("Succeeded:"),
-		   get_reset_color (ctx),
-		   succeeded ? get_color (ctx, COLOR_GREEN) : get_color (ctx, COLOR_RED),
+		   pkgc_get_reset_color (ctx),
+		   succeeded ? pkgc_get_color (ctx, COLOR_GREEN) : pkgc_get_color (ctx, COLOR_RED),
 		   succeeded
 		   ? _("True")
-		   : _("False"), get_reset_color (ctx));
+		   : _("False"), pkgc_get_reset_color (ctx));
 	g_print (" %s%s%s %s\n",
-		 get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for transaction role */
-		 _("Role:"), get_reset_color (ctx), role_text);
+		 _("Role:"), pkgc_get_reset_color (ctx), role_text);
 
 	if (duration > 0) {
 		g_autofree gchar *duration_str = pkgc_util_format_time (duration);
 		g_print (" %s%s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for transaction duration */
-			 _("Duration:"), get_reset_color (ctx), duration_str);
+			 _("Duration:"), pkgc_get_reset_color (ctx), duration_str);
 	}
 
 	if (cmdline && cmdline[0] != '\0') {
 		g_print (" %s%s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for transaction command line */
-			 _("Command line:"), get_reset_color (ctx), cmdline);
+			 _("Command line:"), pkgc_get_reset_color (ctx), cmdline);
 	}
 
 	g_print (" %s%s%s %u\n",
-		 get_color (ctx, COLOR_BOLD),
+		 pkgc_get_color (ctx, COLOR_BOLD),
 		 /* TRANSLATORS: Label for transaction user ID */
-		 _("User ID:"), get_reset_color (ctx), uid);
+		 _("User ID:"), pkgc_get_reset_color (ctx), uid);
 
 	/* Query real name */
 	pw = getpwuid (uid);
 	if (pw != NULL) {
 		if (pw->pw_name != NULL) {
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for transaction username */
-				 _("Username:"), get_reset_color (ctx), pw->pw_name);
+				 _("Username:"), pkgc_get_reset_color (ctx), pw->pw_name);
 		}
 		if (pw->pw_gecos != NULL) {
 			g_print (" %s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
+				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for transaction real name */
-				 _("Real name:"), get_reset_color (ctx), pw->pw_gecos);
+				 _("Real name:"), pkgc_get_reset_color (ctx), pw->pw_gecos);
 		}
 	}
 
 	if (packages != NULL && packages->len > 0) {
+		g_autoptr(GPtrArray) sorted = pkgc_util_make_sorted_shallow_copy (
+		    packages,
+		    pk_console_package_sort_func);
+
 		g_print (" %s%s%s\n",
-			 get_color (ctx, COLOR_BOLD),
+			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for affected packages in transaction */
-			 _("Affected packages:"), get_reset_color (ctx));
-		for (guint i = 0; i < packages->len; i++) {
-			PkPackage *pkg = g_ptr_array_index (packages, i);
+			 _("Affected packages:"), pkgc_get_reset_color (ctx));
+		for (guint i = 0; i < sorted->len; i++) {
+			PkPackage *pkg = g_ptr_array_index (sorted, i);
 			g_autofree gchar *package = pk_package_id_to_printable (
 			    pk_package_get_id (pkg));
 			g_print ("   - %s %s\n",
@@ -1143,6 +1429,91 @@ pkgc_print_transaction (PkgcliContext *ctx, PkHistoryItem *transaction)
 				 package);
 		}
 	}
+}
+
+/**
+ * pkgc_print_transactions:
+ *
+ * Print a list of past transactions as a table with one row per
+ * transaction, or with all details in verbose and JSON mode.
+ */
+void
+pkgc_print_transactions (PkgcliContext *ctx, GPtrArray *transactions)
+{
+	g_autoptr(PkConsoleTable) table = NULL;
+	g_autofree gchar *rendered = NULL;
+
+	if (transactions == NULL || transactions->len == 0)
+		return;
+
+	if (ctx->output_mode == PKGCLI_MODE_JSON || ctx->output_mode == PKGCLI_MODE_VERBOSE) {
+		for (guint i = 0; i < transactions->len; i++) {
+			pkgc_print_transaction (ctx, g_ptr_array_index (transactions, i));
+			if (ctx->output_mode != PKGCLI_MODE_JSON && i + 1 < transactions->len)
+				g_print ("\n"); /* add some visual spacing */
+		}
+		return;
+	}
+
+	table = pk_console_table_new (6);
+	if (ctx->output_mode != PKGCLI_MODE_QUIET) {
+		/* clang-format off */
+		pk_console_table_set_header (table,
+					     /* TRANSLATORS: column header in the transaction history */
+					     _("Date"),
+					     /* TRANSLATORS: column header in the transaction history */
+					     _("Action"),
+					     "",
+					     /* TRANSLATORS: column header in the transaction history */
+					     _("Packages"),
+					     /* TRANSLATORS: column header in the transaction history */
+					     _("Duration"),
+					     /* TRANSLATORS: column header in the transaction history */
+					     _("User"));
+		/* clang-format on */
+	}
+
+	for (guint i = 0; i < transactions->len; i++) {
+		PkHistoryItem *transaction = g_ptr_array_index (transactions, i);
+		GDateTime *time_started = pk_history_item_get_time_started (transaction);
+		GPtrArray *packages = pk_history_item_get_packages (transaction);
+		gboolean succeeded = pk_history_item_get_succeeded (transaction);
+		guint duration = pk_history_item_get_duration (transaction);
+		guint uid = pk_history_item_get_uid (transaction);
+		struct passwd *pw = getpwuid (uid);
+		g_autofree gchar *date_str = NULL;
+		g_autofree gchar *n_packages_str = NULL;
+		g_autofree gchar *duration_str = NULL;
+		g_autofree gchar *user_str = NULL;
+
+		if (time_started != NULL) {
+			g_autoptr(GDateTime) local = g_date_time_to_local (time_started);
+			date_str = g_date_time_format (local, "%Y-%m-%d %H:%M");
+		}
+		if (packages != NULL && packages->len > 0)
+			n_packages_str = g_strdup_printf ("%u", packages->len);
+		if (duration > 0)
+			duration_str = pkgc_util_format_time (duration);
+		if (pw != NULL && pw->pw_name != NULL)
+			user_str = g_strdup (pw->pw_name);
+		else
+			user_str = g_strdup_printf ("%u", uid);
+
+		pk_console_table_add_row (
+		    table,
+		    date_str,
+		    pk_role_enum_to_string (pk_history_item_get_role (transaction)),
+		    succeeded ? SYMBOL_CHECK : SYMBOL_CROSS,
+		    n_packages_str,
+		    duration_str,
+		    user_str);
+		pk_console_table_set_color (table, 2, succeeded ? COLOR_GREEN : COLOR_RED);
+	}
+
+	rendered = pk_console_table_render (table,
+					    pk_console_get_width (),
+					    pkgc_can_use_colors (ctx));
+	g_print ("%s", rendered);
 }
 
 /**

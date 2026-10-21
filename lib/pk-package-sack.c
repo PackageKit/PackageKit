@@ -602,16 +602,7 @@ pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_
 static gint
 pk_package_sack_sort_compare_name_func (PkPackage **a, PkPackage **b)
 {
-	const gchar *package_id1;
-	const gchar *package_id2;
-	g_auto(GStrv) split1 = NULL;
-	g_auto(GStrv) split2 = NULL;
-
-	package_id1 = pk_package_get_id (*a);
-	package_id2 = pk_package_get_id (*b);
-	split1 = pk_package_id_split (package_id1);
-	split2 = pk_package_id_split (package_id2);
-	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
+	return pk_package_compare (*a, *b);
 }
 
 /*

@@ -27,13 +27,23 @@
 #include "pkgc-query.h"
 #include "pkgc-util.h"
 
+static gint
+pkgc_query_file_sort_func (gconstpointer a, gconstpointer b)
+{
+	return g_strcmp0 (pk_file_get_path (*(PkFile **) a), pk_file_get_path (*(PkFile **) b));
+}
+
 /**
- * pkgc_query_on_task_finished_cb:
+ * pkgc_query_finish:
+ *
+ * Print the results of a query, optionally with package summaries.
  */
 static void
-pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+pkgc_query_finish (GObject *source_object,
+		   GAsyncResult *res,
+		   PkgcliContext *ctx,
+		   gboolean show_summary)
 {
-	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) array = NULL;
@@ -55,10 +65,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 	/* Process packages */
 	array = pk_results_get_package_array (results);
-	for (guint i = 0; i < array->len; i++) {
-		PkPackage *package = PK_PACKAGE (g_ptr_array_index (array, i));
-		pkgc_print_package (ctx, package);
-	}
+	pkgc_print_packages (ctx, array, show_summary);
 
 	/* Process details */
 	g_clear_pointer (&array, g_ptr_array_unref);
@@ -99,8 +106,12 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 			pkgc_print_json (root);
 		} else {
-			for (guint j = 0; j < filelist->len; j++) {
-				PkFile *file = g_ptr_array_index (filelist, j);
+			g_autoptr(GPtrArray) sorted = pkgc_util_make_sorted_shallow_copy (
+			    filelist,
+			    pkgc_query_file_sort_func);
+
+			for (guint j = 0; j < sorted->len; j++) {
+				PkFile *file = g_ptr_array_index (sorted, j);
 				gboolean is_dir = pk_file_get_kind (file) ==
 						  PK_FILE_KIND_ENUM_DIRECTORY;
 				g_print ("%s%s\n", pk_file_get_path (file), is_dir ? "/" : "");
@@ -110,6 +121,24 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 out:
 	g_main_loop_quit (ctx->loop);
+}
+
+/**
+ * pkgc_query_on_task_finished_cb:
+ */
+static void
+pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	pkgc_query_finish (source_object, res, user_data, FALSE);
+}
+
+/**
+ * pkgc_query_on_search_finished_cb:
+ */
+static void
+pkgc_query_on_search_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	pkgc_query_finish (source_object, res, user_data, TRUE);
 }
 
 /**
@@ -139,11 +168,7 @@ pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpo
 
 		/* Process transactions */
 		array = pk_results_get_history_array (results);
-		for (guint i = 0; i < array->len; i++) {
-			PkHistoryItem *transaction = g_ptr_array_index (array, i);
-			pkgc_print_transaction (ctx, transaction);
-			g_print ("\n"); /* add some visual spacing */
-		}
+		pkgc_print_transactions (ctx, array);
 	}
 
 out:
@@ -332,7 +357,7 @@ pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 					    ctx->cancellable,
 					    pkgc_context_on_progress_cb,
 					    ctx,
-					    pkgc_query_on_task_finished_cb,
+					    pkgc_query_on_search_finished_cb,
 					    ctx);
 	} else if (g_strcmp0 (search_mode, "details") == 0) {
 		pk_task_search_details_async (PK_TASK (ctx->task),
@@ -341,7 +366,7 @@ pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 					      ctx->cancellable,
 					      pkgc_context_on_progress_cb,
 					      ctx,
-					      pkgc_query_on_task_finished_cb,
+					      pkgc_query_on_search_finished_cb,
 					      ctx);
 	} else if (g_strcmp0 (search_mode, "file") == 0) {
 		pk_task_search_files_async (PK_TASK (ctx->task),
@@ -350,7 +375,7 @@ pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 					    ctx->cancellable,
 					    pkgc_context_on_progress_cb,
 					    ctx,
-					    pkgc_query_on_task_finished_cb,
+					    pkgc_query_on_search_finished_cb,
 					    ctx);
 	} else if (g_strcmp0 (search_mode, "group") == 0) {
 		pk_task_search_groups_async (PK_TASK (ctx->task),
@@ -359,7 +384,7 @@ pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 					     ctx->cancellable,
 					     pkgc_context_on_progress_cb,
 					     ctx,
-					     pkgc_query_on_task_finished_cb,
+					     pkgc_query_on_search_finished_cb,
 					     ctx);
 	}
 
@@ -633,10 +658,7 @@ pkgc_on_updates_finished_cb (GObject *source_object, GAsyncResult *res, gpointer
 
 		/* process packages for list-updates */
 		array = pk_results_get_package_array (results);
-		for (guint i = 0; i < array->len; i++) {
-			PkPackage *package = g_ptr_array_index (array, i);
-			pkgc_print_package (ctx, package);
-		}
+		pkgc_print_packages (ctx, array, FALSE);
 
 		g_clear_pointer (&array, g_ptr_array_unref);
 

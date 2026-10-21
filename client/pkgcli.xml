@@ -514,6 +514,16 @@
           </para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><envar>COLUMNS</envar></term>
+        <listitem>
+          <para>
+            The width tables are fitted to. By default the terminal
+            width is used, or 100 columns if the output is not a terminal.
+            Use <option>--json</option> for output meant to be parsed.
+          </para>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 

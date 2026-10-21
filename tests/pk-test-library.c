@@ -21,12 +21,15 @@
 
 #include "config.h"
 
+#include <locale.h>
+#include <unistd.h>
 #include <glib-object.h>
 #include <glib/gstdio.h>
 #include <gio/gunixsocketaddress.h>
 
 #include "pk-client-helper-private.h"
 #include "pk-common.h"
+#include "pk-console-private.h"
 #include "pk-control.h"
 #include "pk-debug.h"
 #include "pk-enum.h"
@@ -35,6 +38,7 @@
 #include "pk-package.h"
 #include "pk-package-id.h"
 #include "pk-package-ids.h"
+#include "pk-package-sack.h"
 #include "pk-progress-bar.h"
 #include "pk-results.h"
 #include "pk-task-text.h"
@@ -651,6 +655,53 @@ pk_test_package_func (void)
 	g_object_unref (package);
 }
 
+static PkPackage *
+pk_test_package_new_for_id (const gchar *package_id)
+{
+	PkPackage *package = pk_package_new ();
+	g_assert_true (pk_package_set_id (package, package_id, NULL));
+	return package;
+}
+
+static void
+pk_test_package_compare_func (void)
+{
+	g_autoptr(PkPackage) bash = pk_test_package_new_for_id ("bash;5.3;amd64;repo;");
+	g_autoptr(PkPackage) bash_doc = pk_test_package_new_for_id ("bash-doc;5.3;all;repo;");
+	g_autoptr(PkPackage) foo_19 = pk_test_package_new_for_id ("foo;1.9;amd64;repo;");
+	g_autoptr(PkPackage) foo_110 = pk_test_package_new_for_id ("foo;1.10;amd64;repo;");
+	g_autoptr(PkPackage) foo_110_i386 = pk_test_package_new_for_id ("foo;1.10;i386;repo;");
+	g_autoptr(PkPackage) foo_110_other = pk_test_package_new_for_id ("foo;1.10;amd64;other;");
+	g_autoptr(PkPackageSack) sack = pk_package_sack_new ();
+	g_autoptr(GPtrArray) array = NULL;
+
+	/* name first, a longer name with the same prefix sorts after */
+	g_assert_cmpint (pk_package_compare (bash, bash_doc), <, 0);
+	g_assert_cmpint (pk_package_compare (bash_doc, bash), >, 0);
+
+	/* numbers in versions are compared by value */
+	g_assert_cmpint (pk_package_compare (foo_19, foo_110), <, 0);
+
+	/* then the architecture, the origin does not matter */
+	g_assert_cmpint (pk_package_compare (foo_110, foo_110_i386), <, 0);
+	g_assert_cmpint (pk_package_compare (foo_110, foo_110_other), ==, 0);
+
+	/* sorting a sack by name uses the same order */
+	pk_package_sack_add_package (sack, foo_110_i386);
+	pk_package_sack_add_package (sack, foo_110);
+	pk_package_sack_add_package (sack, bash_doc);
+	pk_package_sack_add_package (sack, foo_19);
+	pk_package_sack_add_package (sack, bash);
+	pk_package_sack_sort (sack, PK_PACKAGE_SACK_SORT_TYPE_NAME);
+	array = pk_package_sack_get_array (sack);
+	g_assert_cmpuint (array->len, ==, 5);
+	g_assert_true (g_ptr_array_index (array, 0) == bash);
+	g_assert_true (g_ptr_array_index (array, 1) == bash_doc);
+	g_assert_true (g_ptr_array_index (array, 2) == foo_19);
+	g_assert_true (g_ptr_array_index (array, 3) == foo_110);
+	g_assert_true (g_ptr_array_index (array, 4) == foo_110_i386);
+}
+
 /* where the offline tests keep their state files instead of /var/lib/PackageKit */
 #define PK_TEST_OFFLINE_ROOT "/tmp/pk-test-ou-root"
 
@@ -1159,6 +1210,86 @@ pk_test_object_types_func (void)
 	PK_TEST_TYPE (PkUpdateDetail, pk_update_detail_new);
 }
 
+static void
+pk_test_console_func (void)
+{
+	g_autofree gchar *old_locale = g_strdup (setlocale (LC_CTYPE, NULL));
+	gchar *text;
+	PkConsoleTable *table;
+
+	/* the width calculations need a UTF-8 locale */
+	if (setlocale (LC_CTYPE, "C.UTF-8") == NULL) {
+		g_test_skip ("C.UTF-8 locale is not available");
+		return;
+	}
+
+	/* columns are aligned, the last cell is not padded */
+	table = pk_console_table_new (3);
+	pk_console_table_set_header (table, "Name", "Version", "Summary");
+	pk_console_table_set_flexible (table, 2);
+	pk_console_table_add_row (table, "bash", "5.2", "GNU Bourne Again SHell");
+	pk_console_table_add_row (table, "zsh", "5.9.1", "Z shell");
+	text = pk_console_table_render (table, 100, FALSE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "Name  Version  Summary\n"
+			 "bash  5.2      GNU Bourne Again SHell\n"
+			 "zsh   5.9.1    Z shell\n");
+	g_free (text);
+
+	/* the flexible column is truncated to fit */
+	text = pk_console_table_render (table, 30, FALSE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "Name  Version  Summary\n"
+			 "bash  5.2      GNU Bourne A...\n"
+			 "zsh   5.9.1    Z shell\n");
+	g_free (text);
+
+	/* colors do not affect the alignment */
+	pk_console_table_set_color (table, 0, "\033[1m");
+	text = pk_console_table_render (table, 100, TRUE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "\033[1mName  Version  Summary\033[0m\n"
+			 "bash  5.2      GNU Bourne Again SHell\n"
+			 "\033[1mzsh\033[0m   5.9.1    Z shell\n");
+	g_free (text);
+	pk_console_table_free (table);
+
+	/* empty columns are left out, multibyte text is aligned by display width */
+	table = pk_console_table_new (3);
+	pk_console_table_set_header (table, "A", "B", "C");
+	pk_console_table_set_indent (table, 2);
+	pk_console_table_add_row (table, "über", NULL, "z");
+	pk_console_table_add_row (table, "yy", "", "");
+	text = pk_console_table_render (table, 100, FALSE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "  A     C\n"
+			 "  über  z\n"
+			 "  yy\n");
+	g_free (text);
+	pk_console_table_free (table);
+
+	/* wrap long lines, keep short ones and existing line breaks */
+	text = pk_console_text_wrap ("one two three four five six", 24, 4);
+	g_assert_cmpstr (text, ==, "one two three four\n    five six");
+	g_free (text);
+	text = pk_console_text_wrap ("short\nlines", 80, 2);
+	g_assert_cmpstr (text, ==, "short\n  lines");
+	g_free (text);
+
+	/* COLUMNS overrides the detected width */
+	g_setenv ("COLUMNS", "42", TRUE);
+	g_assert_cmpuint (pk_console_get_width (), ==, 42);
+	g_unsetenv ("COLUMNS");
+	if (!isatty (STDOUT_FILENO))
+		g_assert_cmpuint (pk_console_get_width (), ==, PK_CONSOLE_DEFAULT_WIDTH);
+
+	setlocale (LC_CTYPE, old_locale);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -1183,10 +1314,12 @@ main (int argc, char **argv)
 	g_test_add_func ("/libpackagekit/package-ids", pk_test_package_ids_func);
 	g_test_add_func ("/libpackagekit/results", pk_test_results_func);
 	g_test_add_func ("/libpackagekit/package", pk_test_package_func);
+	g_test_add_func ("/libpackagekit/package-compare", pk_test_package_compare_func);
 	g_test_add_func ("/libpackagekit/offline", pk_test_offline_func);
 	g_test_add_func ("/libpackagekit/offline-upgrade", pk_test_offline_upgrade_func);
 	g_test_add_func ("/libpackagekit/object-types", pk_test_object_types_func);
 	g_test_add_func ("/libpackagekit/client-helper", pk_test_client_helper_func);
+	g_test_add_func ("/libpackagekit/console", pk_test_console_func);
 
 	return g_test_run ();
 }

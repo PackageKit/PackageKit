@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <termios.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -30,6 +31,7 @@
 #include <gio/gio.h>
 #include <glib/gi18n.h>
 #include "pk-enum.h"
+#include "pk-package.h"
 
 #include "pk-console-private.h"
 
@@ -189,6 +191,401 @@ pk_console_strpad (const gchar *text, guint width)
 
 	padding = g_strnfill (padding_needed, ' ');
 	return g_strdup_printf ("%s%s", text, padding);
+}
+
+/**
+ * pk_console_get_width:
+ *
+ * Get the width of the terminal stdout is connected to. The COLUMNS
+ * environment variable takes precedence, and if stdout is not a terminal
+ * a fixed width is used, so output stays predictable when piped.
+ *
+ * Returns: the console width in columns
+ */
+guint
+pk_console_get_width (void)
+{
+	const gchar *columns;
+	struct winsize w;
+
+	columns = g_getenv ("COLUMNS");
+	if (columns != NULL) {
+		guint64 value = g_ascii_strtoull (columns, NULL, 10);
+		if (value > 0 && value <= G_MAXUINT16)
+			return (guint) value;
+	}
+
+	if (isatty (STDOUT_FILENO) && ioctl (STDOUT_FILENO, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
+		return w.ws_col;
+
+	return PK_CONSOLE_DEFAULT_WIDTH;
+}
+
+/**
+ * pk_console_text_wrap:
+ * @text: the UTF-8 text to wrap
+ * @width: maximum display width of a line in terminal columns
+ * @indent: number of spaces lines after the first one are indented by
+ *
+ * Wrap text at word boundaries, so that no line is wider than @width
+ * including its indentation. Existing line breaks are preserved, and words
+ * wider than the available space are put on a line of their own.
+ *
+ * Returns: (transfer full): the wrapped text
+ */
+gchar *
+pk_console_text_wrap (const gchar *text, guint width, guint indent)
+{
+	GString *str = g_string_new (NULL);
+	g_auto(GStrv) lines = NULL;
+	g_autofree gchar *indent_str = g_strnfill (indent, ' ');
+	guint avail;
+
+	if (text == NULL)
+		return g_string_free (str, FALSE);
+
+	/* always leave some space for the text itself */
+	avail = width > indent + 20 ? width - indent : 20;
+
+	lines = g_strsplit (text, "\n", -1);
+	for (guint i = 0; lines[i] != NULL; i++) {
+		g_auto(GStrv) words = NULL;
+		guint line_width = 0;
+
+		if (i > 0) {
+			g_string_append_c (str, '\n');
+			if (lines[i][0] != '\0')
+				g_string_append (str, indent_str);
+		}
+
+		/* keep short lines untouched, they may be preformatted */
+		if (pk_console_str_width (lines[i]) <= avail) {
+			g_string_append (str, lines[i]);
+			continue;
+		}
+
+		words = g_strsplit (lines[i], " ", -1);
+		for (guint j = 0; words[j] != NULL; j++) {
+			guint word_width = pk_console_str_width (words[j]);
+
+			if (line_width > 0 && line_width + 1 + word_width > avail) {
+				g_string_append_c (str, '\n');
+				g_string_append (str, indent_str);
+				line_width = 0;
+			} else if (j > 0) {
+				g_string_append_c (str, ' ');
+				line_width++;
+			}
+			g_string_append (str, words[j]);
+			line_width += word_width;
+		}
+	}
+
+	return g_string_free (str, FALSE);
+}
+
+/**
+ * pk_console_package_sort_func:
+ * @a: a pointer to a #PkPackage pointer
+ * @b: a pointer to a #PkPackage pointer
+ *
+ * Sort function for a #GPtrArray of #PkPackage objects.
+ */
+gint
+pk_console_package_sort_func (gconstpointer a, gconstpointer b)
+{
+	return pk_package_compare (*(PkPackage **) a, *(PkPackage **) b);
+}
+
+/* the flexible column of a table is never truncated to less than this */
+#define PK_CONSOLE_TABLE_MIN_FLEXIBLE 12
+
+typedef struct
+{
+	gchar *text;
+	gchar *color;
+} PkConsoleTableCell;
+
+struct PkConsoleTable
+{
+	guint n_columns;
+	guint indent;
+	gint flexible;
+	gchar **header;
+	GPtrArray *rows; /* of PkConsoleTableCell[n_columns] */
+};
+
+/**
+ * pk_console_table_new:
+ * @n_columns: the number of columns
+ *
+ * Create a new table for console output. Columns are aligned to the widest
+ * cell, and columns that are entirely empty are left out when rendering.
+ *
+ * Returns: (transfer full): a new #PkConsoleTable
+ */
+PkConsoleTable *
+pk_console_table_new (guint n_columns)
+{
+	PkConsoleTable *table = g_new0 (PkConsoleTable, 1);
+
+	g_return_val_if_fail (n_columns > 0, NULL);
+
+	table->n_columns = n_columns;
+	table->flexible = -1;
+	table->rows = g_ptr_array_new ();
+	return table;
+}
+
+/**
+ * pk_console_table_free:
+ * @table: a #PkConsoleTable
+ */
+void
+pk_console_table_free (PkConsoleTable *table)
+{
+	if (table == NULL)
+		return;
+
+	for (guint i = 0; i < table->rows->len; i++) {
+		PkConsoleTableCell *row = g_ptr_array_index (table->rows, i);
+		for (guint j = 0; j < table->n_columns; j++) {
+			g_free (row[j].text);
+			g_free (row[j].color);
+		}
+		g_free (row);
+	}
+	g_ptr_array_unref (table->rows);
+	g_strfreev (table->header);
+	g_free (table);
+}
+
+static gchar **
+pk_console_table_collect_va (PkConsoleTable *table, const gchar *first, va_list args)
+{
+	gchar **cells = g_new0 (gchar *, table->n_columns + 1);
+
+	for (guint i = 0; i < table->n_columns; i++) {
+		const gchar *text = i == 0 ? first : va_arg (args, const gchar *);
+		cells[i] = g_strdup (text != NULL ? text : "");
+	}
+
+	return cells;
+}
+
+/**
+ * pk_console_table_set_header:
+ * @table: a #PkConsoleTable
+ * @first: the first column title
+ * @...: the other column titles, one per column
+ *
+ * Set the column titles. An empty or %NULL title leaves the header cell blank.
+ */
+void
+pk_console_table_set_header (PkConsoleTable *table, const gchar *first, ...)
+{
+	va_list args;
+
+	g_strfreev (table->header);
+	va_start (args, first);
+	table->header = pk_console_table_collect_va (table, first, args);
+	va_end (args);
+}
+
+/**
+ * pk_console_table_set_indent:
+ * @table: a #PkConsoleTable
+ * @indent: the number of spaces to indent every line by
+ */
+void
+pk_console_table_set_indent (PkConsoleTable *table, guint indent)
+{
+	table->indent = indent;
+}
+
+/**
+ * pk_console_table_set_flexible:
+ * @table: a #PkConsoleTable
+ * @column: the column index
+ *
+ * Set the column that is truncated if the table is too wide.
+ */
+void
+pk_console_table_set_flexible (PkConsoleTable *table, guint column)
+{
+	g_return_if_fail (column < table->n_columns);
+	table->flexible = (gint) column;
+}
+
+/**
+ * pk_console_table_add_row:
+ * @table: a #PkConsoleTable
+ * @first: the text of the first cell
+ * @...: the text of the other cells, one per column
+ *
+ * Append a row. Cells that are %NULL are left empty.
+ */
+void
+pk_console_table_add_row (PkConsoleTable *table, const gchar *first, ...)
+{
+	va_list args;
+	PkConsoleTableCell *row = g_new0 (PkConsoleTableCell, table->n_columns);
+	g_auto(GStrv) cells = NULL;
+
+	va_start (args, first);
+	cells = pk_console_table_collect_va (table, first, args);
+	va_end (args);
+
+	for (guint i = 0; i < table->n_columns; i++)
+		row[i].text = g_steal_pointer (&cells[i]);
+	g_ptr_array_add (table->rows, row);
+}
+
+/**
+ * pk_console_table_set_color:
+ * @table: a #PkConsoleTable
+ * @column: the column index
+ * @color: (nullable): an ANSI escape sequence
+ *
+ * Set the color of a cell in the most recently added row. The color is
+ * only used if the table is rendered with colors enabled.
+ */
+void
+pk_console_table_set_color (PkConsoleTable *table, guint column, const gchar *color)
+{
+	PkConsoleTableCell *row;
+
+	g_return_if_fail (column < table->n_columns);
+	g_return_if_fail (table->rows->len > 0);
+
+	row = g_ptr_array_index (table->rows, table->rows->len - 1);
+	g_free (row[column].color);
+	row[column].color = g_strdup (color);
+}
+
+static void
+pk_console_table_append_cell (GString *str,
+			      const gchar *text,
+			      const gchar *color,
+			      guint width,
+			      gboolean pad)
+{
+	guint text_width;
+
+	if (text == NULL)
+		text = "";
+	text_width = pk_console_str_width (text);
+	if (color != NULL && text[0] != '\0')
+		g_string_append_printf (str, "%s%s\033[0m", color, text);
+	else
+		g_string_append (str, text);
+
+	for (guint i = text_width; pad && i < width; i++)
+		g_string_append_c (str, ' ');
+}
+
+/**
+ * pk_console_table_render:
+ * @table: a #PkConsoleTable
+ * @max_width: the maximum line width, e.g. from pk_console_get_width()
+ * @colors: %TRUE to use colors and a bold header
+ *
+ * Render the table. If it would be wider than @max_width, the flexible
+ * column is truncated, down to a minimum width.
+ *
+ * Returns: (transfer full): the rendered table, every line ending in a newline
+ */
+gchar *
+pk_console_table_render (PkConsoleTable *table, guint max_width, gboolean colors)
+{
+	GString *str = g_string_new (NULL);
+	g_autofree guint *widths = g_new0 (guint, table->n_columns);
+	g_autofree gboolean *visible = g_new0 (gboolean, table->n_columns);
+	gint last_visible = -1;
+	guint total;
+
+	/* calculate column widths, a column only exists if it has content */
+	for (guint i = 0; i < table->rows->len; i++) {
+		PkConsoleTableCell *row = g_ptr_array_index (table->rows, i);
+		for (guint j = 0; j < table->n_columns; j++) {
+			if (row[j].text[0] == '\0')
+				continue;
+			visible[j] = TRUE;
+			widths[j] = MAX (widths[j], pk_console_str_width (row[j].text));
+		}
+	}
+	for (guint j = 0; j < table->n_columns; j++) {
+		if (!visible[j])
+			continue;
+		if (table->header != NULL)
+			widths[j] = MAX (widths[j], pk_console_str_width (table->header[j]));
+		last_visible = (gint) j;
+	}
+	if (last_visible < 0)
+		return g_string_free (str, FALSE);
+
+	/* shrink the flexible column if we are too wide */
+	total = table->indent;
+	for (guint j = 0; j < table->n_columns; j++) {
+		if (visible[j])
+			total += widths[j] + (j == (guint) last_visible ? 0 : 2);
+	}
+	if (total > max_width && table->flexible >= 0 && visible[table->flexible]) {
+		guint excess = total - max_width;
+		guint min_width = MIN (widths[table->flexible], PK_CONSOLE_TABLE_MIN_FLEXIBLE);
+		widths[table->flexible] = MAX (
+		    min_width,
+		    widths[table->flexible] > excess ? widths[table->flexible] - excess : 0);
+	}
+
+	for (gint i = table->header != NULL ? -1 : 0; i < (gint) table->rows->len; i++) {
+		PkConsoleTableCell *row = i >= 0 ? g_ptr_array_index (table->rows, i) : NULL;
+		gint last_filled = -1;
+		gboolean first = TRUE;
+
+		/* do not pad the last cell of a line with spaces */
+		for (guint j = 0; j < table->n_columns; j++) {
+			const gchar *text = row != NULL ? row[j].text : table->header[j];
+			if (visible[j] && text[0] != '\0')
+				last_filled = (gint) j;
+		}
+
+		for (guint j = 0; j < table->indent; j++)
+			g_string_append_c (str, ' ');
+		if (row == NULL && colors)
+			g_string_append (str, "\033[1m");
+
+		for (guint j = 0; j < table->n_columns && (gint) j <= last_filled; j++) {
+			g_autofree gchar *truncated = NULL;
+			const gchar *text;
+			const gchar *color = NULL;
+
+			if (!visible[j])
+				continue;
+			if (!first)
+				g_string_append (str, "  ");
+			first = FALSE;
+
+			text = row != NULL ? row[j].text : table->header[j];
+			if (row != NULL && colors)
+				color = row[j].color;
+			if ((gint) j == table->flexible) {
+				truncated = pk_console_text_truncate (text, widths[j]);
+				text = truncated;
+			}
+			pk_console_table_append_cell (str,
+						      text,
+						      color,
+						      widths[j],
+						      (gint) j < last_filled);
+		}
+
+		if (row == NULL && colors)
+			g_string_append (str, "\033[0m");
+		g_string_append_c (str, '\n');
+	}
+
+	return g_string_free (str, FALSE);
 }
 
 /**

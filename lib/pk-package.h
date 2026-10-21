@@ -86,6 +86,8 @@ gboolean       pk_package_equal (PkPackage *package1,
 				 PkPackage *package2);
 gboolean       pk_package_equal_id (PkPackage *package1,
 				    PkPackage *package2);
+gint	       pk_package_compare (PkPackage *package1,
+				   PkPackage *package2);
 
 /* accessors */
 const gchar   *pk_package_get_id (PkPackage *package);

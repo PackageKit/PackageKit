@@ -24,7 +24,6 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-unix.h>
-#include <sys/ioctl.h>
 
 #include "pkgc-util.h"
 
@@ -146,7 +145,6 @@ pkgc_context_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointe
 gboolean
 pkgc_context_init (PkgcliContext *ctx, GError **error)
 {
-	struct winsize w;
 	int bar_size = 40;
 
 	if (ctx->control != NULL) {
@@ -159,10 +157,8 @@ pkgc_context_init (PkgcliContext *ctx, GError **error)
 	if (ctx->is_tty && ctx->output_mode != PKGCLI_MODE_JSON &&
 	    ctx->output_mode != PKGCLI_MODE_QUIET) {
 		/* adjust progress bar size for small terminals */
-		if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
-			gint col_diff = (gint) w.ws_col - 52;
-			bar_size = MAX (8, MIN (col_diff, bar_size));
-		}
+		gint col_diff = (gint) pk_console_get_width () - 52;
+		bar_size = MAX (8, MIN (col_diff, bar_size));
 
 		ctx->progressbar = pk_progress_bar_new ();
 		pk_progress_bar_set_size (ctx->progressbar, (guint) bar_size);

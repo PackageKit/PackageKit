@@ -29,11 +29,44 @@
 
 G_BEGIN_DECLS
 
-guint	 pk_console_str_width (const gchar *text);
-gchar	*pk_console_text_truncate (const gchar *text,
-				   guint	max_width);
-gchar	*pk_console_strpad (const gchar *text,
-			    guint	 width);
+guint  pk_console_str_width (const gchar *text);
+gchar *pk_console_text_truncate (const gchar *text,
+				 guint	      max_width);
+gchar *pk_console_strpad (const gchar *text,
+			  guint	       width);
+
+#define PK_CONSOLE_DEFAULT_WIDTH 100
+
+guint			      pk_console_get_width (void);
+gchar			     *pk_console_text_wrap (const gchar *text,
+						    guint	 width,
+						    guint	 indent);
+
+gint			      pk_console_package_sort_func (gconstpointer a,
+							    gconstpointer b);
+
+typedef struct PkConsoleTable PkConsoleTable;
+
+PkConsoleTable		     *pk_console_table_new (guint n_columns);
+void			      pk_console_table_free (PkConsoleTable *table);
+void			      pk_console_table_set_header (PkConsoleTable *table,
+							   const gchar	  *first,
+							   ...);
+void			      pk_console_table_set_indent (PkConsoleTable *table,
+							   guint	   indent);
+void			      pk_console_table_set_flexible (PkConsoleTable *table,
+							     guint	     column);
+void			      pk_console_table_add_row (PkConsoleTable *table,
+							const gchar    *first,
+							...);
+void			      pk_console_table_set_color (PkConsoleTable *table,
+							  guint		  column,
+							  const gchar	 *color);
+gchar			     *pk_console_table_render (PkConsoleTable *table,
+						       guint	       max_width,
+						       gboolean	       colors);
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (PkConsoleTable, pk_console_table_free)
 
 guint	 pk_console_get_number (const gchar *question,
 				guint	     maxnum);

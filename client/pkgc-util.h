@@ -51,22 +51,27 @@ gboolean	pkgc_util_check_connection (PkgcliContext *ctx,
 					    GError	 **error);
 gchar	       *pkgc_util_format_size (guint64 size);
 gchar	       *pkgc_util_format_time (guint seconds);
+GPtrArray      *pkgc_util_make_sorted_shallow_copy (GPtrArray	*array,
+						    GCompareFunc func);
 
 void		pkgc_print_json (json_t *root);
 
 const gchar    *pkgc_get_ansi_color (PkgcliContext *ctx,
 				     PkgcColor	    color);
 
-void		pkgc_print_package (PkgcliContext *ctx,
-				    PkPackage	  *package);
+void		pkgc_print_packages (PkgcliContext *ctx,
+				     GPtrArray	   *packages,
+				     gboolean	    show_summary);
 void		pkgc_print_package_detail (PkgcliContext *ctx,
 					   PkDetails	 *details);
 void		pkgc_print_update_detail (PkgcliContext	 *ctx,
 					  PkUpdateDetail *update);
-void		pkgc_print_repo (PkgcliContext *ctx,
-				 PkRepoDetail  *repo);
-void		pkgc_print_transaction (PkgcliContext *ctx,
-					PkHistoryItem *transaction);
+void		pkgc_print_repos (PkgcliContext *ctx,
+				  GPtrArray	*repos);
+void		pkgc_print_refreshed_repos (PkgcliContext *ctx,
+					    GPtrArray	  *repos);
+void		pkgc_print_transactions (PkgcliContext *ctx,
+					 GPtrArray     *transactions);
 void		pkgc_print_error (PkgcliContext *ctx,
 				  const char	*format,
 				  ...) G_GNUC_PRINTF (2, 3);

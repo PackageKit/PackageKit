@@ -258,19 +258,74 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info, gboolean purge)
 	return NULL;
 }
 
-static gint
-package_sort_func (gconstpointer a, gconstpointer b)
+/*
+ * pk_task_text_simulate_question_section:
+ *
+ * Map package states to the section they are listed in, so all kinds
+ * of updates end up in one section.
+ **/
+static PkInfoEnum
+pk_task_text_simulate_question_section (PkInfoEnum info)
 {
-	const gchar *package_id1;
-	const gchar *package_id2;
-	g_auto(GStrv) split1 = NULL;
-	g_auto(GStrv) split2 = NULL;
+	if (info == PK_INFO_ENUM_UPDATE_SECURITY || info == PK_INFO_ENUM_UPDATE_ENHANCEMENT)
+		return PK_INFO_ENUM_UPDATE;
+	return info;
+}
 
-	package_id1 = pk_package_get_id (*(PkPackage **) a);
-	package_id2 = pk_package_get_id (*(PkPackage **) b);
-	split1 = pk_package_id_split (package_id1);
-	split2 = pk_package_id_split (package_id2);
-	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
+/*
+ * pk_task_text_simulate_question_count:
+ **/
+static guint
+pk_task_text_simulate_question_count (GHashTable *table, PkInfoEnum info)
+{
+	GPtrArray *array = g_hash_table_lookup (table, GINT_TO_POINTER (info));
+	return array != NULL ? array->len : 0;
+}
+
+/*
+ * pk_task_text_simulate_question_summary:
+ **/
+static gchar *
+pk_task_text_simulate_question_summary (GHashTable *table)
+{
+	guint n_install = pk_task_text_simulate_question_count (table, PK_INFO_ENUM_INSTALL);
+	guint n_update = pk_task_text_simulate_question_count (table, PK_INFO_ENUM_UPDATE);
+	guint n_remove = pk_task_text_simulate_question_count (table, PK_INFO_ENUM_REMOVE) +
+			 pk_task_text_simulate_question_count (table, PK_INFO_ENUM_OBSOLETE);
+	guint n_downgrade = pk_task_text_simulate_question_count (table, PK_INFO_ENUM_DOWNGRADE);
+	guint n_reinstall = pk_task_text_simulate_question_count (table, PK_INFO_ENUM_REINSTALL);
+	g_autoptr(GPtrArray) parts = g_ptr_array_new_with_free_func (g_free);
+
+	g_ptr_array_add (
+	    parts,
+	    /* TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove" */
+	    g_strdup_printf (ngettext ("%u to install", "%u to install", n_install), n_install));
+	g_ptr_array_add (
+	    parts,
+	    /* TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove" */
+	    g_strdup_printf (ngettext ("%u to update", "%u to update", n_update), n_update));
+	g_ptr_array_add (
+	    parts,
+	    /* TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove" */
+	    g_strdup_printf (ngettext ("%u to remove", "%u to remove", n_remove), n_remove));
+	if (n_downgrade > 0) {
+		g_ptr_array_add (
+		    parts,
+		    /* TRANSLATORS: part of the transaction summary, only shown if packages are downgraded */
+		    g_strdup_printf (ngettext ("%u to downgrade", "%u to downgrade", n_downgrade),
+				     n_downgrade));
+	}
+	if (n_reinstall > 0) {
+		g_ptr_array_add (
+		    parts,
+		    /* TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled */
+		    g_strdup_printf (ngettext ("%u to reinstall", "%u to reinstall", n_reinstall),
+				     n_reinstall));
+	}
+	g_ptr_array_add (parts, NULL);
+
+	/* TRANSLATORS: separator between the parts of the transaction summary */
+	return g_strjoinv (_(", "), (gchar **) parts->pdata);
 }
 
 /**
@@ -279,12 +334,24 @@ package_sort_func (gconstpointer a, gconstpointer b)
 static void
 pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
-	guint max_width = 0;
 	gboolean ret;
-	PkPackage *package;
+	guint width;
+	g_autofree gchar *summary_line = NULL;
 	g_autoptr(GPtrArray) array = NULL;
 	g_autoptr(GHashTable) table = NULL;
 	g_autoptr(GList) list = NULL;
+	g_autoptr(GArray) sections = NULL;
+	/* clang-format off */
+	const PkInfoEnum section_order[] = {
+		PK_INFO_ENUM_REMOVE,
+		PK_INFO_ENUM_OBSOLETE,
+		PK_INFO_ENUM_DOWNGRADE,
+		PK_INFO_ENUM_REINSTALL,
+		PK_INFO_ENUM_UPDATE,
+		PK_INFO_ENUM_INSTALL,
+		PK_INFO_ENUM_UNTRUSTED,
+	};
+	/* clang-format on */
 
 	/* clear new line */
 	g_print ("\n");
@@ -292,66 +359,50 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	/* get data */
 	array = pk_results_get_package_array (results);
 
-	/* put data in a hash table for easier sorting */
+	/* group the packages by what happens to them */
 	table = g_hash_table_new_full (g_direct_hash,
 				       g_direct_equal,
 				       NULL,
 				       (GDestroyNotify) g_ptr_array_unref);
 	for (guint i = 0; i < array->len; i++) {
-		PkInfoEnum info;
-		g_autoptr(GPtrArray) package_array = NULL;
+		PkPackage *package = g_ptr_array_index (array, i);
+		PkInfoEnum info = pk_task_text_simulate_question_section (
+		    pk_package_get_info (package));
+		GPtrArray *package_array = g_hash_table_lookup (table, GINT_TO_POINTER (info));
 
-		package = g_ptr_array_index (array, i);
-		g_object_get (package, "info", &info, NULL);
-
-		if (g_hash_table_contains (table, GINT_TO_POINTER (info)))
-			package_array = g_ptr_array_ref (
-			    g_hash_table_lookup (table, GINT_TO_POINTER (info)));
-		else
+		if (package_array == NULL) {
 			package_array = g_ptr_array_new_with_free_func (g_object_unref);
+			g_hash_table_insert (table, GINT_TO_POINTER (info), package_array);
+		}
 		g_ptr_array_add (package_array, g_object_ref (package));
-		g_hash_table_insert (table,
-				     GINT_TO_POINTER (info),
-				     g_ptr_array_ref (package_array));
 	}
 
-	/* calculate the maximum package name width for proper alignment */
-	max_width = 0;
+	/* show the sections in a fixed order, unknown ones last */
+	sections = g_array_new (FALSE, FALSE, sizeof (PkInfoEnum));
+	for (guint i = 0; i < G_N_ELEMENTS (section_order); i++) {
+		if (g_hash_table_contains (table, GINT_TO_POINTER (section_order[i])))
+			g_array_append_val (sections, section_order[i]);
+	}
 	list = g_hash_table_get_keys (table);
 	for (GList *l = list; l != NULL; l = l->next) {
-		GPtrArray *package_array;
+		PkInfoEnum info = GPOINTER_TO_INT (l->data);
+		gboolean known = FALSE;
 
-		package_array = g_hash_table_lookup (table, l->data);
-		for (guint i = 0; i < package_array->len; i++) {
-			guint width;
-			g_autofree gchar *package_id = NULL;
-			g_autofree gchar *printable = NULL;
-
-			package = g_ptr_array_index (package_array, i);
-			g_object_get (package, "package-id", &package_id, NULL);
-			/* NOTE: We could put this into an array to not invoke pk_package_id_to_printable()
-			 * multiple times and save allocations, but this is simpler code.
-			 * If this becomes a problem in future, PkPackage should get a function to
-			 * generate & cache a printable name, */
-			printable = pk_package_id_to_printable (package_id);
-
-			width = pk_console_str_width (printable);
-			if (width > max_width)
-				max_width = width;
-		}
+		for (guint i = 0; i < G_N_ELEMENTS (section_order); i++)
+			known = known || section_order[i] == info;
+		if (!known)
+			g_array_append_val (sections, info);
 	}
 
-	/* add a minimum spacing of 2 characters between columns */
-	max_width += 2;
-
-	/* go over the data we now have in a hash table and print */
-	for (GList *l = list; l != NULL; l = l->next) {
-		PkInfoEnum info;
-		GPtrArray *package_array;
+	width = pk_console_get_width ();
+	for (guint s = 0; s < sections->len; s++) {
+		PkInfoEnum info = g_array_index (sections, PkInfoEnum, s);
+		GPtrArray *package_array = g_hash_table_lookup (table, GINT_TO_POINTER (info));
+		g_autoptr(PkConsoleTable) pkg_table = pk_console_table_new (5);
+		g_autofree gchar *rendered = NULL;
 		const gchar *title;
 
 		/* new header */
-		info = GPOINTER_TO_INT (l->data);
 		title = pk_task_text_simulate_question_type_to_string (info,
 								       pk_task_get_purge (task));
 		if (title == NULL) {
@@ -360,29 +411,29 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		}
 		g_print ("%s\n", title);
 
-		/* sort the packages and print */
-		package_array = g_hash_table_lookup (table, l->data);
-		g_ptr_array_sort (package_array, package_sort_func);
+		/* sort the packages and print them as a table */
+		g_ptr_array_sort (package_array, pk_console_package_sort_func);
+		pk_console_table_set_indent (pkg_table, 2);
+		pk_console_table_set_flexible (pkg_table, 4);
 		for (guint i = 0; i < package_array->len; i++) {
-			g_autofree gchar *package_id = NULL;
-			g_autofree gchar *summary = NULL;
-			g_autofree gchar *printable = NULL;
-			g_autofree gchar *printable_pad = NULL;
+			PkPackage *package = g_ptr_array_index (package_array, i);
+			g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
 
-			package = g_ptr_array_index (package_array, i);
-			g_object_get (package,
-				      "package-id",
-				      &package_id,
-				      "summary",
-				      &summary,
-				      NULL);
-			printable = pk_package_id_to_printable (package_id);
-
-			/* pad the package name to align descriptions */
-			printable_pad = pk_console_strpad (printable, max_width);
-			g_print (" %s%s\n", printable_pad, summary);
+			if (split == NULL)
+				continue;
+			pk_console_table_add_row (pkg_table,
+						  split[PK_PACKAGE_ID_NAME],
+						  split[PK_PACKAGE_ID_VERSION],
+						  split[PK_PACKAGE_ID_ARCH],
+						  split[PK_PACKAGE_ID_ORIGIN],
+						  pk_package_get_summary (package));
 		}
+		rendered = pk_console_table_render (pkg_table, width, FALSE);
+		g_print ("%s\n", rendered);
 	}
+
+	summary_line = pk_task_text_simulate_question_summary (table);
+	g_print ("%s\n", summary_line);
 
 	/* TRANSLATORS: ask the user if the proposed changes are okay */
 	ret = pk_console_get_prompt (_("Proceed with changes?"), FALSE);

@@ -208,24 +208,18 @@ pkgc_manage_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoi
 
 		/* show packages that were processed */
 		pkgs = pk_results_get_package_array (results);
-		for (guint i = 0; i < pkgs->len; i++) {
-			PkPackage *package = PK_PACKAGE (g_ptr_array_index (pkgs, i));
-			pkgc_print_package (ctx, package);
-		}
+		pkgc_print_packages (ctx, pkgs, FALSE);
 
 		/* show transactions */
 		tas = pk_results_get_history_array (results);
-		for (guint i = 0; i < tas->len; i++) {
-			PkHistoryItem *transaction = PK_HISTORY_ITEM (g_ptr_array_index (tas, i));
-			pkgc_print_transaction (ctx, transaction);
-		}
+		pkgc_print_transactions (ctx, tas);
 
 		/* repo_detail */
 		repos = pk_results_get_repo_detail_array (results);
-		for (guint i = 0; i < repos->len; i++) {
-			PkRepoDetail *repo = PK_REPO_DETAIL (g_ptr_array_index (repos, i));
-			pkgc_print_repo (ctx, repo);
-		}
+		if (pk_results_get_role (results) == PK_ROLE_ENUM_REFRESH_CACHE)
+			pkgc_print_refreshed_repos (ctx, repos);
+		else
+			pkgc_print_repos (ctx, repos);
 
 		pkgc_manage_print_require_restart (ctx, results);
 	}

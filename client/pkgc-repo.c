@@ -53,10 +53,7 @@ pkgc_repo_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoint
 
 		/* Process repo details */
 		array = pk_results_get_repo_detail_array (results);
-		for (guint i = 0; i < array->len; i++) {
-			PkRepoDetail *repo = g_ptr_array_index (array, i);
-			pkgc_print_repo (ctx, repo);
-		}
+		pkgc_print_repos (ctx, array);
 	}
 
 out:
