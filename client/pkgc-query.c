@@ -108,9 +108,14 @@ pkgc_query_finish (PkgcliContext *ctx,
 
 			for (guint j = 0; j < sorted->len; j++) {
 				PkFile *file = g_ptr_array_index (sorted, j);
+				const gchar *path = pk_file_get_path (file);
 				gboolean is_dir = pk_file_get_kind (file) ==
 						  PK_FILE_KIND_ENUM_DIRECTORY;
-				g_print ("%s%s\n", pk_file_get_path (file), is_dir ? "/" : "");
+
+				/* mark directories, unless the path already ends in a slash like "/" */
+				g_print ("%s%s\n",
+					 path,
+					 is_dir && !g_str_has_suffix (path, "/") ? "/" : "");
 			}
 		}
 	}
