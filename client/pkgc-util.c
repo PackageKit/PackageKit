@@ -166,9 +166,9 @@ pkgc_util_dedent (const gchar *text)
 	}
 
 	for (guint i = 0; lines[i] != NULL; i++) {
-		/* blank lines may be shorter than the common indentation */
 		if (i > 0)
 			g_string_append_c (str, '\n');
+		/* blank lines may be shorter than the common indentation */
 		g_string_append (str, lines[i] + MIN (strlen (lines[i]), common));
 	}
 
@@ -653,18 +653,13 @@ pkgc_print_package_json (PkPackage *package)
 {
 	PkInfoEnum info = pk_package_get_info (package);
 	PkSeverityEnum severity = pk_package_get_update_severity (package);
-	g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
-	g_autoptr(json_t) root = NULL;
+	g_autoptr(json_t) root = json_object ();
 
-	if (split == NULL)
-		return;
-
-	root = json_object ();
-	json_object_set_new (root, "name", json_string (split[PK_PACKAGE_ID_NAME]));
-	json_object_set_new (root, "version", json_string (split[PK_PACKAGE_ID_VERSION]));
-	json_object_set_new (root, "arch", json_string (split[PK_PACKAGE_ID_ARCH]));
-	json_object_set_new (root, "repo", json_string (split[PK_PACKAGE_ID_ORIGIN]));
-	json_object_set_new (root, "data", json_string (split[PK_PACKAGE_ID_DATA]));
+	json_object_set_new (root, "name", json_string (pk_package_get_name (package)));
+	json_object_set_new (root, "version", json_string (pk_package_get_version (package)));
+	json_object_set_new (root, "arch", json_string (pk_package_get_arch (package)));
+	json_object_set_new (root, "repo", json_string (pk_package_get_origin (package)));
+	json_object_set_new (root, "data", json_string (pk_package_get_data (package)));
 	json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
 	if (severity != PK_SEVERITY_ENUM_NONE)
 		json_object_set_new (root,

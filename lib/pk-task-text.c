@@ -224,8 +224,7 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info, gboolean purge)
 		return _("The following packages have to be installed:");
 	}
 
-	if (info == PK_INFO_ENUM_UPDATE || info == PK_INFO_ENUM_UPDATE_SECURITY ||
-	    info == PK_INFO_ENUM_UPDATE_ENHANCEMENT) {
+	if (info == PK_INFO_ENUM_UPDATE) {
 		/* TRANSLATORS: When processing, we might have to update other dependencies */
 		return _("The following packages have to be updated:");
 	}
