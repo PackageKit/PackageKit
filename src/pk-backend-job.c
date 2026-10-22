@@ -1792,7 +1792,7 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 
 	/* form PkDistroUpgrade struct */
 	item = pk_distro_upgrade_new ();
-	g_object_set (item, "state", state, "name", name, "summary", summary, NULL);
+	g_object_set (item, "state", state, "id", name, "summary", summary, NULL);
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,

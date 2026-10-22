@@ -709,7 +709,7 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 	pk_results_add_distro_upgrade (transaction->results, item);
 
 	/* get data */
-	g_object_get (item, "state", &state, "name", &name, "summary", &summary, NULL);
+	g_object_get (item, "state", &state, "id", &name, "summary", &summary, NULL);
 
 	/* emit */
 	g_debug ("emitting distro-upgrade %s, %s, %s",
