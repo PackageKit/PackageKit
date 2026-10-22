@@ -2,11 +2,6 @@
 subdir('config')
 subdir('policy')
 
-install_data(
-    'pk-upgrade-distro.sh',
-    install_dir: join_paths(get_option('datadir'), 'packagekit'),
-)
-
 dbus_config_data = configuration_data()
 dbus_config_data.set('PACKAGEKIT_USER', get_option('daemon-user'))
 dbus_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('libexecdir')))

@@ -196,7 +196,6 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_datadir}/packagekit/Vendor.conf
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
-%{_datadir}/packagekit/pk-upgrade-distro.sh
 %{_metainfodir}/org.freedesktop.packagekit.metainfo.xml
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
