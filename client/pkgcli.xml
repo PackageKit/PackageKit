@@ -163,6 +163,8 @@
           <para>
             Show a list of recent package management transactions (like  installation,
             removal, and update operations performed on the system).
+            Use the <option>--details</option> flag to show all details of every
+            transaction, including the packages it affected.
           </para>
         </listitem>
       </varlistentry>

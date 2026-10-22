@@ -73,7 +73,8 @@ void		pkgc_print_repos (PkgcliContext *ctx,
 void		pkgc_print_refreshed_repos (PkgcliContext *ctx,
 					    GPtrArray	  *repos);
 void		pkgc_print_transactions (PkgcliContext *ctx,
-					 GPtrArray     *transactions);
+					 GPtrArray     *transactions,
+					 gboolean	details);
 void		pkgc_print_error (PkgcliContext *ctx,
 				  const char	*format,
 				  ...) G_GNUC_PRINTF (2, 3);

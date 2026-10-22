@@ -1437,10 +1437,10 @@ pkgc_print_transaction (PkgcliContext *ctx, PkHistoryItem *transaction)
  * pkgc_print_transactions:
  *
  * Print a list of past transactions as a table with one row per
- * transaction, or with all details in verbose and JSON mode.
+ * transaction, or with all details if @details is set and in JSON mode.
  */
 void
-pkgc_print_transactions (PkgcliContext *ctx, GPtrArray *transactions)
+pkgc_print_transactions (PkgcliContext *ctx, GPtrArray *transactions, gboolean details)
 {
 	g_autoptr(PkConsoleTable) table = NULL;
 	g_autofree gchar *rendered = NULL;
@@ -1448,7 +1448,7 @@ pkgc_print_transactions (PkgcliContext *ctx, GPtrArray *transactions)
 	if (transactions == NULL || transactions->len == 0)
 		return;
 
-	if (ctx->output_mode == PKGCLI_MODE_JSON || ctx->output_mode == PKGCLI_MODE_VERBOSE) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON || details) {
 		for (guint i = 0; i < transactions->len; i++) {
 			pkgc_print_transaction (ctx, g_ptr_array_index (transactions, i));
 			if (ctx->output_mode != PKGCLI_MODE_JSON && i + 1 < transactions->len)

@@ -212,7 +212,7 @@ pkgc_manage_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoi
 
 		/* show transactions */
 		tas = pk_results_get_history_array (results);
-		pkgc_print_transactions (ctx, tas);
+		pkgc_print_transactions (ctx, tas, FALSE);
 
 		/* repo_detail */
 		repos = pk_results_get_repo_detail_array (results);

@@ -169,12 +169,17 @@ pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpo
 }
 
 /**
- * pkgc_query_on_history_finished_cb:
+ * pkgc_query_history_finish:
+ *
+ * Print the transaction history, optionally with all details of every
+ * transaction.
  */
 static void
-pkgc_query_on_history_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+pkgc_query_history_finish (GObject *source_object,
+			   GAsyncResult *res,
+			   PkgcliContext *ctx,
+			   gboolean details)
 {
-	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 
@@ -195,11 +200,31 @@ pkgc_query_on_history_finished_cb (GObject *source_object, GAsyncResult *res, gp
 
 		/* Process transactions */
 		array = pk_results_get_history_array (results);
-		pkgc_print_transactions (ctx, array);
+		pkgc_print_transactions (ctx, array, details);
 	}
 
 out:
 	g_main_loop_quit (ctx->loop);
+}
+
+/**
+ * pkgc_query_on_history_finished_cb:
+ */
+static void
+pkgc_query_on_history_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	pkgc_query_history_finish (source_object, res, user_data, FALSE);
+}
+
+/**
+ * pkgc_query_on_history_details_finished_cb:
+ */
+static void
+pkgc_query_on_history_details_finished_cb (GObject *source_object,
+					   GAsyncResult *res,
+					   gpointer user_data)
+{
+	pkgc_query_history_finish (source_object, res, user_data, TRUE);
 }
 
 /**
@@ -295,7 +320,17 @@ static gint
 pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
+	gboolean details = FALSE;
 	guint limit = 10;
+
+	/* clang-format off */
+	const GOptionEntry options[] = {
+		{ "details", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &details,
+		  /* TRANSLATORS: Option of pkgcli history */
+		  _("Show all details of every transaction"), NULL },
+		{ NULL, 0, 0, 0, NULL, NULL, NULL }
+	};
+	/* clang-format on */
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
@@ -304,6 +339,8 @@ pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	    "[LIMIT]",
 	    /* TRANSLATORS: Description for pkgcli history */
 	    _("Show recent package management transactions."));
+	g_option_context_add_main_entries (option_context, options, NULL);
+
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -323,7 +360,8 @@ pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 				     ctx->cancellable,
 				     pkgc_context_on_progress_cb,
 				     ctx,
-				     pkgc_query_on_history_finished_cb,
+				     details ? pkgc_query_on_history_details_finished_cb
+					     : pkgc_query_on_history_finished_cb,
 				     ctx);
 
 	g_main_loop_run (ctx->loop);
