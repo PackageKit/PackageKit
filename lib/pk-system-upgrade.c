@@ -224,8 +224,7 @@ pk_system_upgrade_get_kind (PkSystemUpgrade *system_upgrade)
 {
 	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
-	g_return_val_if_fail (PK_IS_SYSTEM_UPGRADE (system_upgrade),
-			      PK_RELEASE_KIND_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_SYSTEM_UPGRADE (system_upgrade), PK_RELEASE_KIND_ENUM_UNKNOWN);
 
 	return priv->kind;
 }
@@ -542,13 +541,13 @@ pk_system_upgrade_new (void)
  **/
 PkSystemUpgrade *
 pk_system_upgrade_new_full (const gchar *id,
-			const gchar *os_id,
-			const gchar *version,
-			const gchar *name,
-			const gchar *summary,
-			PkReleaseKindEnum kind,
-			guint64 download_size,
-			const gchar *url)
+			    const gchar *os_id,
+			    const gchar *version,
+			    const gchar *name,
+			    const gchar *summary,
+			    PkReleaseKindEnum kind,
+			    guint64 download_size,
+			    const gchar *url)
 {
 	g_return_val_if_fail (id != NULL, NULL);
 

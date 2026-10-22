@@ -1658,10 +1658,11 @@ pk_transaction_system_upgrade_cb (PkBackendJob *job,
 				       "kind",
 				       g_variant_new_uint32 (pk_system_upgrade_get_kind (item)));
 	if (pk_system_upgrade_get_download_size (item) > 0)
-		g_variant_builder_add (&dict,
-				       "{sv}",
-				       "download-size",
-				       g_variant_new_uint64 (pk_system_upgrade_get_download_size (item)));
+		g_variant_builder_add (
+		    &dict,
+		    "{sv}",
+		    "download-size",
+		    g_variant_new_uint64 (pk_system_upgrade_get_download_size (item)));
 	pk_transaction_dict_add_string (&dict, "url", pk_system_upgrade_get_url (item));
 	g_dbus_connection_emit_signal (transaction->connection,
 				       NULL,

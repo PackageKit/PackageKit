@@ -865,7 +865,7 @@ const gchar	     *pk_group_enum_to_string (PkGroupEnum group);
 PkFilterEnum	      pk_filter_enum_from_string (const gchar *filter);
 const gchar	     *pk_filter_enum_to_string (PkFilterEnum filter);
 
-PkReleaseKindEnum   pk_release_kind_enum_from_string (const gchar *kind);
+PkReleaseKindEnum     pk_release_kind_enum_from_string (const gchar *kind);
 const gchar	     *pk_release_kind_enum_to_string (PkReleaseKindEnum kind);
 
 PkAuthorizeEnum	      pk_authorize_type_enum_from_string (const gchar *authorize_type);

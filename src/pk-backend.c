@@ -1435,9 +1435,7 @@ pk_backend_upgrade_system (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
-	pk_backend_job_set_parameters (
-	    job,
-	    g_variant_new ("(ts)", transaction_flags, upgrade_id));
+	pk_backend_job_set_parameters (job, g_variant_new ("(ts)", transaction_flags, upgrade_id));
 	backend->desc->run_job (backend, job);
 }
 

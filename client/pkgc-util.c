@@ -1137,7 +1137,8 @@ pkgc_print_os_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
 		const gchar *summary = pk_system_upgrade_get_summary (upgrade);
 		const gchar *url = pk_system_upgrade_get_url (upgrade);
 		guint64 download_size = pk_system_upgrade_get_download_size (upgrade);
-		const gchar *kind = pk_release_kind_enum_to_string (pk_system_upgrade_get_kind (upgrade));
+		const gchar *kind = pk_release_kind_enum_to_string (
+		    pk_system_upgrade_get_kind (upgrade));
 
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			g_autoptr(json_t) root = json_object ();
@@ -1165,20 +1166,23 @@ pkgc_print_os_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
 			 /* TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44" */
 			 _("Upgrade:"), pkgc_get_reset_color (ctx), id);
 		if (name && name[0] != '\0')
-			g_print ("%s%s%s %s\n",
-				 pkgc_get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44" */
-				 _("Name:"), pkgc_get_reset_color (ctx), name);
+			g_print (
+			    "%s%s%s %s\n",
+			    pkgc_get_color (ctx, COLOR_BOLD),
+			    /* TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44" */
+			    _("Name:"), pkgc_get_reset_color (ctx), name);
 		if (os_id && os_id[0] != '\0')
-			g_print ("%s%s%s %s\n",
-				 pkgc_get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora" */
-				 _("Operating system:"), pkgc_get_reset_color (ctx), os_id);
+			g_print (
+			    "%s%s%s %s\n",
+			    pkgc_get_color (ctx, COLOR_BOLD),
+			    /* TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora" */
+			    _("Operating system:"), pkgc_get_reset_color (ctx), os_id);
 		if (version && version[0] != '\0')
-			g_print ("%s%s%s %s\n",
-				 pkgc_get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for the version of an OS release, e.g. "44" */
-				 _("Version:"), pkgc_get_reset_color (ctx), version);
+			g_print (
+			    "%s%s%s %s\n",
+			    pkgc_get_color (ctx, COLOR_BOLD),
+			    /* TRANSLATORS: Label for the version of an OS release, e.g. "44" */
+			    _("Version:"), pkgc_get_reset_color (ctx), version);
 		g_print ("%s%s%s %s\n",
 			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for the kind of an OS release, e.g. "stable" */

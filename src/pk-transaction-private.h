@@ -46,7 +46,7 @@ gboolean pk_transaction_filter_check (const gchar *filter,
 gboolean pk_transaction_strvalidate (const gchar *textr,
 				     GError	**error);
 gboolean pk_transaction_upgrade_id_validate (const gchar *upgrade_id,
-					    GError     **error);
+					     GError	**error);
 gboolean pk_transaction_set_tid (PkTransaction *transaction,
 				 const gchar   *tid);
 

@@ -454,17 +454,17 @@ pk_backend_protocol_get_enum (json_t *obj,
 				      error)
 
 /* Lazy hack: the PK_*_ENUM_UNKNOWN constants do not share a naming scheme, so map them */
-#define pk_status_ENUM_UNKNOWN_VALUE	     PK_STATUS_ENUM_UNKNOWN
-#define pk_info_ENUM_UNKNOWN_VALUE	     PK_INFO_ENUM_UNKNOWN
-#define pk_severity_ENUM_UNKNOWN_VALUE	     PK_SEVERITY_ENUM_NONE
-#define pk_restart_ENUM_UNKNOWN_VALUE	     PK_RESTART_ENUM_UNKNOWN
-#define pk_error_ENUM_UNKNOWN_VALUE	     PK_ERROR_ENUM_UNKNOWN
-#define pk_group_ENUM_UNKNOWN_VALUE	     PK_GROUP_ENUM_UNKNOWN
-#define pk_update_state_ENUM_UNKNOWN_VALUE   PK_UPDATE_STATE_ENUM_UNKNOWN
-#define pk_sig_type_ENUM_UNKNOWN_VALUE	     PK_SIGTYPE_ENUM_UNKNOWN
+#define pk_status_ENUM_UNKNOWN_VALUE	   PK_STATUS_ENUM_UNKNOWN
+#define pk_info_ENUM_UNKNOWN_VALUE	   PK_INFO_ENUM_UNKNOWN
+#define pk_severity_ENUM_UNKNOWN_VALUE	   PK_SEVERITY_ENUM_NONE
+#define pk_restart_ENUM_UNKNOWN_VALUE	   PK_RESTART_ENUM_UNKNOWN
+#define pk_error_ENUM_UNKNOWN_VALUE	   PK_ERROR_ENUM_UNKNOWN
+#define pk_group_ENUM_UNKNOWN_VALUE	   PK_GROUP_ENUM_UNKNOWN
+#define pk_update_state_ENUM_UNKNOWN_VALUE PK_UPDATE_STATE_ENUM_UNKNOWN
+#define pk_sig_type_ENUM_UNKNOWN_VALUE	   PK_SIGTYPE_ENUM_UNKNOWN
 #define pk_release_kind_ENUM_UNKNOWN_VALUE PK_RELEASE_KIND_ENUM_UNKNOWN
-#define pk_role_ENUM_UNKNOWN_VALUE	     PK_ROLE_ENUM_UNKNOWN
-#define pk_issue_kind_ENUM_UNKNOWN_VALUE     PK_ISSUE_KIND_ENUM_UNKNOWN
+#define pk_role_ENUM_UNKNOWN_VALUE	   PK_ROLE_ENUM_UNKNOWN
+#define pk_issue_kind_ENUM_UNKNOWN_VALUE   PK_ISSUE_KIND_ENUM_UNKNOWN
 
 /**
  * pk_backend_protocol_get_issues:
@@ -923,7 +923,11 @@ pk_backend_protocol_handle_system_upgrades (json_t *root, PkBackendJob *job, GEr
 		    !pk_backend_protocol_get_string (item, "name", TRUE, &name, error) ||
 		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error) ||
 		    !pk_backend_protocol_get_string (item, "url", TRUE, &url, error) ||
-		    !pk_backend_protocol_get_int (item, "download_size", TRUE, &download_size, error))
+		    !pk_backend_protocol_get_int (item,
+						  "download_size",
+						  TRUE,
+						  &download_size,
+						  error))
 			return FALSE;
 		upgrade = pk_system_upgrade_new_full (id,
 						      os_id,
@@ -931,7 +935,8 @@ pk_backend_protocol_handle_system_upgrades (json_t *root, PkBackendJob *job, GEr
 						      name,
 						      summary,
 						      kind,
-						      download_size > 0 ? (guint64) download_size : 0,
+						      download_size > 0 ? (guint64) download_size
+									: 0,
 						      url);
 		pk_backend_job_system_upgrade (job, upgrade);
 	}

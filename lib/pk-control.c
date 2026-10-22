@@ -1957,11 +1957,11 @@ pk_control_class_init (PkControlClass *klass)
 	 * Since: 2.0.0
 	 */
 	obj_properties[PROP_OS_ID] = g_param_spec_string ("os-id",
-							      NULL,
-							      NULL,
-							      NULL,
-							      G_PARAM_READWRITE |
-								  G_PARAM_STATIC_STRINGS);
+							  NULL,
+							  NULL,
+							  NULL,
+							  G_PARAM_READWRITE |
+							      G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkControl:connected:

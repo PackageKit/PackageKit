@@ -186,7 +186,8 @@ gchar *_tid = NULL;
 static void
 pk_test_os_rdns_func (void)
 {
-	const struct {
+	const struct
+	{
 		const gchar *url;
 		const gchar *suffix;
 		const gchar *expected;

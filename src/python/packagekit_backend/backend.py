@@ -371,8 +371,17 @@ class Backend:
             'repo-details', {'repo_id': repo_id, 'description': description, 'enabled': enabled}
         )
 
-    def system_upgrade(self, id, kind, version=None, os_id=None, name=None,
-                   summary=None, download_size=None, url=None):
+    def system_upgrade(
+        self,
+        id,
+        kind,
+        version=None,
+        os_id=None,
+        name=None,
+        summary=None,
+        download_size=None,
+        url=None,
+    ):
         """Report an OS release this system can be upgraded to.
 
         ``id`` is what ``upgrade_system`` receives as ``upgrade_id``; ``kind`` is
@@ -380,11 +389,19 @@ class Backend:
         component ID of the target OS (the daemon fills in the running OS when
         omitted) and ``version`` the AppStream release version.
         """
-        self._queue('system-upgrades', {
-            'id': id, 'kind': kind, 'version': version, 'os_id': os_id,
-            'name': name, 'summary': summary, 'download_size': download_size,
-            'url': url,
-        })
+        self._queue(
+            'system-upgrades',
+            {
+                'id': id,
+                'kind': kind,
+                'version': version,
+                'os_id': os_id,
+                'name': name,
+                'summary': summary,
+                'download_size': download_size,
+                'url': url,
+            },
+        )
 
     def error(self, code, details=''):
         """Fail the job with an error code; the job still runs until the method returns."""

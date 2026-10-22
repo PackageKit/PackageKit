@@ -1399,7 +1399,9 @@ pk_test_spawn_module_repo_detail_cb (PkBackendJob *job, PkRepoDetail *item, gpoi
 }
 
 static void
-pk_test_spawn_module_system_upgrade_cb (PkBackendJob *job, PkSystemUpgrade *item, gpointer user_data)
+pk_test_spawn_module_system_upgrade_cb (PkBackendJob *job,
+					PkSystemUpgrade *item,
+					gpointer user_data)
 {
 	sm_system_upgrades++;
 	g_assert_cmpstr (pk_system_upgrade_get_id (item), ==, "test-2");

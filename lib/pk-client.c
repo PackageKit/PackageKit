@@ -2204,16 +2204,15 @@ pk_client_call_role_method (PkClientState *state)
 				   pk_client_method_cb,
 				   g_object_ref (state));
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		g_dbus_proxy_call (state->proxy,
-				   "UpgradeSystem",
-				   g_variant_new ("(ts)",
-						  state->transaction_flags,
-						  state->upgrade_id),
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   g_object_ref (state));
+		g_dbus_proxy_call (
+		    state->proxy,
+		    "UpgradeSystem",
+		    g_variant_new ("(ts)", state->transaction_flags, state->upgrade_id),
+		    G_DBUS_CALL_FLAGS_NONE,
+		    PK_CLIENT_DBUS_METHOD_TIMEOUT,
+		    state->cancellable,
+		    pk_client_method_cb,
+		    g_object_ref (state));
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
 		g_dbus_proxy_call (state->proxy,
 				   "RepairSystem",

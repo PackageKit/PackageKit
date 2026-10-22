@@ -203,7 +203,7 @@ void	       pk_backend_job_details (PkBackendJob *job,
 void	       pk_backend_job_files (PkBackendJob *job,
 				     const gchar  *package_id,
 				     GPtrArray	  *files);
-void	       pk_backend_job_system_upgrade (PkBackendJob	  *job,
+void	       pk_backend_job_system_upgrade (PkBackendJob    *job,
 					      PkSystemUpgrade *upgrade);
 void	       pk_backend_job_error_code (PkBackendJob *job,
 					  PkErrorEnum	code,

@@ -68,26 +68,26 @@ struct _PkSystemUpgradeClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		    pk_system_upgrade_get_type (void);
-PkSystemUpgrade	   *pk_system_upgrade_new (void);
-PkSystemUpgrade	   *pk_system_upgrade_new_full (const gchar	       *id,
-					    const gchar	       *os_id,
-					    const gchar	       *version,
-					    const gchar	       *name,
-					    const gchar	       *summary,
-					    PkReleaseKindEnum kind,
-					    guint64		download_size,
-					    const gchar	       *url);
+GType		  pk_system_upgrade_get_type (void);
+PkSystemUpgrade	 *pk_system_upgrade_new (void);
+PkSystemUpgrade	 *pk_system_upgrade_new_full (const gchar      *id,
+					      const gchar      *os_id,
+					      const gchar      *version,
+					      const gchar      *name,
+					      const gchar      *summary,
+					      PkReleaseKindEnum kind,
+					      guint64		download_size,
+					      const gchar      *url);
 
 /* accessors */
-const gchar	   *pk_system_upgrade_get_id (PkSystemUpgrade *system_upgrade);
-const gchar	   *pk_system_upgrade_get_os_id (PkSystemUpgrade *system_upgrade);
-const gchar	   *pk_system_upgrade_get_version (PkSystemUpgrade *system_upgrade);
-const gchar	   *pk_system_upgrade_get_name (PkSystemUpgrade *system_upgrade);
-const gchar	   *pk_system_upgrade_get_summary (PkSystemUpgrade *system_upgrade);
-const gchar	   *pk_system_upgrade_get_url (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_id (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_os_id (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_version (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_name (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_summary (PkSystemUpgrade *system_upgrade);
+const gchar	 *pk_system_upgrade_get_url (PkSystemUpgrade *system_upgrade);
 PkReleaseKindEnum pk_system_upgrade_get_kind (PkSystemUpgrade *system_upgrade);
-guint64		    pk_system_upgrade_get_download_size (PkSystemUpgrade *system_upgrade);
+guint64		  pk_system_upgrade_get_download_size (PkSystemUpgrade *system_upgrade);
 
 G_END_DECLS
 

@@ -717,12 +717,12 @@ pkgc_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 	pkgc_manage_apply_options (ctx);
 
 	pk_task_upgrade_system_async (PK_TASK (ctx->task),
-				  argv[1],
-				  ctx->cancellable,
-				  pkgc_context_on_progress_cb,
-				  ctx,
-				  pkgc_manage_on_task_finished_cb,
-				  ctx);
+				      argv[1],
+				      ctx->cancellable,
+				      pkgc_context_on_progress_cb,
+				      ctx,
+				      pkgc_manage_on_task_finished_cb,
+				      ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;
