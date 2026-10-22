@@ -371,8 +371,8 @@ class Backend:
             'repo-details', {'repo_id': repo_id, 'description': description, 'enabled': enabled}
         )
 
-    def distro_upgrade(self, type, name, summary):
-        self._queue('distro-upgrades', {'type': type, 'name': name, 'summary': summary})
+    def distro_upgrade(self, type, id, summary):
+        self._queue('distro-upgrades', {'type': type, 'id': id, 'summary': summary})
 
     def error(self, code, details=''):
         """Fail the job with an error code; the job still runs until the method returns."""

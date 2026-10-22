@@ -285,7 +285,7 @@ optional.
 `enum_upgrade`, `summary` is optional.
 
 ```json
-{"ev":"distro-upgrades","job":"42","items":[{"type":"stable","name":"example-27","summary":"Example OS 27"}]}
+{"ev":"distro-upgrades","job":"42","items":[{"type":"stable","id":"example-27","summary":"Example OS 27"}]}
 ```
 
 ### 5.4 Errors, interaction, logging

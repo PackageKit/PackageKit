@@ -698,9 +698,9 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 				  PkDistroUpgrade *item,
 				  PkTransaction *transaction)
 {
-	PkUpdateStateEnum state;
-	g_autofree gchar *name = NULL;
-	g_autofree gchar *summary = NULL;
+	PkDistroUpgradeEnum state;
+	const gchar *id;
+	const gchar *summary;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
@@ -709,12 +709,14 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 	pk_results_add_distro_upgrade (transaction->results, item);
 
 	/* get data */
-	g_object_get (item, "state", &state, "id", &name, "summary", &summary, NULL);
+	state = pk_distro_upgrade_get_state (item);
+	id = pk_distro_upgrade_get_id (item);
+	summary = pk_distro_upgrade_get_summary (item);
 
 	/* emit */
 	g_debug ("emitting distro-upgrade %s, %s, %s",
-		 pk_update_state_enum_to_string (state),
-		 name,
+		 pk_distro_upgrade_enum_to_string (state),
+		 id,
 		 summary);
 	g_dbus_connection_emit_signal (
 	    transaction->connection,
@@ -722,7 +724,7 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 	    transaction->tid,
 	    PK_DBUS_INTERFACE_TRANSACTION,
 	    "DistroUpgrade",
-	    g_variant_new ("(uss)", state, name, summary != NULL ? summary : ""),
+	    g_variant_new ("(uss)", state, id, summary != NULL ? summary : ""),
 	    NULL);
 }
 

@@ -905,7 +905,7 @@ pk_backend_protocol_handle_distro_upgrades (json_t *root, PkBackendJob *job, GEr
 		return FALSE;
 	json_array_foreach (items, i, item)
 	{
-		const gchar *name = NULL;
+		const gchar *id = NULL;
 		const gchar *summary = NULL;
 		PkDistroUpgradeEnum type = PK_DISTRO_UPGRADE_ENUM_UNKNOWN;
 
@@ -914,10 +914,10 @@ pk_backend_protocol_handle_distro_upgrades (json_t *root, PkBackendJob *job, GEr
 			    error,
 			    "distro-upgrades items must be objects");
 		if (!GET_ENUM (item, "type", pk_distro_upgrade, &type) ||
-		    !pk_backend_protocol_get_string (item, "name", FALSE, &name, error) ||
+		    !pk_backend_protocol_get_string (item, "id", FALSE, &id, error) ||
 		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error))
 			return FALSE;
-		pk_backend_job_distro_upgrade (job, type, name, summary);
+		pk_backend_job_distro_upgrade (job, type, id, summary);
 	}
 	return TRUE;
 }
