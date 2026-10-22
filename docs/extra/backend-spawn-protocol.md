@@ -135,7 +135,7 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 | `get-dependencies`, `get-dependents`                                                                | `filters`, `package_ids`, `recursive` (boolean)                        |
 | `get-details`, `get-files`, `get-update-detail`                                            | `package_ids`                                                          |
 | `get-details-local`, `get-files-local`                                                     | `files` (array of absolute paths, see below)                           |
-| `get-distro-upgrades`                                                                      | none                                                                   |
+| `get-system-upgrades`                                                                      | none                                                                   |
 | `download-packages`                                                                        | `package_ids`, `directory`                                             |
 | `install-packages`, `update-packages`                                                      | `flags`, `package_ids`                                                 |
 | `install-files`                                                                            | `flags`, `files`                                                       |
@@ -145,7 +145,7 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 | `repo-enable`                                                                              | `repo_id`, `enabled` (boolean)                                         |
 | `repo-set-data`                                                                            | `repo_id`, `parameter`, `value`                                        |
 | `repo-remove`                                                                              | `flags`, `repo_id`, `autoremove` (boolean)                             |
-| `upgrade-system`                                                                           | `flags`, `distro_id`, `upgrade_kind` (`enum_upgrade_kind`)             |
+| `upgrade-system`                                                                               | `flags`, `upgrade_id`                                                  |
 | `repair-system`                                                                            | `flags`                                                                |
 
 `files` names private copies the daemon made of the files the client sent
@@ -281,11 +281,11 @@ optional.
 {"ev":"repo-details","job":"42","items":[{"repo_id":"main","description":"Main repository","enabled":true}]}
 ```
 
-`distro-upgrades`: `pk_backend_job_distro_upgrade` per item; `type` is
-`enum_upgrade`, `summary` is optional.
+`system-upgrades`: `pk_backend_job_system_upgrade` per item; `type` is
+`enum_release_kind`, `summary` is optional.
 
 ```json
-{"ev":"distro-upgrades","job":"42","items":[{"type":"stable","id":"example-27","summary":"Example OS 27"}]}
+{"ev":"system-upgrades","job":"42","items":[{"type":"stable","id":"example-27","summary":"Example OS 27"}]}
 ```
 
 ### 5.4 Errors, interaction, logging

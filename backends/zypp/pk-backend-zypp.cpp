@@ -2475,7 +2475,7 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 }
 
 static void
-backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+backend_get_system_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
 
@@ -2503,13 +2503,13 @@ backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 		vector<parser::ProductFileData::Upgrade> upgrades = it->upgrades();
 		for (vector<parser::ProductFileData::Upgrade>::iterator it2 = upgrades.begin (); it2 != upgrades.end (); it2++) {
 			if (it2->notify ()){
-				PkDistroUpgradeEnum status = PK_DISTRO_UPGRADE_ENUM_UNKNOWN;
+				PkReleaseKindEnum status = PK_RELEASE_KIND_ENUM_UNKNOWN;
 				if (it2->status () == "stable") {
-					status = PK_DISTRO_UPGRADE_ENUM_STABLE;
+					status = PK_RELEASE_KIND_ENUM_STABLE;
 				} else if (it2->status () == "unstable") {
-					status = PK_DISTRO_UPGRADE_ENUM_UNSTABLE;
+					status = PK_RELEASE_KIND_ENUM_UNSTABLE;
 				}
-				pk_backend_job_distro_upgrade (job,
+				pk_backend_job_system_upgrade (job,
 							   status,
 							   it2->name ().c_str (),
 							   it2->summary ().c_str ());
@@ -3492,8 +3492,8 @@ upgrade_system (PkBackendJob *job,
 		PoolStatusSaver saver;
 		zypp_get_updates (job, zypp, candidates);
 		if (candidates.empty ()) {
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
-						   "No Distribution Upgrade Available.");
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_SYSTEM_UPGRADE_DATA,
+						   "No operating system upgrade available.");
 
 			return;
 		}
@@ -3577,9 +3577,9 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
     g_autoptr(GError) error = NULL;
 	PkBitfield transaction_flags = 0;
 
-	g_variant_get (params, "(t&su)",
+	g_variant_get (params, "(t&s)",
 		       &transaction_flags,
-		       &release_ver, NULL);
+		       &release_ver);
 
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp ();
@@ -3596,7 +3596,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 		return;
 	}
 
-    release_name = pk_get_distro_name (&error);
+    release_name = pk_get_os_name (&error);
 	if (release_name == NULL)
 		g_error ("Failed to parse os-release: %s", error->message);
     if (g_str_has_prefix (release_name, "SLE")) {
@@ -4134,7 +4134,7 @@ pk_backend_get_roles (PkBackend *backend)
 		PK_ROLE_ENUM_GET_DETAILS,
 		PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 		PK_ROLE_ENUM_GET_FILES_LOCAL,
-		PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+		PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 		PK_ROLE_ENUM_REFRESH_CACHE,
 		PK_ROLE_ENUM_GET_UPDATES,
 		PK_ROLE_ENUM_INSTALL_FILES,
@@ -4182,8 +4182,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_GET_FILES_LOCAL:
 		pk_backend_job_thread_create (job, backend_get_files_local_thread, NULL, NULL);
 		break;
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
-		pk_backend_job_thread_create (job, backend_get_distro_upgrades_thread, NULL, NULL);
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
+		pk_backend_job_thread_create (job, backend_get_system_upgrades_thread, NULL, NULL);
 		break;
 	case PK_ROLE_ENUM_REFRESH_CACHE:
 		pk_backend_job_thread_create (job, backend_refresh_cache_thread, NULL, NULL);

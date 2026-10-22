@@ -404,15 +404,14 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-			gchar *distro_id = NULL;
-			PkUpgradeKindEnum upgrade_kind;
+			gchar *upgrade_id = NULL;
 			PkBitfield transaction_flags;
-			g_variant_get(params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
-			if (distro_id) {
+			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
+			if (upgrade_id) {
 				pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-				dnf5_setup_base(priv, TRUE, TRUE, distro_id, job);
+				dnf5_setup_base(priv, TRUE, TRUE, upgrade_id, job);
 
-				g_debug("Checking repositories for system upgrade to %s:", distro_id);
+				g_debug("Checking repositories for system upgrade to %s:", upgrade_id);
 				// ... logging code ...
 				libdnf5::repo::RepoQuery query(*priv->base);
 				for (auto repo : query) {
@@ -495,9 +494,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			for (const auto &p : added)
 				goal.add_rpm_install(p.second);
 		} else if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-			const gchar *distro_id = NULL;
-			PkUpgradeKindEnum upgrade_kind;
-			g_variant_get(params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
+			const gchar *upgrade_id = NULL;
+			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
 
 			// System upgrades require allowing erasure of packages (e.g. obsoletes)
 			// and downgrades if necessary to match repo versions.

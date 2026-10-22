@@ -122,7 +122,7 @@ void	     pk_backend_get_details_local (PkBackend	*backend,
 void	     pk_backend_get_files_local (PkBackend    *backend,
 					 PkBackendJob *job,
 					 GUnixFDList  *fds);
-void	     pk_backend_get_distro_upgrades (PkBackend	  *backend,
+void	     pk_backend_get_system_upgrades (PkBackend	  *backend,
 					     PkBackendJob *job);
 void	     pk_backend_get_files (PkBackend	*backend,
 				   PkBackendJob *job,
@@ -211,8 +211,7 @@ void	     pk_backend_get_packages (PkBackend	   *backend,
 void	     pk_backend_upgrade_system (PkBackend	 *backend,
 					PkBackendJob	 *job,
 					PkBitfield	  transaction_flags,
-					const gchar	 *distro_id,
-					PkUpgradeKindEnum upgrade_kind);
+					const gchar	 *upgrade_id);
 void	     pk_backend_repair_system (PkBackend    *backend,
 				       PkBackendJob *job,
 				       PkBitfield    transaction_flags);

@@ -256,7 +256,7 @@ void	     pk_client_what_provides_async (PkClient	       *client,
 					    GAsyncReadyCallback callback_ready,
 					    gpointer		user_data);
 
-void	     pk_client_get_distro_upgrades_async (PkClient	     *client,
+void	     pk_client_get_system_upgrades_async (PkClient	     *client,
 						  GCancellable	     *cancellable,
 						  PkProgressCallback  progress_callback,
 						  gpointer	      progress_user_data,
@@ -374,8 +374,7 @@ void	     pk_client_repo_remove_async (PkClient	     *client,
 
 void	     pk_client_upgrade_system_async (PkClient		*client,
 					     PkBitfield		 transaction_flags,
-					     const gchar	*distro_id,
-					     PkUpgradeKindEnum	 upgrade_kind,
+					     const gchar	*upgrade_id,
 					     GCancellable	*cancellable,
 					     PkProgressCallback	 progress_callback,
 					     gpointer		 progress_user_data,

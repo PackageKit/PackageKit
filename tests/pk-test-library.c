@@ -188,7 +188,7 @@ pk_test_common_func (void)
 	gchar *present;
 	GDate *date;
 
-	present = pk_get_distro_id ();
+	present = pk_get_os_id ();
 	g_assert_cmpstr (present, ==, "selftest;11.91;i686");
 	g_free (present);
 
@@ -359,9 +359,9 @@ pk_test_enum_func (void)
 		}
 	}
 
-	/* check we convert all the upgrade bitfield */
-	for (guint i = 0; i < PK_DISTRO_UPGRADE_ENUM_LAST; i++) {
-		string = pk_distro_upgrade_enum_to_string (i);
+	/* check we convert all the OS release kinds */
+	for (guint i = 0; i < PK_RELEASE_KIND_ENUM_LAST; i++) {
+		string = pk_release_kind_enum_to_string (i);
 		if (string == NULL) {
 			/* so we get the value of i in the assert text */
 			g_assert_cmpint (0, ==, i);
@@ -1198,7 +1198,7 @@ pk_test_object_types_func (void)
 	PK_TEST_TYPE (PkControl, pk_control_new);
 
 	PK_TEST_TYPE (PkDetails, pk_details_new);
-	PK_TEST_TYPE (PkDistroUpgrade, pk_distro_upgrade_new);
+	PK_TEST_TYPE (PkSystemUpgrade, pk_system_upgrade_new);
 	PK_TEST_TYPE (PkError, pk_error_new);
 	PK_TEST_TYPE (PkEulaRequired, pk_eula_required_new);
 	PK_TEST_TYPE (PkFiles, pk_files_new);

@@ -65,7 +65,7 @@ struct _PkControlPrivate
 	gchar **mime_types;
 	gboolean connected;
 	gboolean locked;
-	gchar *distro_id;
+	gchar *os_id;
 	PkRestartEnum reboot_required;
 	gchar **reboot_required_package_ids;
 	guint watch_id;
@@ -95,7 +95,7 @@ enum {
 	PROP_MIME_TYPES,
 	PROP_LOCKED,
 	PROP_CONNECTED,
-	PROP_DISTRO_ID,
+	PROP_OS_ID,
 	PROP_REBOOT_REQUIRED,
 	PROP_REBOOT_REQUIRED_PACKAGE_IDS,
 	PROP_LAST
@@ -273,16 +273,16 @@ pk_control_set_property_value (PkControl *control, const gchar *key, GVariant *v
 		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_LOCKED]);
 		return;
 	}
-	if (g_strcmp0 (key, "DistroId") == 0) {
+	if (g_strcmp0 (key, "OsId") == 0) {
 		tmp_str = g_variant_get_string (value, NULL);
 		/* we don't want distro specific results in 'make check' */
 		if (g_getenv ("PK_SELF_TEST") != NULL)
 			tmp_str = "selftest;11.91;i686";
-		if (g_strcmp0 (priv->distro_id, tmp_str) == 0)
+		if (g_strcmp0 (priv->os_id, tmp_str) == 0)
 			return;
-		g_free (priv->distro_id);
-		priv->distro_id = g_strdup (tmp_str);
-		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_DISTRO_ID]);
+		g_free (priv->os_id);
+		priv->os_id = g_strdup (tmp_str);
+		g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_OS_ID]);
 		return;
 	}
 	if (g_strcmp0 (key, "RebootRequired") == 0) {
@@ -1717,8 +1717,8 @@ pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_LOCKED:
 		g_value_set_boolean (value, priv->locked);
 		break;
-	case PROP_DISTRO_ID:
-		g_value_set_string (value, priv->distro_id);
+	case PROP_OS_ID:
+		g_value_set_string (value, priv->os_id);
 		break;
 	case PROP_REBOOT_REQUIRED:
 		g_value_set_enum (value, priv->reboot_required);
@@ -1949,11 +1949,14 @@ pk_control_class_init (PkControlClass *klass)
 	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
-	 * PkControl:distro-id:
+	 * PkControl:os-id:
 	 *
-	 * Since: 0.5.5
+	 * The running operating system as `id;version;arch`, e.g.
+	 * "debian;12;x86_64".
+	 *
+	 * Since: 2.0.0
 	 */
-	obj_properties[PROP_DISTRO_ID] = g_param_spec_string ("distro-id",
+	obj_properties[PROP_OS_ID] = g_param_spec_string ("os-id",
 							      NULL,
 							      NULL,
 							      NULL,
@@ -2167,7 +2170,7 @@ pk_control_finalize (GObject *object)
 	g_clear_pointer (&priv->backend_description, g_free);
 	g_clear_pointer (&priv->backend_author, g_free);
 	g_clear_pointer (&priv->mime_types, g_strfreev);
-	g_clear_pointer (&priv->distro_id, g_free);
+	g_clear_pointer (&priv->os_id, g_free);
 	g_clear_pointer (&priv->reboot_required_package_ids, g_strfreev);
 	g_clear_object (&priv->cancellable);
 

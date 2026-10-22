@@ -119,7 +119,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_WHAT_PROVIDES,			"what-provides"},
 	{PK_ROLE_ENUM_ACCEPT_EULA,			"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,		"download-packages"},
-	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
+	{PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,		"get-system-upgrades"},
 	{PK_ROLE_ENUM_GET_HISTORY,		"get-history"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
@@ -170,7 +170,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED, "all-packages-already-installed"},
 	{PK_ERROR_ENUM_FILE_NOT_FOUND,		"file-not-found"},
 	{PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,	"no-more-mirrors-to-try"},
-	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
+	{PK_ERROR_ENUM_NO_SYSTEM_UPGRADE_DATA,	"no-system-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
 	{PK_ERROR_ENUM_NOT_AUTHORIZED,		"not-authorized"},
@@ -353,10 +353,10 @@ static const PkEnumMatch enum_sig_type[] = {
 	{0, NULL}
 };
 
-static const PkEnumMatch enum_upgrade[] = {
-	{PK_DISTRO_UPGRADE_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
-	{PK_DISTRO_UPGRADE_ENUM_STABLE,		"stable"},
-	{PK_DISTRO_UPGRADE_ENUM_UNSTABLE,		"unstable"},
+static const PkEnumMatch enum_release_kind[] = {
+	{PK_RELEASE_KIND_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
+	{PK_RELEASE_KIND_ENUM_STABLE,	"stable"},
+	{PK_RELEASE_KIND_ENUM_UNSTABLE,	"unstable"},
 	{0, NULL}
 };
 
@@ -365,14 +365,6 @@ static const PkEnumMatch enum_authorize_type[] = {
 	{PK_AUTHORIZE_ENUM_YES,			"yes"},
 	{PK_AUTHORIZE_ENUM_NO,			"no"},
 	{PK_AUTHORIZE_ENUM_INTERACTIVE,		"interactive"},
-	{0, NULL}
-};
-
-static const PkEnumMatch enum_upgrade_kind[] = {
-	{PK_UPGRADE_KIND_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_UPGRADE_KIND_ENUM_MINIMAL,		"minimal"},
-	{PK_UPGRADE_KIND_ENUM_DEFAULT,		"default"},
-	{PK_UPGRADE_KIND_ENUM_COMPLETE,		"complete"},
 	{0, NULL}
 };
 
@@ -484,35 +476,35 @@ pk_sig_type_enum_to_string (PkSigTypeEnum sig_type)
 }
 
 /**
- * pk_distro_upgrade_enum_from_string:
- * @upgrade: Text describing the enumerated type
+ * pk_release_kind_enum_from_string:
+ * @kind: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
  *
- * Return value: the enumerated constant value, e.g. PK_DISTRO_UPGRADE_ENUM_STABLE
+ * Return value: the enumerated constant value, e.g. PK_RELEASE_KIND_ENUM_STABLE
  *
- * Since: 0.5.0
+ * Since: 2.0.0
  **/
-PkDistroUpgradeEnum
-pk_distro_upgrade_enum_from_string (const gchar *upgrade)
+PkReleaseKindEnum
+pk_release_kind_enum_from_string (const gchar *kind)
 {
-	return pk_enum_find_value (enum_upgrade, upgrade);
+	return pk_enum_find_value (enum_release_kind, kind);
 }
 
 /**
- * pk_distro_upgrade_enum_to_string:
- * @upgrade: The enumerated type value
+ * pk_release_kind_enum_to_string:
+ * @kind: The enumerated type value
  *
  * Converts a enumerated type to its text representation
  *
  * Return value: the enumerated constant value, e.g. "stable"
  *
- * Since: 0.5.0
+ * Since: 2.0.0
  **/
 const gchar *
-pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade)
+pk_release_kind_enum_to_string (PkReleaseKindEnum kind)
 {
-	return pk_enum_find_string (enum_upgrade, upgrade);
+	return pk_enum_find_string (enum_release_kind, kind);
 }
 
 /**
@@ -932,38 +924,6 @@ pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type)
 }
 
 /**
- * pk_upgrade_kind_enum_from_string:
- * @upgrade_kind: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. %PK_UPGRADE_KIND_ENUM_MINIMAL
- *
- * Since: 0.6.11
- **/
-PkUpgradeKindEnum
-pk_upgrade_kind_enum_from_string (const gchar *upgrade_kind)
-{
-	return pk_enum_find_value (enum_upgrade_kind, upgrade_kind);
-}
-
-/**
- * pk_upgrade_kind_enum_to_string:
- * @upgrade_kind: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "minimal"
- *
- * Since: 0.6.11
- **/
-const gchar *
-pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind)
-{
-	return pk_enum_find_string (enum_upgrade_kind, upgrade_kind);
-}
-
-/**
  * pk_transaction_flag_enum_from_string:
  * @transaction_flag: Text describing the enumerated type
  *
@@ -1315,9 +1275,9 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Downloading packages");
 		break;
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting upgrades");
+		text = dgettext ("PackageKit", "Getting operating system upgrades");
 		break;
 	case PK_ROLE_ENUM_GET_HISTORY:
 		/* TRANSLATORS: The role of the transaction, in present tense */
@@ -1325,7 +1285,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		break;
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting system upgrades");
+		text = dgettext ("PackageKit", "Upgrading the operating system");
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */

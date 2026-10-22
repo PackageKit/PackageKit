@@ -95,13 +95,12 @@ typedef struct
 	gboolean force;
 	gboolean recursive;
 	gchar *directory;
-	gchar *distro_id;
+	gchar *upgrade_id;
 	gchar **packages;
 	gchar *repo_id;
 	gchar *transaction_id;
 	gchar **values;
 	PkBitfield filters;
-	PkUpgradeKindEnum upgrade_kind;
 	guint retry_id;
 } PkTaskState;
 
@@ -145,7 +144,7 @@ pk_task_state_free (gpointer task_state)
 	if (state->retry_id != 0)
 		g_source_remove (state->retry_id);
 	g_free (state->directory);
-	g_free (state->distro_id);
+	g_free (state->upgrade_id);
 	g_free (state->repo_id);
 	g_free (state->transaction_id);
 	g_strfreev (state->files);
@@ -375,8 +374,7 @@ pk_task_do_async_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		pk_client_upgrade_system_async (PK_CLIENT (task),
 						transaction_flags,
-						state->distro_id,
-						state->upgrade_kind,
+						state->upgrade_id,
 						cancellable,
 						state->progress_callback,
 						state->progress_user_data,
@@ -553,12 +551,11 @@ pk_task_do_async_simulate_action (GTask *gtask)
 					       pk_task_simulate_ready_cb,
 					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		/* simulate upgrade system async */
-		g_debug ("doing upgrade system");
+		/* simulate OS upgrade async */
+		g_debug ("doing OS upgrade");
 		pk_client_upgrade_system_async (PK_CLIENT (task),
 						transaction_flags,
-						state->distro_id,
-						state->upgrade_kind,
+						state->upgrade_id,
 						cancellable,
 						state->progress_callback,
 						state->progress_user_data,
@@ -1223,26 +1220,22 @@ pk_task_update_packages_async (PkTask *task,
 /**
  * pk_task_upgrade_system_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
- * @distro_id: a distro ID such as "fedora-14"
- * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @upgrade_id: the ID of an upgrade reported by pk_client_get_system_upgrades_async(), such as "fedora-42"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * This transaction will update the distro to the next version, which may
- * involve just downloading the installer and setting up the boot device,
- * or may involve doing an on-line upgrade.
+ * This transaction will upgrade the operating system to the release
+ * identified by @upgrade_id, simulating the transaction first and asking
+ * the user for confirmation as configured on the task.
  *
- * The backend will decide what is best to do.
- *
- * Since: 1.0.12
+ * Since: 2.0.0
  **/
 void
 pk_task_upgrade_system_async (PkTask *task,
-			      const gchar *distro_id,
-			      PkUpgradeKindEnum upgrade_kind,
+			      const gchar *upgrade_id,
 			      GCancellable *cancellable,
 			      PkProgressCallback progress_callback,
 			      gpointer progress_user_data,
@@ -1262,8 +1255,7 @@ pk_task_upgrade_system_async (PkTask *task,
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
-	state->distro_id = g_strdup (distro_id);
-	state->upgrade_kind = upgrade_kind;
+	state->upgrade_id = g_strdup (upgrade_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->request = pk_task_generate_request_id ();

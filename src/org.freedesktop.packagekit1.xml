@@ -98,12 +98,13 @@
 
     <!--*********************************************************************-->
     <!--
-      DistroId:
+      OsId:
 
-      The distribution identification, in the distro;version;arch form e.g.
-      `"debian;squeeze/sid;x86_64"`.
+      The identification of the running operating system, in the
+      `id;version;arch` form, e.g. `"debian;13;x86_64"`, built from the
+      `ID` and `VERSION_ID` of os-release and the machine type.
     -->
-    <property name="DistroId" type="s" access="read"/>
+    <property name="OsId" type="s" access="read"/>
 
     <!--*********************************************************************-->
     <!--

@@ -1065,7 +1065,7 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, GUnixFDList *
 }
 
 void
-pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
+pk_backend_get_system_upgrades (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (pk_is_thread_default ());
@@ -1073,7 +1073,7 @@ pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_SYSTEM_UPGRADES);
 	backend->desc->run_job (backend, job);
 }
 
@@ -1426,8 +1426,7 @@ void
 pk_backend_upgrade_system (PkBackend *backend,
 			   PkBackendJob *job,
 			   PkBitfield transaction_flags,
-			   const gchar *distro_id,
-			   PkUpgradeKindEnum upgrade_kind)
+			   const gchar *upgrade_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
 
@@ -1438,7 +1437,7 @@ pk_backend_upgrade_system (PkBackend *backend,
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (
 	    job,
-	    g_variant_new ("(tsu)", transaction_flags, distro_id, upgrade_kind));
+	    g_variant_new ("(ts)", transaction_flags, upgrade_id));
 	backend->desc->run_job (backend, job);
 }
 

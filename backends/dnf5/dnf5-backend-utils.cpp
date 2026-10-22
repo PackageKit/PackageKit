@@ -97,7 +97,7 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 		g_autofree gchar *distro_version = NULL;
 		if (releasever == NULL) {
 			g_autoptr(GError) error = NULL;
-			distro_version = pk_get_distro_version_id(&error);
+			distro_version = pk_get_os_version_id(&error);
 		} else {
 			distro_version = g_strdup(releasever);
 		}
@@ -144,7 +144,7 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 		g_autofree gchar *distro_version = NULL;
 		if (releasever == NULL) {
 			g_autoptr(GError) error = NULL;
-			distro_version = pk_get_distro_version_id(&error);
+			distro_version = pk_get_os_version_id(&error);
 		} else {
 			distro_version = g_strdup(releasever);
 		}

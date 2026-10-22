@@ -919,8 +919,8 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "Details";
 	if (id == PK_BACKEND_SIGNAL_ERROR_CODE)
 		return "ErrorCode";
-	if (id == PK_BACKEND_SIGNAL_DISTRO_UPGRADE)
-		return "DistroUpgrade";
+	if (id == PK_BACKEND_SIGNAL_SYSTEM_UPGRADE)
+		return "SystemUpgrade";
 	if (id == PK_BACKEND_SIGNAL_FINISHED)
 		return "Finished";
 	if (id == PK_BACKEND_SIGNAL_PACKAGE)
@@ -1772,31 +1772,31 @@ pk_backend_job_files (PkBackendJob *job, const gchar *package_id, GPtrArray *fil
 }
 
 void
-pk_backend_job_distro_upgrade (PkBackendJob *job,
-			       PkDistroUpgradeEnum state,
-			       const gchar *name,
+pk_backend_job_system_upgrade (PkBackendJob *job,
+			       PkReleaseKindEnum kind,
+			       const gchar *id,
 			       const gchar *summary)
 {
-	g_autoptr(PkDistroUpgrade) item = NULL;
+	g_autoptr(PkSystemUpgrade) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (state != PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
-	g_return_if_fail (name != NULL);
+	g_return_if_fail (kind != PK_RELEASE_KIND_ENUM_UNKNOWN);
+	g_return_if_fail (id != NULL);
 	g_return_if_fail (summary != NULL);
 
 	/* have we already set an error? */
 	if (job->set_error) {
-		g_warning ("already set error: distro-upgrade");
+		g_warning ("already set error: system-upgrade");
 		return;
 	}
 
-	/* form PkDistroUpgrade struct */
-	item = pk_distro_upgrade_new ();
-	g_object_set (item, "state", state, "id", name, "summary", summary, NULL);
+	/* form PkSystemUpgrade struct */
+	item = pk_system_upgrade_new ();
+	g_object_set (item, "state", kind, "id", id, "summary", summary, NULL);
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
+				   PK_BACKEND_SIGNAL_SYSTEM_UPGRADE,
 				   g_object_ref (item),
 				   g_object_unref);
 }

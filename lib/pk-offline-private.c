@@ -333,11 +333,12 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 
 /*
  * pk_offline_auth_set_prepared_upgrade:
- * @name: Distro name to upgrade to
- * @release_ver: Distro version to upgrade to
+ * @name: Name of the operating system being upgraded, from os-release
+ * @release_ver: The upgrade ID to pass to UpgradeSystem
  * @error: A #GError or %NULL
  *
- * Saves the distro name and version to upgrade to a prepared transaction file.
+ * Saves the OS name and the upgrade ID of a prepared OS upgrade to the
+ * prepared upgrade file, so that it can be applied offline later.
  *
  * Return value: %TRUE for success, else %FALSE and @error set
  *
@@ -360,11 +361,11 @@ pk_offline_auth_set_prepared_upgrade (const gchar *name, const gchar *release_ve
 
 /*
  * pk_offline_get_prepared_upgrade:
- * @name: (out): Return location for the distro name
- * @release_ver: (out): Return location for the distro version
+ * @name: (out): Return location for the OS name
+ * @release_ver: (out): Return location for the upgrade ID
  * @error: A #GError or %NULL
  *
- * Gets details about a prepared system upgrade transaction.
+ * Gets details about a prepared OS upgrade transaction.
  *
  * Return value: %TRUE for success, else %FALSE and @error set
  *

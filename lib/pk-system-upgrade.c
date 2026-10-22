@@ -19,11 +19,11 @@
  */
 
 /**
- * PkDistroUpgrade:
+ * PkSystemUpgrade:
  *
- * DistroUpgrade object
+ * SystemUpgrade object
  *
- * This GObject represents a distro_upgrade from a transaction.
+ * This GObject represents a system_upgrade from a transaction.
  * These objects represent single items of data from the transaction, and are
  * often present in lists (#PkResults) or just refcounted in client programs.
  */
@@ -32,20 +32,20 @@
 
 #include <glib-object.h>
 
-#include "pk-distro-upgrade.h"
+#include "pk-system-upgrade.h"
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void pk_distro_upgrade_finalize (GObject *object);
+static void pk_system_upgrade_finalize (GObject *object);
 
 /**
- * PkDistroUpgradePrivate:
+ * PkSystemUpgradePrivate:
  *
- * Private #PkDistroUpgrade data
+ * Private #PkSystemUpgrade data
  **/
-struct _PkDistroUpgradePrivate
+struct _PkSystemUpgradePrivate
 {
-	PkDistroUpgradeEnum state;
+	PkReleaseKindEnum state;
 	gchar *id;
 	gchar *summary;
 };
@@ -58,33 +58,33 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (PkDistroUpgrade, pk_distro_upgrade, PK_TYPE_SOURCE)
-#define GET_PRIVATE(o) (pk_distro_upgrade_get_instance_private (o))
+G_DEFINE_TYPE_WITH_PRIVATE (PkSystemUpgrade, pk_system_upgrade, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_system_upgrade_get_instance_private (o))
 
 /**
- * pk_distro_upgrade_get_id:
- * @distro_upgrade: a valid #PkDistroUpgrade object.
+ * pk_system_upgrade_get_id:
+ * @system_upgrade: a valid #PkSystemUpgrade object.
  *
  * Gets the distribution identifier.
  * You use this value to call UpgradeSystem.
  *
- * Return value: the distro-id, e.g. "fedora-14"
+ * Return value: the upgrade ID, e.g. "fedora-42"
  *
  * Since: 0.6.11
  **/
 const gchar *
-pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
+pk_system_upgrade_get_id (PkSystemUpgrade *system_upgrade)
 {
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
-	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
+	g_return_val_if_fail (PK_IS_SYSTEM_UPGRADE (system_upgrade), NULL);
 
 	return priv->id;
 }
 
 /**
- * pk_distro_upgrade_get_summary:
- * @distro_upgrade: a valid #PkDistroUpgrade object.
+ * pk_system_upgrade_get_summary:
+ * @system_upgrade: a valid #PkSystemUpgrade object.
  *
  * Gets the description of the distribution upgrade.
  *
@@ -93,44 +93,44 @@ pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
  * Since: 0.6.11
  **/
 const gchar *
-pk_distro_upgrade_get_summary (PkDistroUpgrade *distro_upgrade)
+pk_system_upgrade_get_summary (PkSystemUpgrade *system_upgrade)
 {
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
-	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
+	g_return_val_if_fail (PK_IS_SYSTEM_UPGRADE (system_upgrade), NULL);
 
 	return priv->summary;
 }
 
 /**
- * pk_distro_upgrade_get_state:
- * @distro_upgrade: a valid #PkDistroUpgrade object.
+ * pk_system_upgrade_get_state:
+ * @system_upgrade: a valid #PkSystemUpgrade object.
  *
  * Gets the status of the distribution upgrade.
  *
- * Return value: the printable name, e.g. %PK_DISTRO_UPGRADE_ENUM_UNSTABLE
+ * Return value: the printable name, e.g. %PK_RELEASE_KIND_ENUM_UNSTABLE
  *
  * Since: 0.6.11
  **/
-PkDistroUpgradeEnum
-pk_distro_upgrade_get_state (PkDistroUpgrade *distro_upgrade)
+PkReleaseKindEnum
+pk_system_upgrade_get_state (PkSystemUpgrade *system_upgrade)
 {
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
-	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade),
-			      PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_SYSTEM_UPGRADE (system_upgrade),
+			      PK_RELEASE_KIND_ENUM_UNKNOWN);
 
 	return priv->state;
 }
 
 /*
- * pk_distro_upgrade_get_property:
+ * pk_system_upgrade_get_property:
  **/
 static void
-pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+pk_system_upgrade_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgrade *system_upgrade = PK_SYSTEM_UPGRADE (object);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
 	switch (prop_id) {
 	case PROP_STATE:
@@ -149,16 +149,16 @@ pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, G
 }
 
 /*
- * pk_distro_upgrade_set_property:
+ * pk_system_upgrade_set_property:
  **/
 static void
-pk_distro_upgrade_set_property (GObject *object,
+pk_system_upgrade_set_property (GObject *object,
 				guint prop_id,
 				const GValue *value,
 				GParamSpec *pspec)
 {
-	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgrade *system_upgrade = PK_SYSTEM_UPGRADE (object);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
 	switch (prop_id) {
 	case PROP_STATE:
@@ -179,32 +179,32 @@ pk_distro_upgrade_set_property (GObject *object,
 }
 
 /*
- * pk_distro_upgrade_class_init:
+ * pk_system_upgrade_class_init:
  **/
 static void
-pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
+pk_system_upgrade_class_init (PkSystemUpgradeClass *klass)
 {
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_distro_upgrade_finalize;
-	object_class->get_property = pk_distro_upgrade_get_property;
-	object_class->set_property = pk_distro_upgrade_set_property;
+	object_class->finalize = pk_system_upgrade_finalize;
+	object_class->get_property = pk_system_upgrade_get_property;
+	object_class->set_property = pk_system_upgrade_set_property;
 
 	/**
-	 * PkDistroUpgrade:state:
+	 * PkSystemUpgrade:state:
 	 *
 	 * Since: 0.5.4
 	 */
 	pspec = g_param_spec_enum ("state",
 				   NULL,
 				   NULL,
-				   PK_TYPE_DISTRO_UPGRADE_ENUM,
-				   PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
+				   PK_TYPE_RELEASE_KIND_ENUM,
+				   PK_RELEASE_KIND_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
-	 * PkDistroUpgrade:id:
+	 * PkSystemUpgrade:id:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -216,7 +216,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	g_object_class_install_property (object_class, PROP_ID, pspec);
 
 	/**
-	 * PkDistroUpgrade:summary:
+	 * PkSystemUpgrade:summary:
 	 *
 	 * Since: 0.5.4
 	 */
@@ -229,40 +229,40 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 }
 
 /*
- * pk_distro_upgrade_init:
+ * pk_system_upgrade_init:
  **/
 static void
-pk_distro_upgrade_init (PkDistroUpgrade *distro_upgrade)
+pk_system_upgrade_init (PkSystemUpgrade *system_upgrade)
 {
-	distro_upgrade->priv = GET_PRIVATE(distro_upgrade);
+	system_upgrade->priv = GET_PRIVATE(system_upgrade);
 }
 
 /*
- * pk_distro_upgrade_finalize:
+ * pk_system_upgrade_finalize:
  **/
 static void
-pk_distro_upgrade_finalize (GObject *object)
+pk_system_upgrade_finalize (GObject *object)
 {
-	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
+	PkSystemUpgrade *system_upgrade = PK_SYSTEM_UPGRADE (object);
+	PkSystemUpgradePrivate *priv = GET_PRIVATE(system_upgrade);
 
 	g_clear_pointer (&priv->id, g_free);
 	g_clear_pointer (&priv->summary, g_free);
 
-	G_OBJECT_CLASS (pk_distro_upgrade_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_system_upgrade_parent_class)->finalize (object);
 }
 
 /**
- * pk_distro_upgrade_new:
+ * pk_system_upgrade_new:
  *
- * Return value: a new #PkDistroUpgrade object.
+ * Return value: a new #PkSystemUpgrade object.
  *
  * Since: 0.5.4
  **/
-PkDistroUpgrade *
-pk_distro_upgrade_new (void)
+PkSystemUpgrade *
+pk_system_upgrade_new (void)
 {
-	PkDistroUpgrade *distro_upgrade;
-	distro_upgrade = g_object_new (PK_TYPE_DISTRO_UPGRADE, NULL);
-	return PK_DISTRO_UPGRADE (distro_upgrade);
+	PkSystemUpgrade *system_upgrade;
+	system_upgrade = g_object_new (PK_TYPE_SYSTEM_UPGRADE, NULL);
+	return PK_SYSTEM_UPGRADE (system_upgrade);
 }

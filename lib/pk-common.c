@@ -222,7 +222,7 @@ pk_ptr_array_to_strv (GPtrArray *array)
  * Return value: a machine type
  **/
 static gchar *
-pk_get_distro_id_machine_type (void)
+pk_get_os_id_machine_type (void)
 {
 	gint retval;
 	struct utsname buf;
@@ -297,14 +297,14 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 }
 
 /**
- * pk_get_distro_id:
+ * pk_get_os_id:
  *
  * Get the distribution ID for the current host, typically "distro;version;arch"
  *
  * Return value: a distribution ID
  **/
 gchar *
-pk_get_distro_id (void)
+pk_get_os_id (void)
 {
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
@@ -322,12 +322,12 @@ pk_get_distro_id (void)
 		return NULL;
 	}
 
-	arch = pk_get_distro_id_machine_type ();
+	arch = pk_get_os_id_machine_type ();
 	return g_strdup_printf ("%s;%s;%s", id, version, arch);
 }
 
 /**
- * pk_get_distro_name:
+ * pk_get_os_name:
  * @error: the #GError to store any failure, or %NULL
  *
  * Get the distribution name for this host as specified by NAME in /etc/os-release, e.g. "Fedora",
@@ -335,7 +335,7 @@ pk_get_distro_id (void)
  * Return value: a distro name
  **/
 gchar *
-pk_get_distro_name (GError **error)
+pk_get_os_name (GError **error)
 {
 	gboolean ret;
 	gchar *name = NULL;
@@ -348,7 +348,7 @@ pk_get_distro_name (GError **error)
 }
 
 /**
- * pk_get_distro_version_id:
+ * pk_get_os_version_id:
  * @error: the #GError to store any failure, or %NULL
  *
  * Get the distribution version ID as specified by VERSION_ID in /etc/os-release, e.g. "23"
@@ -356,7 +356,7 @@ pk_get_distro_name (GError **error)
  * Return value: a distribution version
  **/
 gchar *
-pk_get_distro_version_id (GError **error)
+pk_get_os_version_id (GError **error)
 {
 	gboolean ret;
 	gchar *version_id = NULL;

@@ -696,8 +696,7 @@ static gint
 pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
-	const char *distro_name = NULL;
-	PkUpgradeKindEnum upgrade_kind = PK_UPGRADE_KIND_ENUM_DEFAULT;
+	const char *upgrade_id = NULL;
 	g_autoptr(GError) error = NULL;
 
 	pkgc_manage_reset_options ();
@@ -706,11 +705,10 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	option_context = pkgc_option_context_for_command (
 	    ctx,
 	    cmd,
-	    "[DISTRO] [TYPE]",
-	    /* TRANSLATORS: Description of pkgcli upgrade.
-		 * No not translate "minimal, default, complete", those are parameters */
-	    _("Upgrade all packages or perform a distribution upgrade.\n\n"
-		  "Types: minimal, default, complete"));
+	    "[UPGRADE-ID]",
+	    /* TRANSLATORS: Description of pkgcli upgrade. */
+	    _("Upgrade all packages, or upgrade the operating system to the release\n"
+	      "with the given upgrade ID as shown by show-os-upgrade."));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -718,24 +716,14 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
 
-	/* Parse optional distro name and upgrade type */
+	/* Parse the optional upgrade ID */
 	if (argc >= 2)
-		distro_name = argv[1];
+		upgrade_id = argv[1];
 
-	if (argc >= 3) {
-		if (g_strcmp0 (argv[2], "minimal") == 0)
-			upgrade_kind = PK_UPGRADE_KIND_ENUM_MINIMAL;
-		else if (g_strcmp0 (argv[2], "complete") == 0)
-			upgrade_kind = PK_UPGRADE_KIND_ENUM_COMPLETE;
-		else if (g_strcmp0 (argv[2], "default") == 0)
-			upgrade_kind = PK_UPGRADE_KIND_ENUM_DEFAULT;
-	}
-
-	/* Upgrade system */
-	if (distro_name) {
+	/* Upgrade the OS */
+	if (upgrade_id) {
 		pk_task_upgrade_system_async (PK_TASK (ctx->task),
-					      distro_name,
-					      upgrade_kind,
+					      upgrade_id,
 					      ctx->cancellable,
 					      pkgc_context_on_progress_cb,
 					      ctx,

@@ -86,8 +86,8 @@ class TestSpawnBackend(pkb.Backend):
         self.repo_detail('main', 'Main repository', True)
         self.repo_detail('extra', 'Extra repository', False)
 
-    def get_distro_upgrades(self):
-        self.distro_upgrade(pkb.DISTRO_UPGRADE_STABLE, 'test-2', 'Test OS 2')
+    def get_system_upgrades(self):
+        self.system_upgrade(pkb.RELEASE_KIND_STABLE, 'test-2', 'Test OS 2')
 
     def install_packages(self, flags, package_ids):
         self.allow_cancel(True)

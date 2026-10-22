@@ -226,11 +226,11 @@
 
   <action id="org.freedesktop.packagekit.upgrade-system">
     <!-- SECURITY:
-          - Normal users require admin authentication to upgrade the disto as
-            this can make the system unbootable or stop other applications from
-            working.
+          - Normal users require admin authentication to upgrade the operating
+            system to a new release as this can make the system unbootable or
+            stop other applications from working.
      -->
-    <description>Upgrade System</description>
+    <description>Upgrade the operating system</description>
     <message>Authentication is required to upgrade the operating system</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>

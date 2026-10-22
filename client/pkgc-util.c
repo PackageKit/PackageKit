@@ -1121,19 +1121,19 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 }
 
 /**
- * pkgc_print_distro_upgrades:
+ * pkgc_print_os_upgrades:
  *
  * Print the available OS upgrades, or one JSON object per upgrade in JSON mode.
  */
 void
-pkgc_print_distro_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
+pkgc_print_os_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
 {
 	for (guint i = 0; i < upgrades->len; i++) {
-		PkDistroUpgrade *upgrade = g_ptr_array_index (upgrades, i);
-		const gchar *id = pk_distro_upgrade_get_id (upgrade);
-		const gchar *summary = pk_distro_upgrade_get_summary (upgrade);
-		const gchar *state = pk_distro_upgrade_enum_to_string (
-		    pk_distro_upgrade_get_state (upgrade));
+		PkSystemUpgrade *upgrade = g_ptr_array_index (upgrades, i);
+		const gchar *id = pk_system_upgrade_get_id (upgrade);
+		const gchar *summary = pk_system_upgrade_get_summary (upgrade);
+		const gchar *state = pk_release_kind_enum_to_string (
+		    pk_system_upgrade_get_state (upgrade));
 
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			g_autoptr(json_t) root = json_object ();

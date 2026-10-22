@@ -1363,27 +1363,23 @@ pk_task_repo_enable_sync (PkTask *task,
 /**
  * pk_task_upgrade_system_sync:
  * @task: a valid #PkTask instance
- * @distro_id: a distro ID such as "fedora-14"
- * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @upgrade_id: the ID of an upgrade reported by pk_client_get_system_upgrades(), such as "fedora-42"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * This transaction will update the distro to the next version, which may
- * involve just downloading the installer and setting up the boot device,
- * or may involve doing an on-line upgrade.
- *
- * The backend will decide what is best to do.
+ * This transaction will upgrade the operating system to the release
+ * identified by @upgrade_id, simulating the transaction first and asking
+ * the user for confirmation as configured on the task.
  *
  * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
- * Since: 1.0.12
+ * Since: 2.0.0
  **/
 PkResults *
 pk_task_upgrade_system_sync (PkTask *task,
-			     const gchar *distro_id,
-			     PkUpgradeKindEnum upgrade_kind,
+			     const gchar *upgrade_id,
 			     GCancellable *cancellable,
 			     PkProgressCallback progress_callback,
 			     gpointer progress_user_data,
@@ -1405,8 +1401,7 @@ pk_task_upgrade_system_sync (PkTask *task,
 
 	/* run async method */
 	pk_task_upgrade_system_async (task,
-				      distro_id,
-				      upgrade_kind,
+				      upgrade_id,
 				      cancellable,
 				      progress_callback,
 				      progress_user_data,

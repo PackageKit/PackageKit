@@ -1274,7 +1274,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 	    "install-signature;"
 	    "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 	    "search-details;search-file;search-group;search-name;update-packages;"
-	    "what-provides;download-packages;get-distro-upgrades;"
+	    "what-provides;download-packages;get-system-upgrades;"
 	    "get-history;repair-system;get-details-local;"
 	    "get-files-local;upgrade-system");
 	g_free (text);
@@ -1455,7 +1455,7 @@ pk_test_control_func (void)
 	    "install-signature;"
 	    "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
 	    "search-details;search-file;search-group;search-name;update-packages;"
-	    "what-provides;download-packages;get-distro-upgrades;"
+	    "what-provides;download-packages;get-system-upgrades;"
 	    "get-history;repair-system;get-details-local;"
 	    "get-files-local;upgrade-system");
 	g_free (text);

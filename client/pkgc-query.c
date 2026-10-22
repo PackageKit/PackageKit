@@ -122,11 +122,11 @@ pkgc_query_finish (PkgcliContext *ctx,
 
 	/* Process OS upgrades */
 	g_clear_pointer (&array, g_ptr_array_unref);
-	array = pk_results_get_distro_upgrade_array (results);
-	if (array->len == 0 && pk_results_get_role (results) == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+	array = pk_results_get_system_upgrade_array (results);
+	if (array->len == 0 && pk_results_get_role (results) == PK_ROLE_ENUM_GET_SYSTEM_UPGRADES)
 		pkgc_print_info (ctx, _("There are no OS upgrades available."));
 	else
-		pkgc_print_distro_upgrades (ctx, array);
+		pkgc_print_os_upgrades (ctx, array);
 
 out:
 	g_main_loop_quit (ctx->loop);
@@ -963,13 +963,13 @@ pkgc_query_show_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, g
 	    ctx,
 	    cmd,
 	    NULL,
-	    /* TRANSLATORS: Description for pkgcli show-distro-upgrade */
+	    /* TRANSLATORS: Description for pkgcli show-os-upgrade */
 	    _("Show distribution version upgrades, if any are available."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Get available distribution upgrades */
-	pk_client_get_distro_upgrades_async (PK_CLIENT (ctx->task),
+	pk_client_get_system_upgrades_async (PK_CLIENT (ctx->task),
 					     ctx->cancellable,
 					     pkgc_context_on_progress_cb,
 					     ctx,

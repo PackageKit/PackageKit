@@ -157,7 +157,7 @@ PkResults  *pk_client_what_provides (PkClient	       *client,
 				     gpointer		progress_user_data,
 				     GError	      **error);
 
-PkResults  *pk_client_get_distro_upgrades (PkClient	     *client,
+PkResults  *pk_client_get_system_upgrades (PkClient	     *client,
 					   GCancellable	     *cancellable,
 					   PkProgressCallback progress_callback,
 					   gpointer	      progress_user_data,
@@ -262,8 +262,7 @@ PkResults  *pk_client_repo_remove (PkClient	     *client,
 
 PkResults  *pk_client_upgrade_system (PkClient		*client,
 				      PkBitfield	 transaction_flags,
-				      const gchar	*distro_id,
-				      PkUpgradeKindEnum	 upgrade_kind,
+				      const gchar	*upgrade_id,
 				      GCancellable	*cancellable,
 				      PkProgressCallback progress_callback,
 				      gpointer		 progress_user_data,

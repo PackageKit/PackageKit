@@ -98,7 +98,7 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_GET_FILES_LOCAL:
 		pk_backend_job_finished (job);
 		break;
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
 		pk_backend_job_finished (job);
 		break;
 	case PK_ROLE_ENUM_GET_FILES:
@@ -184,7 +184,7 @@ pk_backend_get_roles (PkBackend *backend)
 				       PK_ROLE_ENUM_GET_DETAILS,
 				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 				       PK_ROLE_ENUM_GET_FILES_LOCAL,
-				       PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+				       PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 				       PK_ROLE_ENUM_GET_FILES,
 				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,

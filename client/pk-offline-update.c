@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -167,7 +168,7 @@ pk_offline_update_progress_cb (PkProgress *progress, PkProgressType type, gpoint
 		role = pk_progress_get_role (progress);
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			/* TRANSLATORS: this is the message we send plymouth to
-			 * advise of the new percentage completion when installing system upgrades */
+			 * advise of the new percentage completion when installing OS upgrades */
 			msg = g_strdup_printf ("%s — %s", _("Installing System Upgrade"), tmp_perc);
 		} else {
 			/* TRANSLATORS: this is the message we send plymouth to
@@ -418,20 +419,19 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
-			     "failed to get prepared system upgrade version");
+			     "failed to get the upgrade ID of the prepared OS upgrade");
 		return FALSE;
 	}
 
 	pk_offline_update_set_plymouth_mode ("system-upgrade");
 
 	pk_offline_update_set_plymouth_msg (
-	    /* TRANSLATORS: we've started doing offline system upgrade */
-	    _("Installing system upgrade; this could take a while..."));
+	    /* TRANSLATORS: we've started doing an offline OS upgrade */
+	    _("Installing operating system upgrade; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
 	results = pk_client_upgrade_system (PK_CLIENT (task),
 					    0,
 					    version,
-					    PK_UPGRADE_KIND_ENUM_DEFAULT,
 					    NULL, /* GCancellable */
 					    pk_offline_update_progress_cb,
 					    progressbar, /* user_data */
@@ -513,7 +513,7 @@ main (int argc, char *argv[])
 			retval = EXIT_FAILURE;
 			pk_offline_update_write_error (error);
 			sd_journal_print (LOG_WARNING,
-					  "failed to upgrade system: %s",
+					  "failed to upgrade the OS: %s",
 					  error->message);
 			goto out;
 		}

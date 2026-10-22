@@ -28,7 +28,7 @@
 #include <glib-object.h>
 #include "pk-bitfield.h"
 #include "pk-details.h"
-#include "pk-distro-upgrade.h"
+#include "pk-system-upgrade.h"
 #include "pk-enum.h"
 #include "pk-error.h"
 #include "pk-eula-required.h"
@@ -92,8 +92,8 @@ gboolean       pk_results_add_details (PkResults *results,
 				       PkDetails *item);
 gboolean       pk_results_add_update_detail (PkResults	    *results,
 					     PkUpdateDetail *item);
-gboolean       pk_results_add_distro_upgrade (PkResults	      *results,
-					      PkDistroUpgrade *item);
+gboolean       pk_results_add_system_upgrade (PkResults	      *results,
+					      PkSystemUpgrade *item);
 gboolean       pk_results_add_require_restart (PkResults	*results,
 					       PkRequireRestart *item);
 gboolean       pk_results_add_history_item (PkResults	  *results,
@@ -119,7 +119,7 @@ PkRestartEnum  pk_results_get_require_restart_worst (PkResults *results);
 GPtrArray     *pk_results_get_package_array (PkResults *results);
 GPtrArray     *pk_results_get_details_array (PkResults *results);
 GPtrArray     *pk_results_get_update_detail_array (PkResults *results);
-GPtrArray     *pk_results_get_distro_upgrade_array (PkResults *results);
+GPtrArray     *pk_results_get_system_upgrade_array (PkResults *results);
 GPtrArray     *pk_results_get_require_restart_array (PkResults *results);
 GPtrArray     *pk_results_get_history_array (PkResults *results);
 GPtrArray     *pk_results_get_files_array (PkResults *results);

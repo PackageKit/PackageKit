@@ -443,14 +443,15 @@
 
     <!--*********************************************************************-->
     <!--
-      GetDistroUpgrades:
+      GetSystemUpgrades:
 
-      This method should return a list of distribution upgrades that are
-      available. It should not return updates, only major upgrades.
+      This method returns the operating system releases this system can be
+      upgraded to with `UpgradeSystem`. It must not return package updates, only
+      upgrades to a different release of the operating system.
 
-      This method typically emits `DistroUpgrade`, `Error` and
+      This method typically emits `SystemUpgrade`, `Error` and `Finished`.
     -->
-    <method name="GetDistroUpgrades">
+    <method name="GetSystemUpgrades">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
     </method>
 
@@ -865,19 +866,20 @@
     <!--*********************************************************************-->
     <!--
       UpgradeSystem:
-      @transaction_flags: If this method is can only install trusted files, and the files are unsigned, then the backend will send a `ErrorCode(missing-gpg-signature)`.
-      @distro_id: The distribution ID to upgrade to, e.g. `fedora-14`.
-      @upgrade_kind: The type of upgrade, e.g. `minimal`, `default` or `complete`. Minimal upgrades will download the smallest amount of data
-        before launching a installer.
-        The default is to download enough data to launch a full graphical installer, but a complete upgrade will be required if there is no
-        internet access during install time.
+      @transaction_flags: If this method can only install trusted packages, and the packages are unsigned, then the backend will send a `ErrorCode(missing-gpg-signature)`.
+        With `only-download` the upgrade is only prepared, so that it can be applied offline later.
+      @upgrade_id: The ID of the upgrade to perform, as reported by `GetSystemUpgrades` in the `SystemUpgrade` signal, e.g. `fedora-42`.
 
-      This method perfoms a distribution upgrade to the specified version.
+      This method upgrades the operating system to a different release. It is
+      a whole-system operation that changes the release the package manager
+      targets and then brings the installed packages in line with it, which
+      may involve downgrades, vendor changes and removals. It is not a package
+      update; use `UpdatePackages` for that.
 
       This method typically emits `Progress`, `Status` and `Error` and
       `Packages`.
 
-      Notes on `distro_id`:
+      Notes on `upgrade_id`:
 
       Backends may use this as a filename component, so it has to start with
       an alphanumeric character and may otherwise only contain alphanumeric
@@ -887,8 +889,7 @@
     <method name="UpgradeSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="t" name="transaction_flags" direction="in"/>
-      <arg type="s" name="distro_id" direction="in"/>
-      <arg type="u" name="upgrade_kind" direction="in"/>
+      <arg type="s" name="upgrade_id" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
@@ -1221,17 +1222,17 @@
 
     <!--*********************************************************************-->
     <!--
-      DistroUpgrade:
-      @type: A valid upgrade enumerated type, e.g. `stable` or `unstable`
-      @name: The short name of the distribution, e.g. `Fedora Core 10 RC1`
-      @summary: The multi-line description of the release.
+      SystemUpgrade:
+      @type: The kind of release, e.g. `stable` or `unstable`
+      @id: The ID of the upgrade, to be passed to `UpgradeSystem`, e.g. `fedora-42`
+      @summary: The description of the release.
 
-      This signal allows the backend to communicate distribution upgrades to
-      the session.
+      This signal allows the backend to communicate operating system upgrades
+      to the session.
     -->
-    <signal name="DistroUpgrade">
+    <signal name="SystemUpgrade">
       <arg type="u" name="type" direction="out"/>
-      <arg type="s" name="name" direction="out"/>
+      <arg type="s" name="id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>
 

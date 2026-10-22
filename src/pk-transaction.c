@@ -136,7 +136,6 @@ struct _PkTransaction
 	gchar *cached_value;
 	gchar *cached_directory;
 	gchar *cached_cat_id;
-	PkUpgradeKindEnum cached_upgrade_kind;
 	guint registration_id;
 	GDBusConnection *connection;
 	GDBusNodeInfo *introspection;
@@ -694,11 +693,11 @@ pk_transaction_item_progress_cb (PkBackendJob *job,
 }
 
 static void
-pk_transaction_distro_upgrade_cb (PkBackendJob *job,
-				  PkDistroUpgrade *item,
+pk_transaction_system_upgrade_cb (PkBackendJob *job,
+				  PkSystemUpgrade *item,
 				  PkTransaction *transaction)
 {
-	PkDistroUpgradeEnum state;
+	PkReleaseKindEnum state;
 	const gchar *id;
 	const gchar *summary;
 
@@ -706,16 +705,16 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 	g_return_if_fail (transaction->tid != NULL);
 
 	/* add to results */
-	pk_results_add_distro_upgrade (transaction->results, item);
+	pk_results_add_system_upgrade (transaction->results, item);
 
 	/* get data */
-	state = pk_distro_upgrade_get_state (item);
-	id = pk_distro_upgrade_get_id (item);
-	summary = pk_distro_upgrade_get_summary (item);
+	state = pk_system_upgrade_get_state (item);
+	id = pk_system_upgrade_get_id (item);
+	summary = pk_system_upgrade_get_summary (item);
 
 	/* emit */
-	g_debug ("emitting distro-upgrade %s, %s, %s",
-		 pk_distro_upgrade_enum_to_string (state),
+	g_debug ("emitting system-upgrade %s, %s, %s",
+		 pk_release_kind_enum_to_string (state),
 		 id,
 		 summary);
 	g_dbus_connection_emit_signal (
@@ -723,7 +722,7 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 	    NULL,
 	    transaction->tid,
 	    PK_DBUS_INTERFACE_TRANSACTION,
-	    "DistroUpgrade",
+	    "SystemUpgrade",
 	    g_variant_new ("(uss)", state, id, summary != NULL ? summary : ""),
 	    NULL);
 }
@@ -995,7 +994,7 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 		const gchar *version = transaction->cached_value;
 		g_autofree gchar *name = NULL;
 
-		name = pk_get_distro_name (&error);
+		name = pk_get_os_name (&error);
 		if (name == NULL) {
 			g_warning ("failed to get distro name: %s", error->message);
 			return;
@@ -1869,8 +1868,8 @@ pk_transaction_run (PkTransaction *transaction)
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_files_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (transaction->job,
-				  PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
-				  PK_BACKEND_JOB_VFUNC (pk_transaction_distro_upgrade_cb),
+				  PK_BACKEND_SIGNAL_SYSTEM_UPGRADE,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_system_upgrade_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (transaction->job,
 				  PK_BACKEND_SIGNAL_FINISHED,
@@ -1966,8 +1965,8 @@ pk_transaction_run (PkTransaction *transaction)
 					    transaction->job,
 					    transaction->cached_fds);
 		break;
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
-		pk_backend_get_distro_upgrades (transaction->backend, transaction->job);
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
+		pk_backend_get_system_upgrades (transaction->backend, transaction->job);
 		break;
 	case PK_ROLE_ENUM_GET_FILES:
 		pk_backend_get_files (transaction->backend,
@@ -2088,8 +2087,7 @@ pk_transaction_run (PkTransaction *transaction)
 		pk_backend_upgrade_system (transaction->backend,
 					   transaction->job,
 					   transaction->cached_transaction_flags,
-					   transaction->cached_value,
-					   transaction->cached_upgrade_kind);
+					   transaction->cached_value);
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		pk_backend_repair_system (transaction->backend,
@@ -2263,8 +2261,8 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 }
 
 /**
- * pk_transaction_distro_id_validate:
- * @distro_id: The distribution ID to check, e.g. "fedora-14"
+ * pk_transaction_upgrade_id_validate:
+ * @upgrade_id: The distribution ID to check, e.g. "fedora-14"
  * @error: The #GError to store any failure, or %NULL
  *
  * Tests a distribution ID for validity.
@@ -2278,48 +2276,48 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
  * Return value: %TRUE if the distribution ID is valid
  **/
 gboolean
-pk_transaction_distro_id_validate (const gchar *distro_id, GError **error)
+pk_transaction_upgrade_id_validate (const gchar *upgrade_id, GError **error)
 {
 	/* catch the empty, overlong and non-UTF-8 cases first */
-	if (!pk_transaction_strvalidate (distro_id, error))
+	if (!pk_transaction_strvalidate (upgrade_id, error))
 		return FALSE;
 
 	/* has to start with an alphanumeric, so that it can never be read as an
 	 * option, a relative path or a hidden directory */
-	if (!g_ascii_isalnum (distro_id[0])) {
+	if (!g_ascii_isalnum (upgrade_id[0])) {
 		g_set_error (error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Invalid distribution ID passed to daemon: "
 			     "does not start with an alphanumeric character: %s",
-			     distro_id);
+			     upgrade_id);
 		return FALSE;
 	}
 
-	for (guint i = 0; distro_id[i] != '\0'; i++) {
-		if (g_ascii_isalnum (distro_id[i]))
+	for (guint i = 0; upgrade_id[i] != '\0'; i++) {
+		if (g_ascii_isalnum (upgrade_id[i]))
 			continue;
-		if (distro_id[i] == '.' || distro_id[i] == '_' || distro_id[i] == '+' ||
-		    distro_id[i] == '-')
+		if (upgrade_id[i] == '.' || upgrade_id[i] == '_' || upgrade_id[i] == '+' ||
+		    upgrade_id[i] == '-')
 			continue;
 		g_set_error (error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Invalid distribution ID passed to daemon: "
 			     "invalid character '%c': %s",
-			     distro_id[i],
-			     distro_id);
+			     upgrade_id[i],
+			     upgrade_id);
 		return FALSE;
 	}
 
 	/* no path traversal, even though there is no directory separator left */
-	if (strstr (distro_id, "..") != NULL) {
+	if (strstr (upgrade_id, "..") != NULL) {
 		g_set_error (error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_INPUT_INVALID,
 			     "Invalid distribution ID passed to daemon: "
 			     "contains a path traversal sequence: %s",
-			     distro_id);
+			     upgrade_id);
 		return FALSE;
 	}
 
@@ -3206,7 +3204,7 @@ out:
 }
 
 static void
-pk_transaction_get_distro_upgrades (PkTransaction *transaction,
+pk_transaction_get_system_upgrades (PkTransaction *transaction,
 				    GVariant *params,
 				    GDBusMethodInvocation *context)
 {
@@ -3215,20 +3213,20 @@ pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	g_debug ("GetDistroUpgrades method called");
+	g_debug ("GetSystemUpgrades method called");
 
 	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_DISTRO_UPGRADES)) {
+	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_SYSTEM_UPGRADES)) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "GetDistroUpgrades not supported by backend");
+			     "GetSystemUpgrades not supported by backend");
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* save so we can run later */
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_SYSTEM_UPGRADES);
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
@@ -4805,20 +4803,18 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 {
 	gboolean ret;
 	PkBitfield transaction_flags;
-	PkUpgradeKindEnum upgrade_kind;
-	const gchar *distro_id;
+	const gchar *upgrade_id;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *transaction_flags_temp = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	g_variant_get (params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
+	g_variant_get (params, "(t&s)", &transaction_flags, &upgrade_id);
 
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-	g_debug ("UpgradeSystem method called: %s: %s  (transaction_flags: %s)",
-		 distro_id,
-		 pk_upgrade_kind_enum_to_string (upgrade_kind),
+	g_debug ("UpgradeSystem method called: %s (transaction_flags: %s)",
+		 upgrade_id,
 		 transaction_flags_temp);
 
 	/* not implemented yet */
@@ -4831,16 +4827,15 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* validate the distro ID and ensure it is sane */
-	if (!pk_transaction_distro_id_validate (distro_id, &error)) {
+	/* validate the upgrade ID and ensure it is sane */
+	if (!pk_transaction_upgrade_id_validate (upgrade_id, &error)) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
 	/* save so we can run later */
 	transaction->cached_transaction_flags = transaction_flags;
-	transaction->cached_value = g_strdup (distro_id);
-	transaction->cached_upgrade_kind = upgrade_kind;
+	transaction->cached_value = g_strdup (upgrade_id);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 
 	/* this changed */
@@ -5072,8 +5067,8 @@ pk_transaction_method_call (GDBusConnection *connection_,
 		pk_transaction_get_updates (transaction, parameters, invocation);
 		return;
 	}
-	if (g_strcmp0 (method_name, "GetDistroUpgrades") == 0) {
-		pk_transaction_get_distro_upgrades (transaction, parameters, invocation);
+	if (g_strcmp0 (method_name, "GetSystemUpgrades") == 0) {
+		pk_transaction_get_system_upgrades (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "InstallFiles") == 0) {

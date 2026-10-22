@@ -89,7 +89,7 @@ struct _PkEngine
 	const gchar *backend_name;
 	const gchar *backend_description;
 	const gchar *backend_author;
-	gchar *distro_id;
+	gchar *os_id;
 	gchar **reboot_package_ids; /* NULL if no system restart is pending */
 	guint timeout_priority_id;
 	guint timeout_normal_id;
@@ -1086,8 +1086,8 @@ pk_engine_daemon_get_property (GDBusConnection *connection_,
 		return g_variant_new_strv ((const gchar *const *) engine->mime_types, -1);
 	if (g_strcmp0 (property_name, "Locked") == 0)
 		return g_variant_new_boolean (engine->locked);
-	if (g_strcmp0 (property_name, "DistroId") == 0)
-		return _g_variant_new_maybe_string (engine->distro_id);
+	if (g_strcmp0 (property_name, "OsId") == 0)
+		return _g_variant_new_maybe_string (engine->os_id);
 	if (g_strcmp0 (property_name, "RebootRequired") == 0)
 		return pk_engine_get_reboot_required_variant (engine);
 
@@ -1744,7 +1744,7 @@ pk_engine_init (PkEngine *engine)
 	}
 
 	/* try to get the distro id */
-	engine->distro_id = pk_get_distro_id ();
+	engine->os_id = pk_get_os_id ();
 
 	engine->timer = g_timer_new ();
 
@@ -1826,7 +1826,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->dbus);
 	g_strfreev (engine->mime_types);
 	g_strfreev (engine->reboot_package_ids);
-	g_free (engine->distro_id);
+	g_free (engine->os_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

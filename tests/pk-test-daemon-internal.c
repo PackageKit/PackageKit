@@ -1117,13 +1117,13 @@ pk_test_transaction_func (void)
 					   NULL };
 
 		for (guint i = 0; valid[i] != NULL; i++) {
-			ret = pk_transaction_distro_id_validate (valid[i], &error);
+			ret = pk_transaction_upgrade_id_validate (valid[i], &error);
 			g_assert_no_error (error);
 			g_assert_true (ret);
 			g_clear_error (&error);
 		}
 		for (guint i = 0; invalid[i] != NULL; i++) {
-			ret = pk_transaction_distro_id_validate (invalid[i], &error);
+			ret = pk_transaction_upgrade_id_validate (invalid[i], &error);
 			g_assert_error (error,
 					PK_TRANSACTION_ERROR,
 					PK_TRANSACTION_ERROR_INPUT_INVALID);
@@ -1332,7 +1332,7 @@ static guint sm_details = 0;
 static guint sm_update_details = 0;
 static guint sm_files = 0;
 static guint sm_repo_details = 0;
-static guint sm_distro_upgrades = 0;
+static guint sm_system_upgrades = 0;
 static guint sm_item_progress = 0;
 static guint sm_require_restart = 0;
 static guint sm_eula = 0;
@@ -1399,11 +1399,11 @@ pk_test_spawn_module_repo_detail_cb (PkBackendJob *job, PkRepoDetail *item, gpoi
 }
 
 static void
-pk_test_spawn_module_distro_upgrade_cb (PkBackendJob *job,
-					PkDistroUpgrade *item,
+pk_test_spawn_module_system_upgrade_cb (PkBackendJob *job,
+					PkSystemUpgrade *item,
 					gpointer user_data)
 {
-	sm_distro_upgrades++;
+	sm_system_upgrades++;
 }
 
 static void
@@ -1477,7 +1477,7 @@ pk_test_spawn_module_job_new (GKeyFile *conf, PkBackend *backend)
 		{ PK_BACKEND_SIGNAL_UPDATE_DETAILS, pk_test_spawn_module_update_details_cb },
 		{ PK_BACKEND_SIGNAL_FILES, pk_test_spawn_module_files_cb },
 		{ PK_BACKEND_SIGNAL_REPO_DETAIL, pk_test_spawn_module_repo_detail_cb },
-		{ PK_BACKEND_SIGNAL_DISTRO_UPGRADE, pk_test_spawn_module_distro_upgrade_cb },
+		{ PK_BACKEND_SIGNAL_SYSTEM_UPGRADE, pk_test_spawn_module_system_upgrade_cb },
 		{ PK_BACKEND_SIGNAL_ITEM_PROGRESS, pk_test_spawn_module_item_progress_cb },
 		{ PK_BACKEND_SIGNAL_REQUIRE_RESTART, pk_test_spawn_module_require_restart_cb },
 		{ PK_BACKEND_SIGNAL_EULA_REQUIRED, pk_test_spawn_module_eula_cb },
@@ -1495,7 +1495,7 @@ pk_test_spawn_module_job_new (GKeyFile *conf, PkBackend *backend)
 					  PK_BACKEND_JOB_VFUNC (vfuncs[i].cb),
 					  NULL);
 	sm_packages = sm_details = sm_update_details = sm_files = sm_repo_details = 0;
-	sm_distro_upgrades = sm_item_progress = sm_require_restart = sm_eula = sm_repo_sig = 0;
+	sm_system_upgrades = sm_item_progress = sm_require_restart = sm_eula = sm_repo_sig = 0;
 	sm_percentage = 0;
 	sm_status = sm_error = sm_exit = -1;
 	pk_backend_start_job (backend, job);
@@ -1588,9 +1588,9 @@ pk_test_spawn_module_func (void)
 	g_assert_cmpuint (sm_repo_details, ==, 2);
 
 	job = pk_test_spawn_module_job_new (conf, backend);
-	pk_backend_get_distro_upgrades (backend, job);
+	pk_backend_get_system_upgrades (backend, job);
 	pk_test_spawn_module_job_wait (backend, job, 5000);
-	g_assert_cmpuint (sm_distro_upgrades, ==, 1);
+	g_assert_cmpuint (sm_system_upgrades, ==, 1);
 
 	/* transaction progress events */
 	job = pk_test_spawn_module_job_new (conf, backend);

@@ -66,7 +66,7 @@ void		pkgc_print_package_detail (PkgcliContext *ctx,
 					   PkDetails	 *details);
 void		pkgc_print_update_detail (PkgcliContext	 *ctx,
 					  PkUpdateDetail *update);
-void		pkgc_print_distro_upgrades (PkgcliContext *ctx,
+void		pkgc_print_os_upgrades (PkgcliContext *ctx,
 					    GPtrArray	  *upgrades);
 void		pkgc_print_repos (PkgcliContext *ctx,
 				  GPtrArray	*repos);

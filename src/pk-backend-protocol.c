@@ -200,7 +200,7 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 			return NULL;
 		STRV ("files", strv);
 		break;
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
 		break;
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		g_variant_get (params, "(^as&s)", &strv, &s1);
@@ -258,12 +258,9 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 		json_object_set_new (root, "autoremove", json_boolean (b1));
 		break;
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
-		g_variant_get (params, "(t&su)", &bits, &s1, &u);
+		g_variant_get (params, "(t&s)", &bits, &s1);
 		FLAGS (bits);
-		json_object_set_new (root, "distro_id", json_string (s1));
-		json_object_set_new (root,
-				     "upgrade_kind",
-				     json_string (pk_upgrade_kind_enum_to_string (u)));
+		json_object_set_new (root, "upgrade_id", json_string (s1));
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		g_variant_get (params, "(t)", &bits);
@@ -465,7 +462,7 @@ pk_backend_protocol_get_enum (json_t *obj,
 #define pk_group_ENUM_UNKNOWN_VALUE	     PK_GROUP_ENUM_UNKNOWN
 #define pk_update_state_ENUM_UNKNOWN_VALUE   PK_UPDATE_STATE_ENUM_UNKNOWN
 #define pk_sig_type_ENUM_UNKNOWN_VALUE	     PK_SIGTYPE_ENUM_UNKNOWN
-#define pk_distro_upgrade_ENUM_UNKNOWN_VALUE PK_DISTRO_UPGRADE_ENUM_UNKNOWN
+#define pk_release_kind_ENUM_UNKNOWN_VALUE PK_RELEASE_KIND_ENUM_UNKNOWN
 #define pk_role_ENUM_UNKNOWN_VALUE	     PK_ROLE_ENUM_UNKNOWN
 #define pk_issue_kind_ENUM_UNKNOWN_VALUE     PK_ISSUE_KIND_ENUM_UNKNOWN
 
@@ -895,7 +892,7 @@ pk_backend_protocol_handle_repo_details (json_t *root, PkBackendJob *job, GError
 }
 
 static gboolean
-pk_backend_protocol_handle_distro_upgrades (json_t *root, PkBackendJob *job, GError **error)
+pk_backend_protocol_handle_system_upgrades (json_t *root, PkBackendJob *job, GError **error)
 {
 	json_t *items = NULL;
 	json_t *item;
@@ -907,17 +904,17 @@ pk_backend_protocol_handle_distro_upgrades (json_t *root, PkBackendJob *job, GEr
 	{
 		const gchar *id = NULL;
 		const gchar *summary = NULL;
-		PkDistroUpgradeEnum type = PK_DISTRO_UPGRADE_ENUM_UNKNOWN;
+		PkReleaseKindEnum type = PK_RELEASE_KIND_ENUM_UNKNOWN;
 
 		if (!json_is_object (item))
 			return pk_backend_protocol_invalid (
 			    error,
-			    "distro-upgrades items must be objects");
-		if (!GET_ENUM (item, "type", pk_distro_upgrade, &type) ||
+			    "system-upgrades items must be objects");
+		if (!GET_ENUM (item, "type", pk_release_kind, &type) ||
 		    !pk_backend_protocol_get_string (item, "id", FALSE, &id, error) ||
 		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error))
 			return FALSE;
-		pk_backend_job_distro_upgrade (job, type, id, summary);
+		pk_backend_job_system_upgrade (job, type, id, summary);
 	}
 	return TRUE;
 }
@@ -1067,8 +1064,8 @@ pk_backend_protocol_handle_event (const gchar *log_domain,
 	} else if (g_strcmp0 (ev, "repo-details") == 0) {
 		return pk_backend_protocol_handle_repo_details (root, job, error);
 
-	} else if (g_strcmp0 (ev, "distro-upgrades") == 0) {
-		return pk_backend_protocol_handle_distro_upgrades (root, job, error);
+	} else if (g_strcmp0 (ev, "system-upgrades") == 0) {
+		return pk_backend_protocol_handle_system_upgrades (root, job, error);
 
 	} else if (g_strcmp0 (ev, "error") == 0) {
 		if (!GET_ENUM (root, "code", pk_error, &value) ||

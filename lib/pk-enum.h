@@ -71,13 +71,13 @@ typedef struct
  * @PK_ROLE_ENUM_WHAT_PROVIDES: Get packages that provide a capability
  * @PK_ROLE_ENUM_ACCEPT_EULA: Accept an EULA
  * @PK_ROLE_ENUM_DOWNLOAD_PACKAGES: Download packages
- * @PK_ROLE_ENUM_GET_DISTRO_UPGRADES: Get available distribution upgrades
+ * @PK_ROLE_ENUM_GET_SYSTEM_UPGRADES: Get the operating system releases this system can be upgraded to
  * @PK_ROLE_ENUM_GET_HISTORY: Get the transaction history
  * @PK_ROLE_ENUM_REPAIR_SYSTEM: Repair system
  * @PK_ROLE_ENUM_GET_DETAILS_LOCAL: Get details on local package
  * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
  * @PK_ROLE_ENUM_REPO_REMOVE: Remove repository
- * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade system
+ * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade the operating system to a new release
  *
  * What we were asked to do, this never changes for the lifetime of the
  * transaction.
@@ -111,7 +111,7 @@ typedef enum {
 	PK_ROLE_ENUM_WHAT_PROVIDES,
 	PK_ROLE_ENUM_ACCEPT_EULA,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
-	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+	PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 	PK_ROLE_ENUM_GET_HISTORY,
 	PK_ROLE_ENUM_REPAIR_SYSTEM,	/* Since: 0.7.2 */
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL, /* Since: 0.8.17 */
@@ -364,7 +364,7 @@ typedef enum {
  * @PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED: All packages already installed
  * @PK_ERROR_ENUM_FILE_NOT_FOUND: Required file not found
  * @PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY: Out of repository mirrors to try
- * @PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA: No distribution upgrade path found
+ * @PK_ERROR_ENUM_NO_SYSTEM_UPGRADE_DATA: No operating system upgrade path found
  * @PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE: Incompatible architecture found
  * @PK_ERROR_ENUM_NO_SPACE_ON_DEVICE: Out of required disk space
  * @PK_ERROR_ENUM_NOT_AUTHORIZED: Authorization failed
@@ -433,7 +433,7 @@ typedef enum {
 	PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
 	PK_ERROR_ENUM_FILE_NOT_FOUND,
 	PK_ERROR_ENUM_NO_MORE_MIRRORS_TO_TRY,
-	PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+	PK_ERROR_ENUM_NO_SYSTEM_UPGRADE_DATA,
 	PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,
 	PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
 	PK_ERROR_ENUM_NOT_AUTHORIZED,
@@ -726,20 +726,22 @@ typedef enum {
 } PkSeverityEnum;
 
 /**
- * PkDistroUpgradeEnum:
- * @PK_DISTRO_UPGRADE_ENUM_UNKNOWN: Unknown disto upgrade state
- * @PK_DISTRO_UPGRADE_ENUM_STABLE: Upgraded to stable release
- * @PK_DISTRO_UPGRADE_ENUM_UNSTABLE: Upgraded to unstable release
+ * PkReleaseKindEnum:
+ * @PK_RELEASE_KIND_ENUM_UNKNOWN: Unknown release kind
+ * @PK_RELEASE_KIND_ENUM_STABLE: A stable release
+ * @PK_RELEASE_KIND_ENUM_UNSTABLE: An unstable release
  *
- * The distro upgrade status
+ * The kind of operating system release an upgrade leads to.
+ *
+ * Since: 2.0.0
  **/
 typedef enum {
-	PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
-	PK_DISTRO_UPGRADE_ENUM_STABLE,
-	PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+	PK_RELEASE_KIND_ENUM_UNKNOWN,
+	PK_RELEASE_KIND_ENUM_STABLE,
+	PK_RELEASE_KIND_ENUM_UNSTABLE,
 	/*< private >*/
-	PK_DISTRO_UPGRADE_ENUM_LAST
-} PkDistroUpgradeEnum;
+	PK_RELEASE_KIND_ENUM_LAST
+} PkReleaseKindEnum;
 
 /**
  * PkSigTypeEnum:
@@ -772,24 +774,6 @@ typedef enum {
 	/*< private >*/
 	PK_AUTHORIZE_ENUM_LAST
 } PkAuthorizeEnum;
-
-/**
- * PkUpgradeKindEnum:
- * @PK_UPGRADE_KIND_ENUM_UNKNOWN:
- * @PK_UPGRADE_KIND_ENUM_MINIMAL: Perform minimal upgrade
- * @PK_UPGRADE_KIND_ENUM_DEFAULT: Perform default upgrade
- * @PK_UPGRADE_KIND_ENUM_COMPLETE: Perform complete upgrade
- *
- * The type of distribution upgrade to perform
- **/
-typedef enum {
-	PK_UPGRADE_KIND_ENUM_UNKNOWN,
-	PK_UPGRADE_KIND_ENUM_MINIMAL,
-	PK_UPGRADE_KIND_ENUM_DEFAULT,
-	PK_UPGRADE_KIND_ENUM_COMPLETE,
-	/*< private >*/
-	PK_UPGRADE_KIND_ENUM_LAST
-} PkUpgradeKindEnum;
 
 /**
  * PkTransactionFlagEnum:
@@ -879,14 +863,11 @@ const gchar	     *pk_group_enum_to_string (PkGroupEnum group);
 PkFilterEnum	      pk_filter_enum_from_string (const gchar *filter);
 const gchar	     *pk_filter_enum_to_string (PkFilterEnum filter);
 
-PkDistroUpgradeEnum   pk_distro_upgrade_enum_from_string (const gchar *upgrade);
-const gchar	     *pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade);
+PkReleaseKindEnum   pk_release_kind_enum_from_string (const gchar *kind);
+const gchar	     *pk_release_kind_enum_to_string (PkReleaseKindEnum kind);
 
 PkAuthorizeEnum	      pk_authorize_type_enum_from_string (const gchar *authorize_type);
 const gchar	     *pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type);
-
-PkUpgradeKindEnum     pk_upgrade_kind_enum_from_string (const gchar *upgrade_kind);
-const gchar	     *pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind);
 
 PkTransactionFlagEnum pk_transaction_flag_enum_from_string (const gchar *transaction_flag);
 const gchar	     *pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag);

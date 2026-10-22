@@ -652,7 +652,7 @@ pk_freebsd_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 
 // TODO: This requires pkgbase support
 // void
-// pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
+// pk_backend_get_system_upgrades (PkBackend *backend, PkBackendJob *job)
 // {
 // }
 
@@ -1317,8 +1317,7 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 // pk_backend_upgrade_system (PkBackend *backend,
 //                            PkBackendJob *job,
 //                            PkBitfield transaction_flags,
-//                            const gchar *distro_id,
-//                            PkUpgradeKindEnum upgrade_kind)
+//                            const gchar *upgrade_id)
 // {
 //     pk_backend_job_finished (job);
 //     g_error("pk_backend_upgrade_system not implemented yet");

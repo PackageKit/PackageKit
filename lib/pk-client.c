@@ -159,7 +159,7 @@ struct _PkClientState
 	gchar *repo_id;
 	gchar **search;
 	gchar *tid;
-	gchar *distro_id;
+	gchar *upgrade_id;
 	gchar *transaction_id;
 	gchar *value;
 	gpointer user_data;
@@ -175,7 +175,6 @@ struct _PkClientState
 	PkResults *results;
 	PkRoleEnum role;
 	PkSigTypeEnum type;
-	PkUpgradeKindEnum upgrade_kind;
 	gint remaining_files_to_copy;
 	PkClientHelper *client_helper;
 	gboolean waiting_for_finished;
@@ -320,7 +319,7 @@ pk_client_state_finalize (GObject *object)
 	g_strfreev (state->search);
 	g_free (state->value);
 	g_free (state->tid);
-	g_free (state->distro_id);
+	g_free (state->upgrade_id);
 	g_free (state->transaction_id);
 	g_strfreev (state->files);
 	g_strfreev (state->package_ids);
@@ -1418,10 +1417,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		g_variant_iter_free (iter);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "DistroUpgrade") == 0) {
-		g_autoptr(PkDistroUpgrade) item = NULL;
+	if (g_strcmp0 (signal_name, "SystemUpgrade") == 0) {
+		g_autoptr(PkSystemUpgrade) item = NULL;
 		g_variant_get (parameters, "(u&s&s)", &tmp_uint, &tmp_str[1], &tmp_str[2]);
-		item = pk_distro_upgrade_new ();
+		item = pk_system_upgrade_new ();
 		g_object_set (item,
 			      "state",
 			      tmp_uint,
@@ -1434,7 +1433,7 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			      "transaction-id",
 			      state->transaction_id,
 			      NULL);
-		pk_results_add_distro_upgrade (state->results, item);
+		pk_results_add_system_upgrade (state->results, item);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
@@ -2030,9 +2029,9 @@ pk_client_call_role_method (PkClientState *state)
 				   state->cancellable,
 				   pk_client_method_cb,
 				   g_object_ref (state));
-	} else if (state->role == PK_ROLE_ENUM_GET_DISTRO_UPGRADES) {
+	} else if (state->role == PK_ROLE_ENUM_GET_SYSTEM_UPGRADES) {
 		g_dbus_proxy_call (state->proxy,
-				   "GetDistroUpgrades",
+				   "GetSystemUpgrades",
 				   NULL,
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
@@ -2177,10 +2176,9 @@ pk_client_call_role_method (PkClientState *state)
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		g_dbus_proxy_call (state->proxy,
 				   "UpgradeSystem",
-				   g_variant_new ("(tsu)",
+				   g_variant_new ("(ts)",
 						  state->transaction_flags,
-						  state->distro_id,
-						  state->upgrade_kind),
+						  state->upgrade_id),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,
@@ -3364,7 +3362,7 @@ pk_client_what_provides_async (PkClient *client,
 }
 
 /**
- * pk_client_get_distro_upgrades_async: (finish-func pk_client_generic_finish):
+ * pk_client_get_system_upgrades_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -3372,13 +3370,15 @@ pk_client_what_provides_async (PkClient *client,
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * This method should return a list of distribution upgrades that are available.
+ * This method returns the operating system releases this system can be
+ * upgraded to with pk_client_upgrade_system_async(). It never returns package
+ * updates, only upgrades to a different OS release.
  * It should not return updates, only major upgrades.
  *
  * Since: 0.5.2
  **/
 void
-pk_client_get_distro_upgrades_async (PkClient *client,
+pk_client_get_system_upgrades_async (PkClient *client,
 				     GCancellable *cancellable,
 				     PkProgressCallback progress_callback,
 				     gpointer progress_user_data,
@@ -3397,8 +3397,8 @@ pk_client_get_distro_upgrades_async (PkClient *client,
 	state = pk_client_state_new (client,
 				     callback_ready,
 				     user_data,
-				     pk_client_get_distro_upgrades_async,
-				     PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+				     pk_client_get_system_upgrades_async,
+				     PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 				     cancellable);
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
@@ -4163,27 +4163,25 @@ pk_client_repo_remove_async (PkClient *client,
  * pk_client_upgrade_system_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
- * @distro_id: a distro ID such as "fedora-14"
- * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @upgrade_id: the ID of an upgrade reported by pk_client_get_system_upgrades_async(), such as "fedora-42"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * This transaction will update the distro to the next version, which may
- * involve just downloading the installer and setting up the boot device,
- * or may involve doing an on-line upgrade.
+ * This transaction will upgrade the operating system to the release
+ * identified by @upgrade_id. This is a whole-system operation that changes
+ * the release the package manager targets; it is not a package update.
+ * With %PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD the upgrade is only prepared
+ * and can be applied offline later.
  *
- * The backend will decide what is best to do.
- *
- * Since: 1.0.10
+ * Since: 2.0.0
  **/
 void
 pk_client_upgrade_system_async (PkClient *client,
 				PkBitfield transaction_flags,
-				const gchar *distro_id,
-				PkUpgradeKindEnum upgrade_kind,
+				const gchar *upgrade_id,
 				GCancellable *cancellable,
 				PkProgressCallback progress_callback,
 				gpointer progress_user_data,
@@ -4206,8 +4204,7 @@ pk_client_upgrade_system_async (PkClient *client,
 				     PK_ROLE_ENUM_UPGRADE_SYSTEM,
 				     cancellable);
 	state->transaction_flags = transaction_flags;
-	state->distro_id = g_strdup (distro_id);
-	state->upgrade_kind = upgrade_kind;
+	state->upgrade_id = g_strdup (upgrade_id);
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */

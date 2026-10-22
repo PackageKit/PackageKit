@@ -40,7 +40,7 @@ ROLE_ARGS = {
     'get-update-detail': ('package_ids',),
     'get-details-local': ('files',),
     'get-files-local': ('files',),
-    'get-distro-upgrades': (),
+    'get-system-upgrades': (),
     'download-packages': ('package_ids', 'directory'),
     'install-packages': ('flags', 'package_ids'),
     'update-packages': ('flags', 'package_ids'),
@@ -51,7 +51,7 @@ ROLE_ARGS = {
     'repo-enable': ('repo_id', 'enabled'),
     'repo-set-data': ('repo_id', 'parameter', 'value'),
     'repo-remove': ('flags', 'repo_id', 'autoremove'),
-    'upgrade-system': ('flags', 'distro_id', 'upgrade_kind'),
+    'upgrade-system': ('flags', 'upgrade_id'),
     'repair-system': ('flags',),
 }
 
@@ -112,7 +112,7 @@ class Backend:
     for the ``search-name`` role; see ROLE_ARGS for the arguments each takes.
     While a role method runs, ``self.ctx`` holds the transaction context.
     Results are emitted with the methods below; ``package``, ``details``,
-    ``update_detail``, ``repo_detail`` and ``distro_upgrade`` are collected and
+    ``update_detail``, ``repo_detail`` and ``system_upgrade`` are collected and
     sent in batches. A role method ends the job by returning, raising PkError
     for a specific error code, or raising anything else for an internal error.
     """
@@ -371,8 +371,8 @@ class Backend:
             'repo-details', {'repo_id': repo_id, 'description': description, 'enabled': enabled}
         )
 
-    def distro_upgrade(self, type, id, summary):
-        self._queue('distro-upgrades', {'type': type, 'id': id, 'summary': summary})
+    def system_upgrade(self, type, id, summary):
+        self._queue('system-upgrades', {'type': type, 'id': id, 'summary': summary})
 
     def error(self, code, details=''):
         """Fail the job with an error code; the job still runs until the method returns."""

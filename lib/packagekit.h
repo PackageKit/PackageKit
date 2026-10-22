@@ -31,7 +31,7 @@
 #include "pk-control-sync.h"
 #include "pk-details.h"
 #include "pk-issue.h"
-#include "pk-distro-upgrade.h"
+#include "pk-system-upgrade.h"
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 #include "pk-error.h"

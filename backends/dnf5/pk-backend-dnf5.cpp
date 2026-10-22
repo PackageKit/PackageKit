@@ -143,11 +143,11 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 
 	pk_backend_set_user_data(backend, priv);
 
-	release_ver = pk_get_distro_version_id(&error);
+	release_ver = pk_get_os_version_id(&error);
 	if (release_ver == NULL) {
 		g_warning("Failed to parse os-release: %s", error->message);
 	} else {
-		/* clean up any cache directories left over from a distro upgrade */
+		/* clean up any cache directories left over from an OS upgrade */
 		dnf5_remove_old_cache_directories(backend, release_ver);
 	}
 

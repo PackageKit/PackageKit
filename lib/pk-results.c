@@ -55,7 +55,7 @@ struct _PkResultsPrivate
 	PkError *error_code;
 	GPtrArray *details_array;
 	GPtrArray *update_detail_array;
-	GPtrArray *distro_upgrade_array;
+	GPtrArray *system_upgrade_array;
 	GPtrArray *require_restart_array;
 	GPtrArray *history_array;
 	GPtrArray *files_array;
@@ -263,7 +263,7 @@ pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
 }
 
 /**
- * pk_results_add_distro_upgrade:
+ * pk_results_add_system_upgrade:
  * @results: a valid #PkResults instance
  * @item: the object to add to the array
  *
@@ -274,7 +274,7 @@ pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
  * Since: 0.5.2
  **/
 gboolean
-pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
+pk_results_add_system_upgrade (PkResults *results, PkSystemUpgrade *item)
 {
 	PkResultsPrivate *priv = GET_PRIVATE(results);
 
@@ -282,7 +282,7 @@ pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (priv->distro_upgrade_array, g_object_ref (item));
+	g_ptr_array_add (priv->system_upgrade_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -632,23 +632,23 @@ pk_results_get_update_detail_array (PkResults *results)
 }
 
 /**
- * pk_results_get_distro_upgrade_array:
+ * pk_results_get_system_upgrade_array:
  * @results: a valid #PkResults instance
  *
  * Gets the distribution upgrades from the transaction.
  *
- * Return value: (element-type PkDistroUpgrade) (transfer container): A #GPtrArray array of #PkDistroUpgrade's, free with g_ptr_array_unref().
+ * Return value: (element-type PkSystemUpgrade) (transfer container): A #GPtrArray array of #PkSystemUpgrade's, free with g_ptr_array_unref().
  *
  * Since: 0.5.2
  **/
 GPtrArray *
-pk_results_get_distro_upgrade_array (PkResults *results)
+pk_results_get_system_upgrade_array (PkResults *results)
 {
 	PkResultsPrivate *priv = GET_PRIVATE(results);
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 
-	return g_ptr_array_ref (priv->distro_upgrade_array);
+	return g_ptr_array_ref (priv->system_upgrade_array);
 }
 
 /**
@@ -896,7 +896,7 @@ pk_results_init (PkResults *results)
 	priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->update_detail_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
-	priv->distro_upgrade_array = g_ptr_array_new_with_free_func (
+	priv->system_upgrade_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
 	priv->require_restart_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
@@ -920,7 +920,7 @@ pk_results_finalize (GObject *object)
 
 	g_clear_pointer (&priv->details_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->update_detail_array, g_ptr_array_unref);
-	g_clear_pointer (&priv->distro_upgrade_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->system_upgrade_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->require_restart_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->history_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->files_array, g_ptr_array_unref);

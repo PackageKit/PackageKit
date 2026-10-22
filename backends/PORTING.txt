@@ -2,8 +2,23 @@ Guide to porting backends from 1.x to 2.0
 
  * Spawned backends no longer need a C shim: ship a backend.conf manifest
    and the helper in $libdir/packagekit/backends/<name>/ and talk the JSON
-   Lines protocol (see docs/spec/backend-spawn.md), e.g. via the
+   Lines protocol (see docs/extra/backend-spawn-protocol.md), e.g. via the
    packagekit_backend Python library.
+
+ * Distribution upgrades are now system upgrades, matching UpgradeSystem.
+   GetDistroUpgrades is GetSystemUpgrades (role
+   PK_ROLE_ENUM_GET_SYSTEM_UPGRADES, spawn role `get-system-upgrades`) and
+   the DistroUpgrade signal is SystemUpgrade. UpgradeSystem keeps its name,
+   but its `distro_id` argument is now `upgrade_id`, the ID of an item from
+   GetSystemUpgrades, and the never-honoured `upgrade_kind` argument and
+   PkUpgradeKindEnum are gone (UPGRADE_KIND_* in Python as well): backends
+   receive the parameters as "(ts)". pk_backend_job_distro_upgrade() is
+   pk_backend_job_system_upgrade(), PkDistroUpgrade is PkSystemUpgrade and
+   PkDistroUpgradeEnum is PkReleaseKindEnum.
+
+ * The daemon property DistroId is now OsId, and pk_get_distro_id(),
+   pk_get_distro_name() and pk_get_distro_version_id() are pk_get_os_id(),
+   pk_get_os_name() and pk_get_os_version_id().
 
  * Compiled backends export a single pk_backend_run_job(backend, job) that
    switches on pk_backend_job_get_role() and reads the arguments from the

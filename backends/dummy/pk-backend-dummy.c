@@ -39,7 +39,7 @@ typedef struct
 	gboolean updated_kernel;
 	gboolean updated_powertop;
 	gboolean use_blocked;
-	gboolean use_distro_upgrade;
+	gboolean use_system_upgrade;
 	gboolean use_eula;
 	gboolean use_gpg;
 	gboolean use_trusted;
@@ -343,14 +343,14 @@ backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 }
 
 static void
-backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
+backend_get_system_upgrades (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	if (!priv->use_distro_upgrade)
+	if (!priv->use_system_upgrade)
 		goto out;
-	pk_backend_job_distro_upgrade (job, PK_DISTRO_UPGRADE_ENUM_STABLE, "fedora-9", "Fedora 9");
-	pk_backend_job_distro_upgrade (job,
-				       PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+	pk_backend_job_system_upgrade (job, PK_RELEASE_KIND_ENUM_STABLE, "fedora-9", "Fedora 9");
+	pk_backend_job_system_upgrade (job,
+				       PK_RELEASE_KIND_ENUM_UNSTABLE,
 				       "fedora-10-rc1",
 				       "Fedora 10 RC1");
 out:
@@ -1707,8 +1707,8 @@ backend_repo_set_data (PkBackend *backend,
 		priv->use_gpg = atoi (value);
 	else if (g_strcmp0 (parameter, "use-trusted") == 0)
 		priv->use_trusted = atoi (value);
-	else if (g_strcmp0 (parameter, "use-distro-upgrade") == 0)
-		priv->use_distro_upgrade = atoi (value);
+	else if (g_strcmp0 (parameter, "use-system-upgrade") == 0)
+		priv->use_system_upgrade = atoi (value);
 	pk_backend_job_finished (job);
 }
 
@@ -1908,8 +1908,7 @@ static void
 backend_upgrade_system (PkBackend *backend,
 			PkBackendJob *job,
 			PkBitfield transaction_flags,
-			const gchar *distro_id,
-			PkUpgradeKindEnum upgrade_kind)
+			const gchar *upgrade_id)
 {
 	PkBackendDummyJobData *job_data = pk_backend_job_get_user_data (job);
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
@@ -1953,8 +1952,8 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 		backend_get_details (backend, job, package_ids);
 		break;
 	}
-	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
-		backend_get_distro_upgrades (backend, job);
+	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
+		backend_get_system_upgrades (backend, job);
 		break;
 	case PK_ROLE_ENUM_GET_FILES: {
 		g_autofree gchar **package_ids = NULL;
@@ -2128,15 +2127,10 @@ pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 	}
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM: {
 		PkBitfield transaction_flags;
-		const gchar *distro_id;
-		guint32 upgrade_kind;
+		const gchar *upgrade_id;
 
-		g_variant_get (params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
-		backend_upgrade_system (backend,
-					job,
-					transaction_flags,
-					distro_id,
-					(PkUpgradeKindEnum) upgrade_kind);
+		g_variant_get (params, "(t&s)", &transaction_flags, &upgrade_id);
+		backend_upgrade_system (backend, job, transaction_flags, upgrade_id);
 		break;
 	}
 	case PK_ROLE_ENUM_REPAIR_SYSTEM: {
@@ -2164,7 +2158,7 @@ pk_backend_get_roles (PkBackend *backend)
 				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
 				       PK_ROLE_ENUM_GET_FILES_LOCAL,
 				       PK_ROLE_ENUM_GET_DETAILS,
-				       PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+				       PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 				       PK_ROLE_ENUM_GET_FILES,
 				       PK_ROLE_ENUM_GET_DEPENDENTS,
 				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,

@@ -642,7 +642,7 @@ pk_offline_get_prepared_ids (GError **error)
  * pk_offline_get_prepared_upgrade_name:
  * @error: A #GError or %NULL
  *
- * Gets the name of the prepared system upgrade in the prepared transaction.
+ * Gets the name of the operating system a prepared OS upgrade was created on.
  *
  * Return value: the name, or %NULL if unset, free with g_free()
  *
@@ -665,9 +665,11 @@ pk_offline_get_prepared_upgrade_name (GError **error)
  * pk_offline_get_prepared_upgrade_version:
  * @error: A #GError or %NULL
  *
- * Gets the version of the prepared system upgrade in the prepared transaction.
+ * Gets the upgrade ID of the prepared OS upgrade, i.e. the value that was
+ * passed to UpgradeSystem when the upgrade was prepared and that is passed to
+ * it again to apply the upgrade offline.
  *
- * Return value: the version, or %NULL if unset, free with g_free()
+ * Return value: the upgrade ID, or %NULL if unset, free with g_free()
  *
  * Since: 1.0.12
  **/

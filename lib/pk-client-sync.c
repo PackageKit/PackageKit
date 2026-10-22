@@ -1097,7 +1097,7 @@ pk_client_what_provides (PkClient *client,
 }
 
 /**
- * pk_client_get_distro_upgrades:
+ * pk_client_get_system_upgrades:
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -1115,7 +1115,7 @@ pk_client_what_provides (PkClient *client,
  * Since: 0.5.3
  **/
 PkResults *
-pk_client_get_distro_upgrades (PkClient *client,
+pk_client_get_system_upgrades (PkClient *client,
 			       GCancellable *cancellable,
 			       PkProgressCallback progress_callback,
 			       gpointer progress_user_data,
@@ -1136,7 +1136,7 @@ pk_client_get_distro_upgrades (PkClient *client,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_client_get_distro_upgrades_async (client,
+	pk_client_get_system_upgrades_async (client,
 					     cancellable,
 					     progress_callback,
 					     progress_user_data,
@@ -1949,32 +1949,28 @@ pk_client_repo_remove (PkClient *client,
 /**
  * pk_client_upgrade_system:
  * @client: a valid #PkClient instance
- * @distro_id: a distro ID such as "fedora-14"
  * @transaction_flags: transaction flags
- * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
+ * @upgrade_id: the ID of an upgrade reported by pk_client_get_system_upgrades(), such as "fedora-42"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * This transaction will upgrade the distro to the next version, which may
- * involve just downloading the installer and setting up the boot device,
- * or may involve doing an on-line upgrade.
- *
- * The backend will decide what is best to do.
+ * This transaction will upgrade the operating system to the release
+ * identified by @upgrade_id. This is a whole-system operation that changes
+ * the release the package manager targets; it is not a package update.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
  * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
- * Since: 1.0.10
+ * Since: 2.0.0
  **/
 PkResults *
 pk_client_upgrade_system (PkClient *client,
 			  PkBitfield transaction_flags,
-			  const gchar *distro_id,
-			  PkUpgradeKindEnum upgrade_kind,
+			  const gchar *upgrade_id,
 			  GCancellable *cancellable,
 			  PkProgressCallback progress_callback,
 			  gpointer progress_user_data,
@@ -1997,8 +1993,7 @@ pk_client_upgrade_system (PkClient *client,
 	/* run async method */
 	pk_client_upgrade_system_async (client,
 					transaction_flags,
-					distro_id,
-					upgrade_kind,
+					upgrade_id,
 					cancellable,
 					progress_callback,
 					progress_user_data,
