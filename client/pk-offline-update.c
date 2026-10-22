@@ -154,7 +154,7 @@ pk_offline_update_progress_cb (PkProgress *progress, PkProgressType type, gpoint
 				  pk_package_get_name (pkg),
 				  pk_package_get_version (pkg),
 				  pk_package_get_arch (pkg),
-				  pk_package_get_data (pkg));
+				  pk_package_get_origin (pkg));
 		break;
 	case PK_PROGRESS_TYPE_PERCENTAGE:
 		g_object_get (progress, "percentage", &percentage, NULL);
