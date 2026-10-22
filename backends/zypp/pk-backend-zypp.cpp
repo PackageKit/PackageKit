@@ -1996,6 +1996,13 @@ zypp_is_no_solvable (const sat::Solvable &solv)
 	return solv == sat::Solvable::noSolvable;
 }
 
+static bool
+zypp_package_is_locked (const sat::Solvable &solv)
+{
+	ui::Selectable::Ptr sel( ui::Selectable::get( solv ) );
+	return sel->locked();
+}
+
 /**
   * backend_get_dependents_thread:
   */
@@ -2034,6 +2041,9 @@ backend_get_dependents_thread (PkBackendJob *job, GVariant *params, gpointer use
 						     "Package couldn't be found");
 			return;
 		}
+
+		if (zypp_package_is_locked(solvable))
+			continue;
 
 		PoolItem package = PoolItem(solvable);
 
@@ -2717,6 +2727,9 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	Repository repo = ResPool::instance().reposFind("PK_TMP_DIR");
 
 	for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
+		if (PoolItem(*it).status().isLocked())
+			continue;
+
 		MIL << "Setting " << *it << " for installation" << endl;
 		PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
 	}
@@ -2878,6 +2891,9 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 				return;
 			}
 
+			if (zypp_package_is_locked(solvable))
+				continue;
+
 			split = pk_package_id_split (package_ids[i]);
 			ui::Selectable::Ptr sel (ui::Selectable::get (ResKind::package,
 								      split[PK_PACKAGE_ID_NAME]));
@@ -3029,6 +3045,10 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 						     "couldn't find package");
 			return;
 		}
+
+		if (zypp_package_is_locked(solvable))
+			continue;
+
 		PoolItem item(solvable);
 		if (item.status ().isLocked ()) {
 			zypp_backend_finished_error (job,
@@ -3543,6 +3563,9 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			return;
 		}
 
+		if (zypp_package_is_locked(solvable))
+			continue;
+
 		ui::Selectable::Ptr sel( ui::Selectable::get( solvable ));
 
 		PoolItem item(solvable);
@@ -3907,6 +3930,9 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 							     "couldn't find package");
 				return;
 			}
+
+			if (zypp_package_is_locked(solvable))
+				continue;
 
 			PoolItem item(solvable);
 			size += 2 * make<ResObject>(solvable)->downloadSize();
