@@ -333,21 +333,9 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 
 gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
 {
-    pkgCache::VerFileIterator vf = ver.FileList();
-    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-    pkgDepCache::StateCache &State = (*this)[pkg];
+    const auto origin = utilBuildPackageOriginId(ver.FileList());
 
-    const bool isInstalled = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
-    const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
-
-    // when a package is installed manually, the data part of a package-id is "manual",
-    // otherwise it is "auto". Available (not installed) packages have no data.
-    const char *data = "";
-    if (isInstalled)
-        data = isAuto ? "auto" : "manual";
-    const auto origin = utilBuildPackageOriginId(vf);
-
-    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), origin.c_str(), data);
+    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), origin.c_str(), nullptr);
 }
 
 pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)
