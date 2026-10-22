@@ -46,14 +46,14 @@ static void pk_distro_upgrade_finalize (GObject *object);
 struct _PkDistroUpgradePrivate
 {
 	PkDistroUpgradeEnum state;
-	gchar *name;
+	gchar *id;
 	gchar *summary;
 };
 
 enum {
 	PROP_0,
 	PROP_STATE,
-	PROP_NAME, /* FIXME: should be "ID" */
+	PROP_ID,
 	PROP_SUMMARY,
 	PROP_LAST
 };
@@ -79,7 +79,7 @@ pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
 
 	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
 
-	return priv->name;
+	return priv->id;
 }
 
 /**
@@ -136,8 +136,8 @@ pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, G
 	case PROP_STATE:
 		g_value_set_enum (value, priv->state);
 		break;
-	case PROP_NAME:
-		g_value_set_string (value, priv->name);
+	case PROP_ID:
+		g_value_set_string (value, priv->id);
 		break;
 	case PROP_SUMMARY:
 		g_value_set_string (value, priv->summary);
@@ -164,9 +164,9 @@ pk_distro_upgrade_set_property (GObject *object,
 	case PROP_STATE:
 		priv->state = g_value_get_enum (value);
 		break;
-	case PROP_NAME:
-		g_free (priv->name);
-		priv->name = g_value_dup_string (value);
+	case PROP_ID:
+		g_free (priv->id);
+		priv->id = g_value_dup_string (value);
 		break;
 	case PROP_SUMMARY:
 		g_free (priv->summary);
@@ -204,16 +204,16 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
-	 * PkDistroUpgrade:name:
+	 * PkDistroUpgrade:id:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("name",
+	pspec = g_param_spec_string ("id",
 				     NULL,
 				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_NAME, pspec);
+	g_object_class_install_property (object_class, PROP_ID, pspec);
 
 	/**
 	 * PkDistroUpgrade:summary:
@@ -246,7 +246,7 @@ pk_distro_upgrade_finalize (GObject *object)
 	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
 	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
-	g_clear_pointer (&priv->name, g_free);
+	g_clear_pointer (&priv->id, g_free);
 	g_clear_pointer (&priv->summary, g_free);
 
 	G_OBJECT_CLASS (pk_distro_upgrade_parent_class)->finalize (object);

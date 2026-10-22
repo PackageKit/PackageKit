@@ -136,8 +136,7 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
  * pk_package_compare_versions:
  *
  * Compare two versions like strcmp(), except that runs of digits are compared
- * by their value. Unlike the collation functions, this does not depend on the
- * locale.
+ * by their value.
  */
 static gint
 pk_package_compare_versions (const gchar *version1, const gchar *version2)
