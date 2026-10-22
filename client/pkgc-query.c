@@ -39,16 +39,12 @@ pkgc_query_file_sort_func (gconstpointer a, gconstpointer b)
  * Print the results of a query, optionally with package summaries.
  */
 static void
-pkgc_query_finish (GObject *source_object,
-		   GAsyncResult *res,
-		   PkgcliContext *ctx,
+pkgc_query_finish (PkgcliContext *ctx,
+		   PkResults *results,
+		   const GError *error,
 		   gboolean show_summary)
 {
-	g_autoptr(GError) error = NULL;
-	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) array = NULL;
-
-	results = pk_task_generic_finish (PK_TASK (source_object), res, &error);
 
 	if (ctx->progressbar != NULL && ctx->is_tty)
 		pk_progress_bar_end (ctx->progressbar);
@@ -119,6 +115,14 @@ pkgc_query_finish (GObject *source_object,
 		}
 	}
 
+	/* Process OS upgrades */
+	g_clear_pointer (&array, g_ptr_array_unref);
+	array = pk_results_get_distro_upgrade_array (results);
+	if (array->len == 0 && pk_results_get_role (results) == PK_ROLE_ENUM_GET_DISTRO_UPGRADES)
+		pkgc_print_info (ctx, _("There are no OS upgrades available."));
+	else
+		pkgc_print_distro_upgrades (ctx, array);
+
 out:
 	g_main_loop_quit (ctx->loop);
 }
@@ -129,7 +133,11 @@ out:
 static void
 pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	pkgc_query_finish (source_object, res, user_data, FALSE);
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+
+	results = pk_task_generic_finish (PK_TASK (source_object), res, &error);
+	pkgc_query_finish (user_data, results, error, FALSE);
 }
 
 /**
@@ -138,14 +146,33 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 static void
 pkgc_query_on_search_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	pkgc_query_finish (source_object, res, user_data, TRUE);
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+
+	results = pk_task_generic_finish (PK_TASK (source_object), res, &error);
+	pkgc_query_finish (user_data, results, error, TRUE);
 }
 
 /**
  * pkgc_query_on_client_finished_cb:
+ *
+ * Print the results of a query that has no #PkTask variant.
  */
 static void
 pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+
+	results = pk_client_generic_finish (PK_CLIENT (source_object), res, &error);
+	pkgc_query_finish (user_data, results, error, FALSE);
+}
+
+/**
+ * pkgc_query_on_history_finished_cb:
+ */
+static void
+pkgc_query_on_history_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
 	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
@@ -296,7 +323,7 @@ pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 				     ctx->cancellable,
 				     pkgc_context_on_progress_cb,
 				     ctx,
-				     pkgc_query_on_client_finished_cb,
+				     pkgc_query_on_history_finished_cb,
 				     ctx);
 
 	g_main_loop_run (ctx->loop);

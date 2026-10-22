@@ -1120,6 +1120,52 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 	}
 }
 
+/**
+ * pkgc_print_distro_upgrades:
+ *
+ * Print the available OS upgrades, or one JSON object per upgrade in JSON mode.
+ */
+void
+pkgc_print_distro_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
+{
+	for (guint i = 0; i < upgrades->len; i++) {
+		PkDistroUpgrade *upgrade = g_ptr_array_index (upgrades, i);
+		const gchar *id = pk_distro_upgrade_get_id (upgrade);
+		const gchar *summary = pk_distro_upgrade_get_summary (upgrade);
+		const gchar *state = pk_distro_upgrade_enum_to_string (
+		    pk_distro_upgrade_get_state (upgrade));
+
+		if (ctx->output_mode == PKGCLI_MODE_JSON) {
+			g_autoptr(json_t) root = json_object ();
+
+			json_object_set_new (root, "id", json_string (id));
+			json_object_set_new (root, "state", json_string (state));
+			json_object_set_new (root, "summary", json_string (summary ? summary : ""));
+			pkgc_print_json (root);
+			continue;
+		}
+
+		if (i > 0)
+			g_print ("\n"); /* add some visual spacing */
+
+		g_print ("%s%s%s %s\n",
+			 pkgc_get_color (ctx, COLOR_BOLD),
+			 /* TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44" */
+			 _("Distribution:"), pkgc_get_reset_color (ctx), id);
+		g_print ("%s%s%s %s\n",
+			 pkgc_get_color (ctx, COLOR_BOLD),
+			 /* TRANSLATORS: Label for the kind of an OS upgrade, e.g. "stable" */
+			 _("Type:"), pkgc_get_reset_color (ctx), state);
+
+		if (summary && summary[0] != '\0') {
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the summary of an OS upgrade */
+				 _("Summary:"), pkgc_get_reset_color (ctx), summary);
+		}
+	}
+}
+
 static gint
 pkgc_repo_sort_func (gconstpointer a, gconstpointer b)
 {
