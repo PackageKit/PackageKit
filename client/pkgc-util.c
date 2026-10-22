@@ -44,6 +44,7 @@
 #define SYMBOL_CHECK   "✔"
 #define SYMBOL_CROSS   "✘"
 #define SYMBOL_DOT     "●"
+#define SYMBOL_CIRCLE  "○"
 #define SYMBOL_PACKAGE "▣"
 #define SYMBOL_UP      "▲"
 #define SYMBOL_DOWN    "▼"
@@ -1218,7 +1219,8 @@ pkgc_print_repos (PkgcliContext *ctx, GPtrArray *repos)
  * pkgc_print_refreshed_repos:
  *
  * Print the sources that were processed while refreshing the metadata,
- * in the order the backend reported them, marked by whether that worked.
+ * in the order the backend reported them, marked by whether they were
+ * fetched or skipped. Backends report skipped sources as disabled.
  */
 void
 pkgc_print_refreshed_repos (PkgcliContext *ctx, GPtrArray *repos)
@@ -1235,11 +1237,11 @@ pkgc_print_refreshed_repos (PkgcliContext *ctx, GPtrArray *repos)
 
 	for (guint i = 0; i < repos->len; i++) {
 		PkRepoDetail *repo = g_ptr_array_index (repos, i);
-		gboolean ok = pk_repo_detail_get_enabled (repo);
+		gboolean fetched = pk_repo_detail_get_enabled (repo);
 
 		g_print ("%s%s%s %s\n",
-			 pkgc_get_color (ctx, ok ? COLOR_GREEN : COLOR_RED),
-			 ok ? SYMBOL_CHECK : SYMBOL_CROSS,
+			 pkgc_get_color (ctx, fetched ? COLOR_GREEN : COLOR_GRAY),
+			 fetched ? SYMBOL_CHECK : SYMBOL_CIRCLE,
 			 pkgc_get_reset_color (ctx),
 			 pkgc_repo_get_name (repo));
 	}
