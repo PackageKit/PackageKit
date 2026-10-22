@@ -19,8 +19,8 @@
 #ifndef ACQ_PKIT_STATUS_H
 #define ACQ_PKIT_STATUS_H
 
-#include <set>
 #include <string>
+#include <vector>
 #include <apt-pkg/acquire-item.h>
 #include <pk-backend.h>
 
@@ -49,7 +49,8 @@ private:
     unsigned long m_lastPercent;
     double m_lastCPS;
 
-    std::set<std::string> m_reportedItems;
+    // what was reported for every item while refreshing, indexed by item ID - 1
+    std::vector<bool> m_reportedItems;
 
     AptJob *m_apt;
     PkBackendJob *m_job;

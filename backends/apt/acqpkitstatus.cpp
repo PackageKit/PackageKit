@@ -228,12 +228,20 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc &Itm, int status)
 
 // AcqPackageKitStatus::reportRefreshedItem - Report an item fetched while refreshing
 // ---------------------------------------------------------------------
-/* apt can notify about the same item more than once, e.g. when it passes
-   through several acquire methods. Only report the first notification, so
-   every source is listed once. */
+/* apt notifies about every stage an item passes through, e.g. downloading and
+   decompressing it. Like apt's own progress output, tag items with an ID that
+   stays the same across stages, and only report an item again if its state
+   changed. */
 void AcqPackageKitStatus::reportRefreshedItem(pkgAcquire::ItemDesc &Itm, bool success)
 {
-    if (!m_reportedItems.insert(Itm.Description).second) {
+    unsigned long &id = Itm.Owner->ID;
+
+    if (id == 0 || id > m_reportedItems.size()) {
+        m_reportedItems.push_back(success);
+        id = m_reportedItems.size();
+    } else if (m_reportedItems[id - 1] != success) {
+        m_reportedItems[id - 1] = success;
+    } else {
         return;
     }
     pk_backend_job_repo_detail(m_job, "", Itm.Description.c_str(), success);
