@@ -672,6 +672,9 @@ pk_test_package_compare_func (void)
 	g_autoptr(PkPackage) foo_110 = pk_test_package_new_for_id ("foo;1.10;amd64;repo;");
 	g_autoptr(PkPackage) foo_110_i386 = pk_test_package_new_for_id ("foo;1.10;i386;repo;");
 	g_autoptr(PkPackage) foo_110_other = pk_test_package_new_for_id ("foo;1.10;amd64;other;");
+	g_autoptr(PkPackage) foo_109 = pk_test_package_new_for_id ("foo;1.09;amd64;repo;");
+	g_autoptr(PkPackage) foo_1100 = pk_test_package_new_for_id ("foo;1.10.0;amd64;repo;");
+	g_autoptr(PkPackage) foo_110a = pk_test_package_new_for_id ("foo;1.10a;amd64;repo;");
 	g_autoptr(PkPackageSack) sack = pk_package_sack_new ();
 	g_autoptr(GPtrArray) array = NULL;
 
@@ -681,6 +684,17 @@ pk_test_package_compare_func (void)
 
 	/* numbers in versions are compared by value */
 	g_assert_cmpint (pk_package_compare (foo_19, foo_110), <, 0);
+	g_assert_cmpint (pk_package_compare (foo_110, foo_19), >, 0);
+	g_assert_cmpint (pk_package_compare (foo_109, foo_110), <, 0);
+
+	/* leading zeros do not change the value, but still give a fixed order */
+	g_assert_cmpint (pk_package_compare (foo_109, foo_19), <, 0);
+	g_assert_cmpint (pk_package_compare (foo_19, foo_109), >, 0);
+
+	/* a version sorts before the versions that extend it */
+	g_assert_cmpint (pk_package_compare (foo_110, foo_1100), <, 0);
+	g_assert_cmpint (pk_package_compare (foo_110, foo_110a), <, 0);
+	g_assert_cmpint (pk_package_compare (foo_1100, foo_110a), <, 0);
 
 	/* then the architecture, the origin does not matter */
 	g_assert_cmpint (pk_package_compare (foo_110, foo_110_i386), <, 0);

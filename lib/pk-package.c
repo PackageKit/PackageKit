@@ -31,6 +31,7 @@
 
 #include "config.h"
 
+#include <string.h>
 #include <glib-object.h>
 
 #include "pk-package.h"
@@ -131,6 +132,54 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
 		priv1->info == priv2->info && priv1->update_severity == priv2->update_severity);
 }
 
+/*
+ * pk_package_compare_versions:
+ *
+ * Compare two versions like strcmp(), except that runs of digits are compared
+ * by their value. Unlike the collation functions, this does not depend on the
+ * locale.
+ */
+static gint
+pk_package_compare_versions (const gchar *version1, const gchar *version2)
+{
+	const gchar *p1 = version1;
+	const gchar *p2 = version2;
+
+	while (*p1 != '\0' && *p2 != '\0') {
+		if (g_ascii_isdigit (*p1) && g_ascii_isdigit (*p2)) {
+			gsize len1;
+			gsize len2;
+			gint ret;
+
+			/* without leading zeros, the longer number is the larger one */
+			while (*p1 == '0')
+				p1++;
+			while (*p2 == '0')
+				p2++;
+			len1 = strspn (p1, "0123456789");
+			len2 = strspn (p2, "0123456789");
+			if (len1 != len2)
+				return len1 < len2 ? -1 : 1;
+
+			ret = memcmp (p1, p2, len1);
+			if (ret != 0)
+				return ret;
+			p1 += len1;
+			p2 += len2;
+		} else if (*p1 == *p2) {
+			p1++;
+			p2++;
+		} else {
+			break;
+		}
+	}
+	if (*p1 != *p2)
+		return (guchar) *p1 < (guchar) *p2 ? -1 : 1;
+
+	/* the versions differ in leading zeros at most */
+	return strcmp (version1, version2);
+}
+
 /**
  * pk_package_compare:
  * @package1: a valid #PkPackage instance
@@ -139,9 +188,10 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
  * Compare two packages to sort them for display, by name, then version and
  * then architecture.
  *
- * Versions are compared with numbers in them ordered by value, so "1.9" sorts
- * before "1.10". This is a heuristic for presenting packages to users, it does
- * not implement the version comparison rules of any particular package manager.
+ * Versions are compared with the numbers in them ordered by value, so "1.9"
+ * sorts before "1.10", and the order does not depend on the locale. This is a
+ * heuristic for presenting packages to users, it does not implement the
+ * version comparison rules of any particular package manager.
  *
  * Returns: a negative value if @package1 sorts before @package2, zero if they
  *   sort equally, and a positive value otherwise.
@@ -164,20 +214,12 @@ pk_package_compare (PkPackage *package1, PkPackage *package2)
 
 	version1 = pk_package_get_version (package1);
 	version2 = pk_package_get_version (package2);
-	if (g_strcmp0 (version1, version2) != 0) {
-		g_autofree gchar *key1 = NULL;
-		g_autofree gchar *key2 = NULL;
-
-		if (version1 == NULL || version2 == NULL)
-			return version1 == NULL ? -1 : 1;
-
-		/* the filename collation compares numbers by value */
-		key1 = g_utf8_collate_key_for_filename (version1, -1);
-		key2 = g_utf8_collate_key_for_filename (version2, -1);
-		ret = g_strcmp0 (key1, key2);
-		if (ret != 0)
-			return ret;
-	}
+	if (version1 != NULL && version2 != NULL)
+		ret = pk_package_compare_versions (version1, version2);
+	else
+		ret = g_strcmp0 (version1, version2);
+	if (ret != 0)
+		return ret;
 
 	return g_strcmp0 (pk_package_get_arch (package1), pk_package_get_arch (package2));
 }
