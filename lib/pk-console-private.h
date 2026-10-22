@@ -56,9 +56,17 @@ void			      pk_console_table_set_indent (PkConsoleTable *table,
 							   guint	   indent);
 void			      pk_console_table_set_flexible (PkConsoleTable *table,
 							     guint	     column);
+void			      pk_console_table_set_spacing (PkConsoleTable *table,
+							    guint	    column,
+							    guint	    spacing);
+void			      pk_console_table_set_max_width (PkConsoleTable *table,
+							      guint	      column,
+							      guint	      max_width);
 void			      pk_console_table_add_row (PkConsoleTable *table,
 							const gchar    *first,
 							...);
+void			      pk_console_table_add_text (PkConsoleTable *table,
+							 const gchar	*text);
 void			      pk_console_table_set_color (PkConsoleTable *table,
 							  guint		  column,
 							  const gchar	 *color);

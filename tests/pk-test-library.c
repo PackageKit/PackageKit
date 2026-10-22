@@ -1284,6 +1284,38 @@ pk_test_console_func (void)
 			 "  über  z\n"
 			 "  yy\n");
 	g_free (text);
+
+	/* text lines get the table indentation, blank ones stay empty */
+	pk_console_table_add_text (table, "note\n\nend");
+	text = pk_console_table_render (table, 100, FALSE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "  A     C\n"
+			 "  über  z\n"
+			 "  yy\n"
+			 "  note\n"
+			 "\n"
+			 "  end\n");
+	g_free (text);
+	pk_console_table_free (table);
+
+	/* long values in a capped column only push their own line, text lines
+	 * do not affect the column widths, the spacing can be changed */
+	table = pk_console_table_new (3);
+	pk_console_table_set_spacing (table, 0, 1);
+	pk_console_table_set_max_width (table, 1, 4);
+	pk_console_table_add_row (table, "*", "a", "x");
+	pk_console_table_add_text (table, "    a long line of text");
+	pk_console_table_add_row (table, "*", "longname", "y");
+	pk_console_table_add_row (table, "*", "bc", "z");
+	text = pk_console_table_render (table, 100, FALSE);
+	g_assert_cmpstr (text,
+			 ==,
+			 "* a     x\n"
+			 "    a long line of text\n"
+			 "* longname  y\n"
+			 "* bc    z\n");
+	g_free (text);
 	pk_console_table_free (table);
 
 	/* wrap long lines, keep short ones and existing line breaks */
