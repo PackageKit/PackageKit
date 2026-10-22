@@ -233,6 +233,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 {
 	g_autoptr(PkClientState) state_owned = g_object_ref (state);
 	g_autoptr(GError) error_owned = g_steal_pointer (&error);
+	g_autoptr(GTask) res = NULL;
 
 	g_debug ("%s: PkClientState %p, error %p, PkClientState.res (GTask) %p",
 		 G_STRFUNC,
@@ -269,17 +270,21 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	pk_client_state_remove (state->client, state);
 	/* `state_owned` may be the only strong ref to `state` remaining after this point */
 
+	/* Mark the state as finished *before* returning the result as well. If the
+	 * completion callback cancels the GCancellable this transaction was started with,
+	 * pk_client_cancellable_cancel_cb() re-enters this function, which must not return
+	 * the GTask a second time. */
+	res = g_steal_pointer (&state->res);
+
+	/* return our result */
 	if (state->ret) {
-		g_task_return_pointer (state->res,
+		g_task_return_pointer (res,
 				       state->querying_progress
 				       ? G_OBJECT (g_object_ref (state->progress))
 				       : G_OBJECT (g_object_ref (state->results)), g_object_unref);
 	} else {
-		g_task_return_error (state->res, g_steal_pointer (&error_owned));
+		g_task_return_error (res, g_steal_pointer (&error_owned));
 	}
-
-	/* mark the state as finished */
-	g_clear_object (&state->res);
 }
 
 static gboolean
