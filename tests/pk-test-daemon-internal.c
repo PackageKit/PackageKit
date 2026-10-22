@@ -1274,17 +1274,19 @@ pk_test_transaction_db_func (void)
 
 		tid = pk_transaction_db_generate_id (db);
 		g_assert_true (pk_transaction_db_add (db, tid));
-		g_assert_true (
-		    pk_transaction_db_set_data (db,
-						tid,
-						"installing\tfoo;1.0;x86_64;fedora;\tFoo summary\n"
-						"removing\tbar;2.0;noarch;;\t"));
+		g_assert_true (pk_transaction_db_set_data (
+		    db,
+		    tid,
+		    "installing\tfoo;1.0;x86_64;fedora;\tFoo summary\n"
+		    "removing\tbar;2.0;noarch;;\t\n"
+		    /* PackageKit 1.x IDs had no separate origin */
+		    "updating\tbaz;3.0;i386;installed:fedora\tBaz summary"));
 		g_free (tid);
 		list = pk_transaction_db_get_list (db, 0);
 		g_assert_cmpint (g_list_length (list), ==, 1);
 		packages = pk_history_item_get_packages (PK_HISTORY_ITEM (list->data));
 		g_assert_nonnull (packages);
-		g_assert_cmpint (packages->len, ==, 2);
+		g_assert_cmpint (packages->len, ==, 3);
 		pkg = g_ptr_array_index (packages, 0);
 		g_assert_cmpint (pk_package_get_info (pkg), ==, PK_INFO_ENUM_INSTALLING);
 		g_assert_cmpstr (pk_package_get_id (pkg), ==, "foo;1.0;x86_64;fedora;");
@@ -1292,6 +1294,10 @@ pk_test_transaction_db_func (void)
 		pkg = g_ptr_array_index (packages, 1);
 		g_assert_cmpint (pk_package_get_info (pkg), ==, PK_INFO_ENUM_REMOVING);
 		g_assert_cmpstr (pk_package_get_id (pkg), ==, "bar;2.0;noarch;;");
+		pkg = g_ptr_array_index (packages, 2);
+		g_assert_cmpint (pk_package_get_info (pkg), ==, PK_INFO_ENUM_UPDATING);
+		g_assert_cmpstr (pk_package_get_id (pkg), ==, "baz;3.0;i386;installed:fedora;");
+		g_assert_cmpstr (pk_package_get_summary (pkg), ==, "Baz summary");
 		g_list_free_full (g_steal_pointer (&list), g_object_unref);
 	}
 }

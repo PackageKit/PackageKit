@@ -701,12 +701,15 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 
 	string = g_string_new ("");
 	for (i = 0; i < array->len; i++) {
+		const gchar *summary;
+
 		pkg = g_ptr_array_index (array, i);
+		summary = pk_package_get_summary (pkg);
 		g_string_append_printf (string,
 					"%s\t%s\t%s\n",
 					pk_info_enum_to_string (pk_package_get_info (pkg)),
 					pk_package_get_id (pkg),
-					pk_package_get_summary (pkg));
+					summary != NULL ? summary : "");
 	}
 
 	/* remove trailing newline */
@@ -731,6 +734,33 @@ pk_transaction_state_to_string (PkTransactionState state)
 	if (state == PK_TRANSACTION_STATE_ERROR)
 		return "error";
 	return NULL;
+}
+
+/*
+ * pk_transaction_is_recorded:
+ *
+ * Returns: %TRUE if the transaction changes the installed packages and
+ * is therefore saved in the transaction history
+ */
+static gboolean
+pk_transaction_is_recorded (PkTransaction *transaction)
+{
+	/* simulations do not change anything */
+	if (pk_bitfield_contain (transaction->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+		return FALSE;
+
+	switch (transaction->role) {
+	case PK_ROLE_ENUM_INSTALL_FILES:
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+		return TRUE;
+	default:
+		return FALSE;
+	}
 }
 
 /**
@@ -769,19 +799,14 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 	g_signal_emit (transaction, signals[SIGNAL_STATE_CHANGED], 0, state);
 
 	/* only get cmdline when it's going to be saved into the database */
-	if (transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+	if (pk_transaction_is_recorded (transaction)) {
 		if (transaction->client_pid != PK_TRANSACTION_PID_INVALID &&
 		    transaction->cmdline == NULL)
 			transaction->cmdline = pk_get_cmdline_for_pid (transaction->client_pid);
 	}
 
 	/* only save into the database for useful stuff */
-	if (state == PK_TRANSACTION_STATE_READY &&
-	    (transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	     transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	     transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+	if (state == PK_TRANSACTION_STATE_READY && pk_transaction_is_recorded (transaction)) {
 
 		/* add to database */
 		pk_transaction_db_add (transaction->transaction_db, transaction->tid);
@@ -1060,9 +1085,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	g_debug ("backend was running for %i ms", time_ms);
 
 	/* add to the database if we are going to log it */
-	if (transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+	if (pk_transaction_is_recorded (transaction)) {
 		g_autoptr(GPtrArray) array = NULL;
 		g_autofree gchar *packages = NULL;
 

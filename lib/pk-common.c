@@ -162,8 +162,7 @@ pk_iso8601_to_datetime (const gchar *iso_date)
 		goto out;
 
 	/* try to parse complete ISO8601 date */
-	if (g_strstr_len (iso_date, -1, " ") != NULL)
-		date = g_date_time_new_from_iso8601 (iso_date, NULL);
+	date = g_date_time_new_from_iso8601 (iso_date, NULL);
 
 	if (date) {
 		g_debug ("Parsed %s %" G_GINT64_FORMAT, iso_date, g_date_time_to_unix (date));

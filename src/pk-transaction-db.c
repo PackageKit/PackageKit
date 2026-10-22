@@ -75,10 +75,25 @@ pk_transaction_db_parse_packages (const gchar *data)
 	for (guint i = 0; lines[i] != NULL; i++) {
 		g_autoptr(GError) error = NULL;
 		g_autoptr(PkPackage) package = pk_package_new ();
+		g_auto(GStrv) sections = NULL;
+		g_autofree gchar *line = NULL;
 
 		if (lines[i][0] == '\0')
 			continue;
-		if (!pk_package_parse (package, lines[i], &error)) {
+
+		/* PackageKit 1.x stored IDs as name;version;arch;data, read the old
+		 * data as the origin of an ID that has no data of its own */
+		sections = g_strsplit (lines[i], "\t", -1);
+		if (g_strv_length (sections) == 3) {
+			g_auto(GStrv) id_sections = g_strsplit (sections[1], ";", -1);
+			if (g_strv_length (id_sections) == 4)
+				line = g_strdup_printf ("%s\t%s;\t%s",
+							sections[0],
+							sections[1],
+							sections[2]);
+		}
+
+		if (!pk_package_parse (package, line != NULL ? line : lines[i], &error)) {
 			g_warning ("Failed to parse package '%s': %s", lines[i], error->message);
 			continue;
 		}
