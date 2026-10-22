@@ -1014,16 +1014,12 @@ class PackageKitPortageMixin(object):
         if slot != '0':
             version = version + ':' + slot
 
-        data = ""
-        if self._is_installed(cpv):
-            repo = repo_meta
-            data = "installed"
-        elif self._is_binpkg(cpv):
+        if not self._is_installed(cpv) and self._is_binpkg(cpv):
             repo = "binpkg"
         else:
             repo = repo_meta
 
-        return pkb.get_package_id(package, version, ' '.join(keywords), repo, data)
+        return pkb.get_package_id(package, version, ' '.join(keywords), repo)
 
     def _get_required_packages(self, cpv_input, recursive):
         '''

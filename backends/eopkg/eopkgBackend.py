@@ -284,19 +284,14 @@ class PackageKitEopkgBackend(pkb.Backend):
         """PiSi pkg to pk id"""
         # FIXME: when getting repo, we can't use self.packagedb/installdb here
         # as they get invalidated by the pisi.api call.
-        data = ""
         if pisi.db.packagedb.PackageDB().has_package(pkg.name):
             repo = pisi.db.packagedb.PackageDB().which_repo(pkg.name)
-            if pisi.db.installdb.InstallDB().has_package(pkg.name):
-                data = "installed"
+        elif pisi.db.installdb.InstallDB().has_package(pkg.name):
+            repo = ""
         else:
-            if pisi.db.installdb.InstallDB().has_package(pkg.name):
-                repo = ""
-                data = "installed"
-            else:
-                repo = "local"
+            repo = "local"
         version = self.__get_package_version(pkg)
-        pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, repo, data)
+        pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, repo)
         return pkg_id
 
     def _get_package_obj_from_id(self, package_id):
@@ -304,9 +299,12 @@ class PackageKitEopkgBackend(pkb.Backend):
         name, version, arch, origin, data = pkb.split_package_id(package_id)
         pkg = None
 
-        if origin == "local" or data == "installed":
-            if self.installdb.has_package(name):
-                pkg = self.installdb.get_package(name)
+        # installed packages share their id with the package of the repository
+        # they are available from, so take the installed package if the version matches
+        if self.installdb.has_package(name):
+            installed = self.installdb.get_package(name)
+            if origin == "local" or self.__get_package_version(installed) == version:
+                pkg = installed
 
         if pkg is None and self.packagedb.has_package(name):
             pkg, repo = self.packagedb.get_package_repo(name, None)
@@ -349,7 +347,7 @@ class PackageKitEopkgBackend(pkb.Backend):
         if installed is None and available is None:
             raise pkb.PkError(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
 
-        # We will collect candidate packages here: (pkg, status, origin, data)
+        # We will collect candidate packages here: (pkg, status, origin)
         candidates = []
 
         # Check if we have any status filters
@@ -359,10 +357,10 @@ class PackageKitEopkgBackend(pkb.Backend):
         if has_status_filter:
             if pkb.FILTER_INSTALLED in filters:
                 if installed:
-                    candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                    candidates.append((installed, pkb.INFO_INSTALLED, repo or ""))
             elif pkb.FILTER_NOT_INSTALLED in filters:
                 if available:
-                    candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                    candidates.append((available, pkb.INFO_AVAILABLE, repo))
             elif pkb.FILTER_NEWEST in filters:
                 if installed and available:
                     # Compare versions/releases
@@ -375,41 +373,35 @@ class PackageKitEopkgBackend(pkb.Backend):
                     # In Solus/eopkg, release is the primary versioning for updates.
                     if v_inst[0] == v_avail[0]:
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo))
                         elif int(v_avail[1]) == int(v_inst[1]):
                             # Same version, show both
-                            candidates.append(
-                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
-                            )
-                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or ""))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo))
                         else:
                             # Installed is newer
-                            candidates.append(
-                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
-                            )
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or ""))
                     else:
                         # Versions differ, we'd need a version comparison tool here.
                         # For now, if versions differ, we'll just show both or available
                         # if it looks newer (e.g. higher release).
                         # Most often, version is the same.
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo))
                         else:
-                            candidates.append(
-                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
-                            )
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or ""))
                 elif available:
-                    candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                    candidates.append((available, pkb.INFO_AVAILABLE, repo))
                 elif installed:
-                    candidates.append((installed, pkb.INFO_INSTALLED, "", "installed"))
+                    candidates.append((installed, pkb.INFO_INSTALLED, ""))
         else:
             # No status filters, show both if they exist
             if installed:
-                candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                candidates.append((installed, pkb.INFO_INSTALLED, repo or ""))
             if available:
-                candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+                candidates.append((available, pkb.INFO_AVAILABLE, repo))
 
-        for pkg, status, origin, data in candidates:
+        for pkg, status, origin in candidates:
             if filters is not None:
                 if pkb.FILTER_APPLICATION in filters and "app:gui" not in pkg.isA:
                     continue
@@ -436,7 +428,7 @@ class PackageKitEopkgBackend(pkb.Backend):
                         continue
 
             version = self.__get_package_version(pkg)
-            pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, origin, data)
+            pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, origin)
             self.package(pkg_id, status, pkg.summary)
 
     def get_dependencies(self, filters, package_ids, recursive):
@@ -563,7 +555,7 @@ class PackageKitEopkgBackend(pkb.Backend):
 
             if self.installdb.has_package(pkg.name):
                 pkg_id = pkb.get_package_id(
-                    pkg.name, self.__get_package_version(pkg), pkg.architecture, origin, "installed"
+                    pkg.name, self.__get_package_version(pkg), pkg.architecture, origin
                 )
 
                 pkg_files = self.installdb.get_files(pkg.name)
@@ -683,7 +675,7 @@ class PackageKitEopkgBackend(pkb.Backend):
                 #       we could cross-examine but it's of little benefit
                 version = self.__get_package_version(current_pkg)
                 updates = pkb.get_package_id(
-                    current_pkg.name, version, current_pkg.architecture, origin, "installed"
+                    current_pkg.name, version, current_pkg.architecture, origin
                 )
             else:
                 updates = ""

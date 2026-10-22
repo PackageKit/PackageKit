@@ -1457,19 +1457,19 @@ static gchar *
 package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 {
 	gchar *evr, *package_id, *poldek_dir;
-	const gchar *data = NULL;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
 	evr = poldek_pkg_evr (pkg);
 
-	/* when filters contain PK_FILTER_ENUM_NOT_INSTALLED package
-	 * can't be marked as installed */
+	/* the rpm database does not record which repository a package was installed
+	 * from, so installed packages have no origin.
+	 * When filters contain PK_FILTER_ENUM_NOT_INSTALLED package can't be marked
+	 * as installed. */
 	if (g_strcmp0 (repo, "installed") == 0 ||
 	    (repo == NULL && !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 	     pkg_is_installed (pkg))) {
 		poldek_dir = NULL;
-		data = "installed";
 	} else if (repo != NULL) {
 		poldek_dir = g_strdup (repo);
 	} else if (pkg->pkgdir && pkg->pkgdir->name) {
@@ -1478,7 +1478,7 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 		poldek_dir = g_strdup ("all-avail");
 	}
 
-	package_id = pk_package_id_build (pkg->name, evr, pkg_arch (pkg), poldek_dir, data);
+	package_id = pk_package_id_build (pkg->name, evr, pkg_arch (pkg), poldek_dir, NULL);
 
 	g_free (evr);
 	g_free (poldek_dir);
@@ -1578,8 +1578,9 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 
 		vr = poldek_get_vr_from_package_id_evr (parts[PK_PACKAGE_ID_VERSION]);
 
-		/* installed packages live in the "installed" poldek directory */
-		if (g_strcmp0 (parts[PK_PACKAGE_ID_DATA], "installed") == 0)
+		/* installed packages have no origin, they live in the "installed"
+		 * poldek directory */
+		if (parts[PK_PACKAGE_ID_ORIGIN][0] == '\0')
 			poldek_dir = "installed";
 		else
 			poldek_dir = parts[PK_PACKAGE_ID_ORIGIN];

@@ -32,7 +32,6 @@ pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 {
 	const gchar *name, *version, *arch;
 	const gchar *repo = NULL;
-	const gchar *data = NULL;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
@@ -43,13 +42,20 @@ pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 	if (arch == NULL)
 		arch = "any";
 
-	/* TODO: check correctness */
-	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_SYNCDB)
+	/* the local database does not record which repository a package was
+	 * installed from, so installed packages have no origin */
+	switch (alpm_pkg_get_origin (pkg)) {
+	case ALPM_PKG_FROM_SYNCDB:
 		repo = alpm_db_get_name (alpm_pkg_get_db (pkg));
-	else
-		data = "installed";
+		break;
+	case ALPM_PKG_FROM_FILE:
+		repo = "local";
+		break;
+	default:
+		break;
+	}
 
-	return pk_package_id_build (name, version, arch, repo, data);
+	return pk_package_id_build (name, version, arch, repo, NULL);
 }
 
 void
@@ -93,8 +99,10 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 	package = pk_package_id_split (package_id);
 	repo_id = package[PK_PACKAGE_ID_ORIGIN];
 
-	/* find the database to search in */
-	if (g_strcmp0 (package[PK_PACKAGE_ID_DATA], "installed") == 0) {
+	/* find the database to search in: installed packages have no origin, and a
+	 * package file that has been installed can only be found in the local
+	 * database as well */
+	if (repo_id[0] == '\0' || g_strcmp0 (repo_id, "local") == 0) {
 		db = priv->localdb;
 	} else {
 		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm_check ? priv->alpm_check : priv->alpm);

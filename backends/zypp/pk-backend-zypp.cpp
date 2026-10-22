@@ -111,6 +111,15 @@ typedef enum {
         EQUAL_VERSION
 } VersionRelation;
 
+/* Installed packages share their package-id with the identical package of a
+ * repository, if there is one. This selects which of the two a package-id
+ * resolves to. */
+typedef enum {
+	PACKAGE_LOOKUP_PREFER_INSTALLED,	/* the installed package if there is one */
+	PACKAGE_LOOKUP_INSTALLED,		/* only installed packages, e.g. to remove them */
+	PACKAGE_LOOKUP_AVAILABLE		/* only packages from repositories */
+} PackageLookup;
+
 class ZyppJob {
  public:
 	ZyppJob(PkBackendJob *job);
@@ -173,7 +182,6 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 	gchar *package_id;
 	const char *arch;
 	g_autofree gchar *repo = NULL;
-	g_autofree gchar *data = NULL;
 
 	if (isKind<SrcPackage>(resolvable))
 		arch = "source";
@@ -187,7 +195,6 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 
 		/* libzypp does not record where an installed package came from, so only
 		 * claim an origin if an identical package is still available from a repository */
-		data = g_strdup ("installed");
 		if (availablePI)
 			repo = g_strdup (availablePI.repository ().alias ().c_str ());
 	} else
@@ -195,7 +202,7 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
-					  arch, repo, data);
+					  arch, repo, NULL);
 
 	return package_id;
 }
@@ -1021,7 +1028,7 @@ zypp_package_is_local (const gchar *package_id)
  * e.g. gnome-packagekit;3.6.1-132.1;x86_64;G:F
 */
 static sat::Solvable
-zypp_get_package_by_id (const gchar *package_id)
+zypp_get_package_by_id (const gchar *package_id, PackageLookup lookup)
 {
 	MIL << package_id << endl;
 	if (!pk_package_id_check(package_id)) {
@@ -1036,6 +1043,8 @@ zypp_get_package_by_id (const gchar *package_id)
 	bool want_source = !g_strcmp0 (arch, "source");
 
 	sat::Solvable package;
+	sat::Solvable installed;
+	sat::Solvable available;
 
 	ResPool pool = ResPool::instance();
 
@@ -1062,24 +1071,28 @@ zypp_get_package_by_id (const gchar *package_id)
 			continue;
 		}
 
-		if (!pkg.isSystem()) {
-			if (g_strcmp0(id_parts[PK_PACKAGE_ID_DATA], "installed") == 0) {
-				//MIL << "pkg is not installed\n";
-				continue;
-			}
-			if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_ORIGIN])) {
-				//MIL << "repo does not match\n";
-				continue;
-			}
-		} else if (g_strcmp0(id_parts[PK_PACKAGE_ID_DATA], "installed") != 0) {
-			//MIL << "pkg installed\n";
+		// only one installed package can match, so its origin does not need to match
+		if (pkg.isSystem()) {
+			if (!installed)
+				installed = pkg;
 			continue;
 		}
 
-		MIL << "found " << pkg << endl;
-		package = pkg;
-		break;
+		if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_ORIGIN])) {
+			//MIL << "repo does not match\n";
+			continue;
+		}
+		if (!available)
+			available = pkg;
 	}
+
+	if (lookup == PACKAGE_LOOKUP_INSTALLED ||
+	    (lookup == PACKAGE_LOOKUP_PREFER_INSTALLED && installed))
+		package = installed;
+	else
+		package = available;
+	if (package)
+		MIL << "found " << package << endl;
 
 	g_strfreev (id_parts);
 	return package;
@@ -2027,7 +2040,7 @@ backend_get_dependents_thread (PkBackendJob *job, GVariant *params, gpointer use
 	PoolStatusSaver saver;
 	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	for (uint i = 0; package_ids[i]; i++) {
-		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_PREFER_INSTALLED);
 
 		if (zypp_is_no_solvable(solvable)) {
 			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -2167,7 +2180,7 @@ backend_get_dependencies_thread (PkBackendJob *job, GVariant *params, gpointer u
 	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	try
 	{
-		sat::Solvable solvable = zypp_get_package_by_id(package_ids[0]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[0], PACKAGE_LOOKUP_PREFER_INSTALLED);
 
 		pk_backend_job_set_percentage (job, 20);
 
@@ -2306,7 +2319,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			return;
 		}
 
-		sat::Solvable solv = zypp_get_package_by_id( package_ids[i] );
+		sat::Solvable solv = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_PREFER_INSTALLED);
 
 		if (zypp_is_no_solvable(solv)) {
 			// Previously stored package_id no longer matches any solvable.
@@ -2766,7 +2779,7 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	g_autoptr(GPtrArray) update_details = g_ptr_array_new_with_free_func (g_object_unref);
 	for (uint i = 0; package_ids[i]; i++) {
-		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_PREFER_INSTALLED);
 		MIL << package_ids[i] << " " << solvable << endl;
 		if (!solvable) {
 			// Previously stored package_id no longer matches any solvable.
@@ -2872,7 +2885,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			MIL << package_ids[i] << endl;
 			g_auto(GStrv) split = NULL;
 			gint ret;
-			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_AVAILABLE);
 			sat::Solvable *inst_pkg = NULL;
 			sat::Solvable *latest_pkg = NULL;
 			vector<sat::Solvable> installed;
@@ -3028,7 +3041,7 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	PoolStatusSaver saver;
 	for (guint i = 0; package_ids[i]; i++) {
-		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_INSTALLED);
 
 		if (zypp_is_no_solvable(solvable)) {
 			zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -3417,7 +3430,7 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 
 	for (uint i = 0; package_ids[i]; i++) {
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_PREFER_INSTALLED);
 
 		if (zypp_is_no_solvable(solvable)) {
 			zypp_backend_finished_error (
@@ -3540,7 +3553,7 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	for (guint i = 0; package_ids[i]; i++) {
-		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_AVAILABLE);
 
 		if (zypp_is_no_solvable(solvable)) {
 			// Previously stored package_id no longer matches any solvable.
@@ -3906,7 +3919,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 		for (guint i = 0; package_ids[i]; i++) {
-			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_AVAILABLE);
 
 			if (zypp_is_no_solvable(solvable)) {
 				zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,

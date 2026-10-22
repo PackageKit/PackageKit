@@ -81,8 +81,23 @@ void dnf5_stage_pkg(
 	PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE);
 void dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs);
 void dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBitfield filters);
-std::vector<libdnf5::rpm::Package>
-dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages = true);
+
+// Installed packages carry the repository they were installed from as origin, so
+// they share their package-id with that repository's package while it is still
+// available. This selects which of the two a package-id resolves to.
+enum class Dnf5PackageLookup {
+	// the installed package if there is one, otherwise the repository's
+	PREFER_INSTALLED,
+	// only installed packages, e.g. to remove them
+	INSTALLED,
+	// only packages from repositories, e.g. to install or download them
+	AVAILABLE,
+};
+std::vector<libdnf5::rpm::Package> dnf5_resolve_package_ids(
+	libdnf5::Base &base,
+	gchar **package_ids,
+	Dnf5PackageLookup lookup,
+	bool allow_cmdline_packages = true);
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
 // Reports download progress to a job. Packages registered with add_package()

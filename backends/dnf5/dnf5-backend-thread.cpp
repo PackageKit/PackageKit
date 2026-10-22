@@ -129,7 +129,10 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			gboolean recursive;
 			g_variant_get(params, "(t^asb)", &filters, &package_ids, &recursive);
 
-			auto input_pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
+			auto input_pkgs = dnf5_resolve_package_ids(
+				*priv->base,
+				package_ids,
+				Dnf5PackageLookup::PREFER_INSTALLED);
 			std::vector<libdnf5::rpm::Package> results;
 			for (const auto &pkg : input_pkgs) {
 				auto deps = dnf5_process_dependency(*priv->base, pkg, role, recursive);
@@ -211,7 +214,10 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			if (role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
 				gchar *directory = NULL;
 				g_variant_get(params, "(^as&s)", &package_ids, &directory);
-				auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
+				auto pkgs = dnf5_resolve_package_ids(
+					*priv->base,
+					package_ids,
+					Dnf5PackageLookup::AVAILABLE);
 				libdnf5::repo::PackageDownloader downloader(*priv->base);
 				auto callbacks = std::make_unique<Dnf5DownloadCallbacks>(job);
 				for (auto &pkg : pkgs) {
@@ -241,7 +247,10 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				g_variant_get(params, "(^as)", &package_ids);
 			}
 
-			auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
+			auto pkgs = dnf5_resolve_package_ids(
+				*priv->base,
+				package_ids,
+				Dnf5PackageLookup::PREFER_INSTALLED);
 			if (role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 				libdnf5::advisory::AdvisoryQuery adv_query(*priv->base);
 				libdnf5::rpm::PackageSet pkg_set(priv->base->get_weak_ptr());
@@ -456,7 +465,12 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			// packages staged in @commandline by an earlier InstallFiles call:
 			// that transaction needed no authorization to run, while this one may
 			// have been authorized as a mere system update.
-			auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids, false);
+			auto pkgs = dnf5_resolve_package_ids(
+				*priv->base,
+				package_ids,
+				role == PK_ROLE_ENUM_REMOVE_PACKAGES ? Dnf5PackageLookup::INSTALLED
+								     : Dnf5PackageLookup::AVAILABLE,
+				false);
 			if (pkgs.empty() && role != PK_ROLE_ENUM_UPDATE_PACKAGES) {
 				pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "No packages found");
 				if (base_config_dirty)

@@ -375,12 +375,10 @@ std::string
 dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
 {
 	std::string origin;
-	const char *data = nullptr;
 
 	if (pkg.get_install_time() > 0) {
 		// installed packages: origin is the repo they were installed from, if known
 		origin = pkg.get_from_repo_id();
-		data = "installed";
 	} else {
 		origin = pkg.get_repo_id();
 		if (origin.empty() || origin == DNF5_CMDLINE_REPO_ID)
@@ -392,7 +390,7 @@ dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
 		pkg.get_evr().c_str(),
 		pkg.get_arch().c_str(),
 		origin.c_str(),
-		data);
+		nullptr);
 	return std::string(package_id);
 }
 
@@ -500,7 +498,11 @@ dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBit
 }
 
 std::vector<libdnf5::rpm::Package>
-dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages)
+dnf5_resolve_package_ids(
+	libdnf5::Base &base,
+	gchar **package_ids,
+	Dnf5PackageLookup lookup,
+	bool allow_cmdline_packages)
 {
 	std::vector<libdnf5::rpm::Package> pkgs;
 	if (!package_ids)
@@ -571,15 +573,25 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cm
 			query.filter_evr(split[PK_PACKAGE_ID_VERSION]);
 			query.filter_arch(split[PK_PACKAGE_ID_ARCH]);
 
-			if (g_strcmp0(split[PK_PACKAGE_ID_DATA], "installed") == 0) {
-				query.filter_installed();
-			} else if (g_strcmp0(split[PK_PACKAGE_ID_ORIGIN], "local") == 0) {
+			// only one package of a NEVRA can be installed, so the origin does
+			// not need to match for installed packages
+			libdnf5::rpm::PackageQuery installed(query);
+			installed.filter_installed();
+
+			libdnf5::rpm::PackageQuery available(query);
+			if (g_strcmp0(split[PK_PACKAGE_ID_ORIGIN], "local") == 0) {
 				// packages from local files are emitted with a "local" origin,
 				// but live in the command line pseudo-repository
-				query.filter_repo_id(DNF5_CMDLINE_REPO_ID);
+				available.filter_repo_id(DNF5_CMDLINE_REPO_ID);
 			} else {
-				query.filter_repo_id(split[PK_PACKAGE_ID_ORIGIN]);
+				available.filter_repo_id(split[PK_PACKAGE_ID_ORIGIN]);
 			}
+
+			if (lookup == Dnf5PackageLookup::INSTALLED
+			    || (lookup == Dnf5PackageLookup::PREFER_INSTALLED && !installed.empty()))
+				query = installed;
+			else
+				query = available;
 
 			if (query.empty()) {
 				g_debug("No exact match for ID: %s. Listing similar packages...", package_ids[i]);
