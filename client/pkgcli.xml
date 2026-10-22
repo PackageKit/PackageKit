@@ -275,7 +275,7 @@
         <listitem>
           <para>
             List the operating system releases this system can be upgraded to,
-            with the upgrade ID to pass to <command>os-upgrade</command>, the
+            with the upgrade ID to pass to <command>upgrade-os</command>, the
             kind of release and, where known, the download size and release notes.
           </para>
         </listitem>
@@ -327,7 +327,7 @@
           <para>
             Install available updates for all installed packages on the system,
             or for specific packages if specified as arguments. This stays within
-            the current operating system release, see <command>os-upgrade</command>
+            the current operating system release, see <command>upgrade-os</command>
             for upgrading to a new release. With
             <literal>--purge</literal>, residual data of packages removed by the
             update is deleted as well.
@@ -335,7 +335,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>os-upgrade <replaceable>ID</replaceable></command></term>
+        <term><command>upgrade-os <replaceable>ID</replaceable></command></term>
         <listitem>
           <para>
             Upgrade the operating system to the release with the given upgrade ID,

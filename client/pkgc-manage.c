@@ -688,12 +688,12 @@ pkgc_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 }
 
 /**
- * pkgc_os_upgrade:
+ * pkgc_upgrade_os:
  *
  * Upgrade the operating system to the release with the given upgrade ID.
  */
 static gint
-pkgc_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
+pkgc_upgrade_os (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -704,7 +704,7 @@ pkgc_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 	    ctx,
 	    cmd,
 	    "ID",
-	    /* TRANSLATORS: Description of pkgcli os-upgrade. Do not translate "list-os-upgrades"/"update" */
+	    /* TRANSLATORS: Description of pkgcli upgrade-os. Do not translate "list-os-upgrades"/"update" */
 	    _("Upgrade the operating system to the release with the given upgrade ID.\n"
 	      "The available upgrade IDs are shown by `list-os-upgrades`.\n"
 	      "This command does not update packages within the current release, use `update` for that."));
@@ -1106,9 +1106,9 @@ pkgc_register_manage_commands (PkgcliContext *ctx)
 
 	pkgc_context_register_command (
 	    ctx,
-	    "os-upgrade",
-	    pkgc_os_upgrade,
-	    /* TRANSLATORS: Description for os-upgrade command in pkgcli help */
+	    "upgrade-os",
+	    pkgc_upgrade_os,
+	    /* TRANSLATORS: Description for upgrade-os command in pkgcli help */
 	    _("Upgrade the operating system to a new release"));
 
 	pkgc_context_register_command (
