@@ -345,14 +345,31 @@ backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 static void
 backend_get_system_upgrades (PkBackend *backend, PkBackendJob *job)
 {
+	g_autoptr(PkSystemUpgrade) stable = NULL;
+	g_autoptr(PkSystemUpgrade) beta = NULL;
+
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	if (!priv->use_system_upgrade)
 		goto out;
-	pk_backend_job_system_upgrade (job, PK_RELEASE_KIND_ENUM_STABLE, "fedora-9", "Fedora 9");
-	pk_backend_job_system_upgrade (job,
-				       PK_RELEASE_KIND_ENUM_UNSTABLE,
-				       "fedora-10-rc1",
-				       "Fedora 10 RC1");
+	stable = pk_system_upgrade_new_full ("fedora-42",
+					     "org.fedoraproject.fedora",
+					     "42",
+					     "Fedora 42",
+					     "The latest stable Fedora release",
+					     PK_RELEASE_KIND_ENUM_STABLE,
+					     1500000000,
+					     "https://fedoraproject.org/wiki/Releases/42");
+	pk_backend_job_system_upgrade (job, stable);
+	/* no os-id on purpose: the daemon fills in the running OS */
+	beta = pk_system_upgrade_new_full ("fedora-43-beta",
+					   NULL,
+					   "43",
+					   "Fedora 43 Beta",
+					   NULL,
+					   PK_RELEASE_KIND_ENUM_DEVELOPMENT,
+					   0,
+					   NULL);
+	pk_backend_job_system_upgrade (job, beta);
 out:
 	pk_backend_job_finished (job);
 }

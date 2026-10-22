@@ -1131,16 +1131,28 @@ pkgc_print_os_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
 	for (guint i = 0; i < upgrades->len; i++) {
 		PkSystemUpgrade *upgrade = g_ptr_array_index (upgrades, i);
 		const gchar *id = pk_system_upgrade_get_id (upgrade);
+		const gchar *os_id = pk_system_upgrade_get_os_id (upgrade);
+		const gchar *version = pk_system_upgrade_get_version (upgrade);
+		const gchar *name = pk_system_upgrade_get_name (upgrade);
 		const gchar *summary = pk_system_upgrade_get_summary (upgrade);
-		const gchar *state = pk_release_kind_enum_to_string (
-		    pk_system_upgrade_get_state (upgrade));
+		const gchar *url = pk_system_upgrade_get_url (upgrade);
+		guint64 download_size = pk_system_upgrade_get_download_size (upgrade);
+		const gchar *kind = pk_release_kind_enum_to_string (pk_system_upgrade_get_kind (upgrade));
 
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			g_autoptr(json_t) root = json_object ();
 
 			json_object_set_new (root, "id", json_string (id));
-			json_object_set_new (root, "state", json_string (state));
+			json_object_set_new (root, "os_id", json_string (os_id ? os_id : ""));
+			json_object_set_new (root, "version", json_string (version ? version : ""));
+			json_object_set_new (root, "name", json_string (name ? name : ""));
 			json_object_set_new (root, "summary", json_string (summary ? summary : ""));
+			json_object_set_new (root, "kind", json_string (kind));
+			if (download_size > 0)
+				json_object_set_new (root,
+						     "download_size",
+						     json_integer ((json_int_t) download_size));
+			json_object_set_new (root, "url", json_string (url ? url : ""));
 			pkgc_print_json (root);
 			continue;
 		}
@@ -1151,18 +1163,43 @@ pkgc_print_os_upgrades (PkgcliContext *ctx, GPtrArray *upgrades)
 		g_print ("%s%s%s %s\n",
 			 pkgc_get_color (ctx, COLOR_BOLD),
 			 /* TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44" */
-			 _("Distribution:"), pkgc_get_reset_color (ctx), id);
+			 _("Upgrade:"), pkgc_get_reset_color (ctx), id);
+		if (name && name[0] != '\0')
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44" */
+				 _("Name:"), pkgc_get_reset_color (ctx), name);
+		if (os_id && os_id[0] != '\0')
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora" */
+				 _("Operating system:"), pkgc_get_reset_color (ctx), os_id);
+		if (version && version[0] != '\0')
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the version of an OS release, e.g. "44" */
+				 _("Version:"), pkgc_get_reset_color (ctx), version);
 		g_print ("%s%s%s %s\n",
 			 pkgc_get_color (ctx, COLOR_BOLD),
-			 /* TRANSLATORS: Label for the kind of an OS upgrade, e.g. "stable" */
-			 _("Type:"), pkgc_get_reset_color (ctx), state);
-
-		if (summary && summary[0] != '\0') {
+			 /* TRANSLATORS: Label for the kind of an OS release, e.g. "stable" */
+			 _("Kind:"), pkgc_get_reset_color (ctx), kind);
+		if (download_size > 0) {
+			g_autofree gchar *size_str = pkgc_util_format_size (download_size);
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the download size of an OS upgrade */
+				 _("Download size:"), pkgc_get_reset_color (ctx), size_str);
+		}
+		if (url && url[0] != '\0')
+			g_print ("%s%s%s %s\n",
+				 pkgc_get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the release notes URL of an OS upgrade */
+				 _("URL:"), pkgc_get_reset_color (ctx), url);
+		if (summary && summary[0] != '\0')
 			g_print ("%s%s%s %s\n",
 				 pkgc_get_color (ctx, COLOR_BOLD),
 				 /* TRANSLATORS: Label for the summary of an OS upgrade */
 				 _("Summary:"), pkgc_get_reset_color (ctx), summary);
-		}
 	}
 }
 

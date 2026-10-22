@@ -1399,11 +1399,17 @@ pk_test_spawn_module_repo_detail_cb (PkBackendJob *job, PkRepoDetail *item, gpoi
 }
 
 static void
-pk_test_spawn_module_system_upgrade_cb (PkBackendJob *job,
-					PkSystemUpgrade *item,
-					gpointer user_data)
+pk_test_spawn_module_system_upgrade_cb (PkBackendJob *job, PkSystemUpgrade *item, gpointer user_data)
 {
 	sm_system_upgrades++;
+	g_assert_cmpstr (pk_system_upgrade_get_id (item), ==, "test-2");
+	g_assert_cmpstr (pk_system_upgrade_get_os_id (item), ==, "org.example.test");
+	g_assert_cmpstr (pk_system_upgrade_get_version (item), ==, "2");
+	g_assert_cmpstr (pk_system_upgrade_get_name (item), ==, "Test OS 2");
+	g_assert_null (pk_system_upgrade_get_summary (item));
+	g_assert_cmpint (pk_system_upgrade_get_kind (item), ==, PK_RELEASE_KIND_ENUM_STABLE);
+	g_assert_cmpuint (pk_system_upgrade_get_download_size (item), ==, 1234);
+	g_assert_cmpstr (pk_system_upgrade_get_url (item), ==, "https://example.org/2");
 }
 
 static void

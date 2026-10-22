@@ -692,41 +692,6 @@ pk_transaction_item_progress_cb (PkBackendJob *job,
 	    NULL);
 }
 
-static void
-pk_transaction_system_upgrade_cb (PkBackendJob *job,
-				  PkSystemUpgrade *item,
-				  PkTransaction *transaction)
-{
-	PkReleaseKindEnum state;
-	const gchar *id;
-	const gchar *summary;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	/* add to results */
-	pk_results_add_system_upgrade (transaction->results, item);
-
-	/* get data */
-	state = pk_system_upgrade_get_state (item);
-	id = pk_system_upgrade_get_id (item);
-	summary = pk_system_upgrade_get_summary (item);
-
-	/* emit */
-	g_debug ("emitting system-upgrade %s, %s, %s",
-		 pk_release_kind_enum_to_string (state),
-		 id,
-		 summary);
-	g_dbus_connection_emit_signal (
-	    transaction->connection,
-	    NULL,
-	    transaction->tid,
-	    PK_DBUS_INTERFACE_TRANSACTION,
-	    "SystemUpgrade",
-	    g_variant_new ("(uss)", state, id, summary != NULL ? summary : ""),
-	    NULL);
-}
-
 static gchar *
 pk_transaction_package_list_to_string (GPtrArray *array)
 {
@@ -1643,6 +1608,68 @@ pk_transaction_dict_add_strv (GVariantBuilder *dict, const gchar *key, gchar **v
 				       "{sv}",
 				       key,
 				       g_variant_new_strv ((const gchar *const *) value, -1));
+}
+
+static void
+pk_transaction_system_upgrade_cb (PkBackendJob *job,
+				  PkSystemUpgrade *item,
+				  PkTransaction *transaction)
+{
+	const gchar *id = pk_system_upgrade_get_id (item);
+	const gchar *os_id;
+	g_auto(GVariantBuilder) dict = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a{sv}"));
+	g_autoptr(GError) error = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->tid != NULL);
+
+	/* the ID must be acceptable to UpgradeSystem later on */
+	if (!pk_transaction_upgrade_id_validate (id, &error)) {
+		g_warning ("ignoring OS upgrade reported by the backend: %s", error->message);
+		return;
+	}
+
+	/* an upgrade that does not name its OS is one of the running OS */
+	os_id = pk_system_upgrade_get_os_id (item);
+	if (os_id == NULL || os_id[0] == '\0') {
+		g_autofree gchar *host_os_id = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		host_os_id = pk_get_os_appstream_id (&error_local);
+		if (host_os_id != NULL)
+			g_object_set (item, "os-id", host_os_id, NULL);
+		else
+			g_debug ("cannot determine the OS component ID: %s", error_local->message);
+	}
+
+	/* add to results */
+	pk_results_add_system_upgrade (transaction->results, item);
+
+	/* emit */
+	g_debug ("emitting system-upgrade %s", id);
+	g_variant_builder_add (&dict, "{sv}", "id", g_variant_new_string (id));
+	pk_transaction_dict_add_string (&dict, "os-id", pk_system_upgrade_get_os_id (item));
+	pk_transaction_dict_add_string (&dict, "version", pk_system_upgrade_get_version (item));
+	pk_transaction_dict_add_string (&dict, "name", pk_system_upgrade_get_name (item));
+	pk_transaction_dict_add_string (&dict, "summary", pk_system_upgrade_get_summary (item));
+	if (pk_system_upgrade_get_kind (item) != PK_RELEASE_KIND_ENUM_UNKNOWN)
+		g_variant_builder_add (&dict,
+				       "{sv}",
+				       "kind",
+				       g_variant_new_uint32 (pk_system_upgrade_get_kind (item)));
+	if (pk_system_upgrade_get_download_size (item) > 0)
+		g_variant_builder_add (&dict,
+				       "{sv}",
+				       "download-size",
+				       g_variant_new_uint64 (pk_system_upgrade_get_download_size (item)));
+	pk_transaction_dict_add_string (&dict, "url", pk_system_upgrade_get_url (item));
+	g_dbus_connection_emit_signal (transaction->connection,
+				       NULL,
+				       transaction->tid,
+				       PK_DBUS_INTERFACE_TRANSACTION,
+				       "SystemUpgrade",
+				       g_variant_new ("(a{sv})", &dict),
+				       NULL);
 }
 
 static void

@@ -356,7 +356,8 @@ static const PkEnumMatch enum_sig_type[] = {
 static const PkEnumMatch enum_release_kind[] = {
 	{PK_RELEASE_KIND_ENUM_UNKNOWN,	"unknown"},	/* fall though value */
 	{PK_RELEASE_KIND_ENUM_STABLE,	"stable"},
-	{PK_RELEASE_KIND_ENUM_UNSTABLE,	"unstable"},
+	{PK_RELEASE_KIND_ENUM_DEVELOPMENT,	"development"},
+	{PK_RELEASE_KIND_ENUM_SNAPSHOT,	"snapshot"},
 	{0, NULL}
 };
 
@@ -479,7 +480,7 @@ pk_sig_type_enum_to_string (PkSigTypeEnum sig_type)
  * pk_release_kind_enum_from_string:
  * @kind: Text describing the enumerated type
  *
- * Converts a text enumerated type to its unsigned integer representation
+ * Converts a text enumerated type to its unsigned integer representation.
  *
  * Return value: the enumerated constant value, e.g. PK_RELEASE_KIND_ENUM_STABLE
  *
@@ -1277,7 +1278,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		break;
 	case PK_ROLE_ENUM_GET_SYSTEM_UPGRADES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting operating system upgrades");
+		text = dgettext ("PackageKit", "Getting system upgrades");
 		break;
 	case PK_ROLE_ENUM_GET_HISTORY:
 		/* TRANSLATORS: The role of the transaction, in present tense */
@@ -1285,7 +1286,7 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		break;
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Upgrading the operating system");
+		text = dgettext ("PackageKit", "Upgrading the system");
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */

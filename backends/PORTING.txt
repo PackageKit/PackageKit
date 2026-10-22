@@ -8,13 +8,27 @@ Guide to porting backends from 1.x to 2.0
  * Distribution upgrades are now system upgrades, matching UpgradeSystem.
    GetDistroUpgrades is GetSystemUpgrades (role
    PK_ROLE_ENUM_GET_SYSTEM_UPGRADES, spawn role `get-system-upgrades`) and
-   the DistroUpgrade signal is SystemUpgrade. UpgradeSystem keeps its name,
-   but its `distro_id` argument is now `upgrade_id`, the ID of an item from
-   GetSystemUpgrades, and the never-honoured `upgrade_kind` argument and
-   PkUpgradeKindEnum are gone (UPGRADE_KIND_* in Python as well): backends
-   receive the parameters as "(ts)". pk_backend_job_distro_upgrade() is
-   pk_backend_job_system_upgrade(), PkDistroUpgrade is PkSystemUpgrade and
-   PkDistroUpgradeEnum is PkReleaseKindEnum.
+   the DistroUpgrade signal is SystemUpgrade, now carrying a vardict.
+   UpgradeSystem keeps its name, but its `distro_id` argument is now
+   `upgrade_id`, the ID of an item from GetSystemUpgrades, and the
+   never-honoured `upgrade_kind` argument and PkUpgradeKindEnum are gone
+   (UPGRADE_KIND_* in Python as well): backends receive the parameters as
+   "(ts)".
+
+ * pk_backend_job_distro_upgrade(job, type, name, summary) is replaced by
+   pk_backend_job_system_upgrade(job, PkSystemUpgrade), with the item built
+   by pk_system_upgrade_new_full(id, os_id, version, name, summary, kind,
+   download_size, url). Only the ID is required. `os_id` is the AppStream
+   component ID of the target operating system (the daemon fills in the
+   running OS when a backend leaves it unset) and `version` the version of
+   the corresponding AppStream release, so that clients can look up the
+   release description, dates and release notes in the AppStream metadata.
+   Spawned backends send a `system-upgrades` event with the same fields.
+
+ * PkDistroUpgradeEnum is replaced by PkReleaseKindEnum, whose values
+   `stable`, `development` and `snapshot` match the AppStream release types.
+   The old `unstable` value is gone; report pre-releases as `development`
+   and rolling snapshots as `snapshot`.
 
  * The daemon property DistroId is now OsId, and pk_get_distro_id(),
    pk_get_distro_name() and pk_get_distro_version_id() are pk_get_os_id(),

@@ -1223,17 +1223,47 @@
     <!--*********************************************************************-->
     <!--
       SystemUpgrade:
-      @type: The kind of release, e.g. `stable` or `unstable`
-      @id: The ID of the upgrade, to be passed to `UpgradeSystem`, e.g. `fedora-42`
-      @summary: The description of the release.
+      @data: One operating system release this system can be upgraded to.
 
-      This signal allows the backend to communicate operating system upgrades
-      to the session.
+      This signal is sent in response to `GetSystemUpgrades`, once per
+      operating system release this system can be upgraded to.
+
+      A key whose value is unset, unknown or empty is omitted, so an absent
+      key means that the backend did not report the field.
+      Clients must ignore keys they do not know and treat enum values they do
+      not recognize as that enum's unknown value.
+
+      - `id`: The upgrade ID, which is the string to pass to `UpgradeSystem`
+        to perform the upgrade, e.g. `fedora-42`. Always present. [`s`]
+      - `os-id`: The AppStream component ID of the target operating system,
+        e.g. `org.fedoraproject.fedora`. If the backend does not report it,
+        the daemon fills in the ID of the running operating system. [`s`]
+      - `version`: The version of the target release. It matches the
+        `version` of the release entry of the `os-id` component in the
+        AppStream metadata, e.g. `42`. [`s`]
+      - `name`: A human readable name of the release, e.g. `Fedora 42`. [`s`]
+      - `summary`: A one-line summary of the release. [`s`]
+      - `kind`: The kind of release as a `PkReleaseKindEnum` value:
+        `stable` (1), `development` (2) or `snapshot` (3). [`u`]
+      - `download-size`: The number of bytes the package manager has to
+        download to perform the upgrade, as far as the backend can determine
+        this cheaply. [`t`]
+      - `url`: Where a user can read the release notes or other details about
+        the release. [`s`]
+
+      Relation to AppStream: an operating system is described by an AppStream
+      `operating-system` component whose ID is `os-id`, and each of its
+      releases by a release entry identified by `version`. AppStream carries
+      the descriptive metadata of a release: its description, release date,
+      end-of-life date and release notes. PackageKit carries what only the
+      package manager knows: whether an upgrade to that release can be
+      performed on this system, the upgrade ID to request it with, and the
+      download size. Clients combine both by looking up the (`os-id`,
+      `version`) pair in the AppStream metadata.
     -->
     <signal name="SystemUpgrade">
-      <arg type="u" name="type" direction="out"/>
-      <arg type="s" name="id" direction="out"/>
-      <arg type="s" name="summary" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
+      <arg type="a{sv}" name="data" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->

@@ -92,6 +92,7 @@ gchar	  *pk_iso8601_from_date (const GDate *date);
 GDate	  *pk_iso8601_to_date (const gchar *iso_date);
 GDateTime *pk_iso8601_to_datetime (const gchar *iso_date);
 gchar	  *pk_get_os_id (void);
+gchar	  *pk_get_os_appstream_id (GError **error);
 
 G_END_DECLS
 

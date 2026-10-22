@@ -281,11 +281,19 @@ optional.
 {"ev":"repo-details","job":"42","items":[{"repo_id":"main","description":"Main repository","enabled":true}]}
 ```
 
-`system-upgrades`: `pk_backend_job_system_upgrade` per item; `type` is
-`enum_release_kind`, `summary` is optional.
+`system-upgrades`: `pk_backend_job_system_upgrade` per item. `id` is what a later
+`upgrade-system` request carries as `upgrade_id`; `kind` is `enum_release_kind`
+(`stable`, `development` or `snapshot`, the AppStream release types). The
+other fields are optional: `os_id` is the AppStream component ID of the target
+operating system (the daemon fills in the running OS when it is absent),
+`version` the version of its AppStream release, `name` and `summary` are for
+display, `download_size` is in bytes and `url` points to the release notes.
 
 ```json
-{"ev":"system-upgrades","job":"42","items":[{"type":"stable","id":"example-27","summary":"Example OS 27"}]}
+{"ev":"system-upgrades","job":"42","items":[
+  {"id":"example-27","kind":"stable","os_id":"org.example.os","version":"27",
+   "name":"Example OS 27","summary":"The next stable release","download_size":1500000000,
+   "url":"https://example.org/releases/27"}]}
 ```
 
 ### 5.4 Errors, interaction, logging

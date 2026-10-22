@@ -729,7 +729,8 @@ typedef enum {
  * PkReleaseKindEnum:
  * @PK_RELEASE_KIND_ENUM_UNKNOWN: Unknown release kind
  * @PK_RELEASE_KIND_ENUM_STABLE: A stable release
- * @PK_RELEASE_KIND_ENUM_UNSTABLE: An unstable release
+ * @PK_RELEASE_KIND_ENUM_DEVELOPMENT: A development (pre-)release
+ * @PK_RELEASE_KIND_ENUM_SNAPSHOT: A snapshot of a rolling release
  *
  * The kind of operating system release an upgrade leads to.
  *
@@ -738,7 +739,8 @@ typedef enum {
 typedef enum {
 	PK_RELEASE_KIND_ENUM_UNKNOWN,
 	PK_RELEASE_KIND_ENUM_STABLE,
-	PK_RELEASE_KIND_ENUM_UNSTABLE,
+	PK_RELEASE_KIND_ENUM_DEVELOPMENT,
+	PK_RELEASE_KIND_ENUM_SNAPSHOT,
 	/*< private >*/
 	PK_RELEASE_KIND_ENUM_LAST
 } PkReleaseKindEnum;

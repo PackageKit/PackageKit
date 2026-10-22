@@ -29,6 +29,7 @@
 
 #include "pk-client-helper-private.h"
 #include "pk-common.h"
+#include "pk-common-private.h"
 #include "pk-console-private.h"
 #include "pk-control.h"
 #include "pk-debug.h"
@@ -183,6 +184,31 @@ pk_test_bitfield_func (void)
 gchar *_tid = NULL;
 
 static void
+pk_test_os_rdns_func (void)
+{
+	const struct {
+		const gchar *url;
+		const gchar *suffix;
+		const gchar *expected;
+	} cases[] = {
+		{ "https://www.debian.org/", "debian", "org.debian.debian" },
+		{ "https://fedoraproject.org/", "fedora", "org.fedoraproject.fedora" },
+		{ "http://www.ubuntu.com/", "ubuntu", "com.ubuntu.ubuntu" },
+		{ "https://example.org/some/path", "x", "org.example.x" },
+		{ "example.org", "x", "org.example.x" },
+		{ "https://www.example.org/", NULL, "org.example" },
+		{ "https://www.example.org/", "", "org.example" },
+		{ "localhost", "os", "localhost.os" },
+	};
+
+	/* the same algorithm as as_utils_dns_to_rdns() in AppStream */
+	for (guint i = 0; i < G_N_ELEMENTS (cases); i++) {
+		g_autofree gchar *rdns = pk_os_dns_to_rdns (cases[i].url, cases[i].suffix);
+		g_assert_cmpstr (rdns, ==, cases[i].expected);
+	}
+}
+
+static void
 pk_test_common_func (void)
 {
 	gchar *present;
@@ -190,6 +216,11 @@ pk_test_common_func (void)
 
 	present = pk_get_os_id ();
 	g_assert_cmpstr (present, ==, "selftest;11.91;i686");
+	g_free (present);
+
+	/* AppStream component ID of the OS under test */
+	present = pk_get_os_appstream_id (NULL);
+	g_assert_cmpstr (present, ==, "org.selftest.selftest");
 	g_free (present);
 
 	/* get present iso8601 */
@@ -1353,6 +1384,7 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	g_test_add_func ("/libpackagekit/common", pk_test_common_func);
+	g_test_add_func ("/libpackagekit/os-rdns", pk_test_os_rdns_func);
 	g_test_add_func ("/libpackagekit/enum", pk_test_enum_func);
 	g_test_add_func ("/libpackagekit/file", pk_test_file_func);
 	g_test_add_func ("/libpackagekit/bitfield", pk_test_bitfield_func);

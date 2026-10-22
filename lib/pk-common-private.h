@@ -32,6 +32,7 @@ G_BEGIN_DECLS
 
 gchar	 *pk_get_os_name (GError **error);
 gchar	 *pk_get_os_version_id (GError **error);
+gchar	 *pk_os_dns_to_rdns (const gchar *url, const gchar *suffix);
 GVariant *pk_unix_fd_list_get_handles (GUnixFDList *fd_list);
 
 G_END_DECLS

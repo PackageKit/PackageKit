@@ -34,6 +34,7 @@
 #include <pk-package-ids.h>
 #include <pk-bitfield.h>
 #include <pk-update-detail.h>
+#include <pk-system-upgrade.h>
 #include <pk-files.h>
 
 #include "pk-backend.h"

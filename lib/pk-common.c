@@ -239,7 +239,7 @@ pk_get_os_id_machine_type (void)
  * Internal helper to parse os-release
  **/
 static gboolean
-pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **error)
+pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, gchar **home_url, GError **error)
 {
 	const gchar *filename = "/etc/os-release";
 	gboolean ret;
@@ -293,7 +293,91 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 		if (*version_id == NULL)
 			return FALSE;
 	}
+	if (home_url != NULL) {
+		/* optional in os-release */
+		g_autofree gchar *tmp = g_key_file_get_string (key_file,
+							       "os-release",
+							       "HOME_URL",
+							       NULL);
+		*home_url = NULL;
+		if (tmp != NULL) {
+			*home_url = g_shell_unquote (tmp, error);
+			if (*home_url == NULL)
+				return FALSE;
+		}
+	}
 	return TRUE;
+}
+
+/**
+ * pk_os_dns_to_rdns: (skip)
+ * @url: a URL or host name, e.g. "https://www.debian.org/"
+ * @suffix: (nullable): the component to append, e.g. the os-release ID
+ *
+ * Builds a reverse-DNS identifier the way AppStream does for operating
+ * system components: the host part of @url is reversed label by label,
+ * "www" labels are dropped and @suffix is appended.
+ *
+ * Return value: the reverse-DNS ID, e.g. "org.debian.debian"
+ **/
+gchar *
+pk_os_dns_to_rdns (const gchar *url, const gchar *suffix)
+{
+	g_autofree gchar *host = NULL;
+	g_auto(GStrv) parts = NULL;
+	const gchar *tmp;
+	gchar *pos;
+	GString *rdns;
+
+	g_return_val_if_fail (url != NULL, NULL);
+
+	/* keep only the host part */
+	tmp = strstr (url, "://");
+	host = g_strdup (tmp != NULL ? tmp + 3 : url);
+	pos = strchr (host, '/');
+	if (pos != NULL)
+		*pos = '\0';
+
+	rdns = g_string_new (suffix);
+	parts = g_strsplit (host, ".", -1);
+	for (guint i = 0; parts[i] != NULL; i++) {
+		if (parts[i][0] == '\0' || g_strcmp0 (parts[i], "www") == 0)
+			continue;
+		g_string_prepend_c (rdns, '.');
+		g_string_prepend (rdns, parts[i]);
+	}
+	if ((suffix == NULL || suffix[0] == '\0') && rdns->len > 0)
+		g_string_truncate (rdns, rdns->len - 1);
+	return g_string_free (rdns, FALSE);
+}
+
+/**
+ * pk_get_os_appstream_id:
+ * @error: a #GError, or %NULL
+ *
+ * Gets the AppStream component ID of the running operating system. This is
+ * the reverse-DNS form of the HOME_URL from os-release combined with its ID,
+ * e.g. "org.debian.debian", as defined by the AppStream specification for
+ * operating-system components. Without a HOME_URL the plain ID is returned,
+ * as AppStream does.
+ *
+ * Return value: (transfer full): the component ID, or %NULL on error
+ *
+ * Since: 2.0.0
+ **/
+gchar *
+pk_get_os_appstream_id (GError **error)
+{
+	g_autofree gchar *id = NULL;
+	g_autofree gchar *home_url = NULL;
+
+	if (g_getenv ("PK_SELF_TEST") != NULL)
+		return g_strdup ("org.selftest.selftest");
+	if (!pk_parse_os_release (&id, NULL, NULL, &home_url, error))
+		return NULL;
+	if (home_url == NULL || home_url[0] == '\0')
+		return g_steal_pointer (&id);
+	return pk_os_dns_to_rdns (home_url, id);
 }
 
 /**
@@ -316,7 +400,7 @@ pk_get_os_id (void)
 	if (g_getenv ("PK_SELF_TEST") != NULL)
 		return g_strdup ("selftest;11.91;i686");
 
-	ret = pk_parse_os_release (&id, NULL, &version, &error);
+	ret = pk_parse_os_release (&id, NULL, &version, NULL, &error);
 	if (!ret) {
 		g_warning ("failed to load os-release: %s", error->message);
 		return NULL;
@@ -340,7 +424,7 @@ pk_get_os_name (GError **error)
 	gboolean ret;
 	gchar *name = NULL;
 
-	ret = pk_parse_os_release (NULL, &name, NULL, error);
+	ret = pk_parse_os_release (NULL, &name, NULL, NULL, error);
 	if (!ret)
 		return NULL;
 
@@ -361,7 +445,7 @@ pk_get_os_version_id (GError **error)
 	gboolean ret;
 	gchar *version_id = NULL;
 
-	ret = pk_parse_os_release (NULL, NULL, &version_id, error);
+	ret = pk_parse_os_release (NULL, NULL, &version_id, NULL, error);
 	if (!ret)
 		return NULL;
 

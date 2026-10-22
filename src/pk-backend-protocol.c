@@ -903,18 +903,37 @@ pk_backend_protocol_handle_system_upgrades (json_t *root, PkBackendJob *job, GEr
 	json_array_foreach (items, i, item)
 	{
 		const gchar *id = NULL;
+		const gchar *os_id = NULL;
+		const gchar *version = NULL;
+		const gchar *name = NULL;
 		const gchar *summary = NULL;
-		PkReleaseKindEnum type = PK_RELEASE_KIND_ENUM_UNKNOWN;
+		const gchar *url = NULL;
+		gint64 download_size = 0;
+		PkReleaseKindEnum kind = PK_RELEASE_KIND_ENUM_UNKNOWN;
+		g_autoptr(PkSystemUpgrade) upgrade = NULL;
 
 		if (!json_is_object (item))
 			return pk_backend_protocol_invalid (
 			    error,
 			    "system-upgrades items must be objects");
-		if (!GET_ENUM (item, "type", pk_release_kind, &type) ||
-		    !pk_backend_protocol_get_string (item, "id", FALSE, &id, error) ||
-		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error))
+		if (!pk_backend_protocol_get_string (item, "id", FALSE, &id, error) ||
+		    !GET_ENUM (item, "kind", pk_release_kind, &kind) ||
+		    !pk_backend_protocol_get_string (item, "os_id", TRUE, &os_id, error) ||
+		    !pk_backend_protocol_get_string (item, "version", TRUE, &version, error) ||
+		    !pk_backend_protocol_get_string (item, "name", TRUE, &name, error) ||
+		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error) ||
+		    !pk_backend_protocol_get_string (item, "url", TRUE, &url, error) ||
+		    !pk_backend_protocol_get_int (item, "download_size", TRUE, &download_size, error))
 			return FALSE;
-		pk_backend_job_system_upgrade (job, type, id, summary);
+		upgrade = pk_system_upgrade_new_full (id,
+						      os_id,
+						      version,
+						      name,
+						      summary,
+						      kind,
+						      download_size > 0 ? (guint64) download_size : 0,
+						      url);
+		pk_backend_job_system_upgrade (job, upgrade);
 	}
 	return TRUE;
 }

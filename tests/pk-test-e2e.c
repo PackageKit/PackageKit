@@ -1098,6 +1098,79 @@ pk_test_client_purge_flag_func (void)
 }
 
 static void
+pk_test_client_system_upgrades_func (void)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkClient) client = pk_client_new ();
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GPtrArray) upgrades = NULL;
+	PkSystemUpgrade *item;
+
+	/* the dummy backend only reports upgrades when asked to */
+	results = pk_client_repo_set_data (client, "dummy", "use-system-upgrade", "1", NULL, NULL, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (results);
+	g_clear_object (&results);
+
+	results = pk_client_get_system_upgrades (client, NULL, NULL, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (results);
+	upgrades = pk_results_get_system_upgrade_array (results);
+	g_assert_cmpuint (upgrades->len, ==, 2);
+
+	/* everything the backend reported survives the vardict round trip */
+	item = g_ptr_array_index (upgrades, 0);
+	g_assert_cmpstr (pk_system_upgrade_get_id (item), ==, "fedora-42");
+	g_assert_cmpstr (pk_system_upgrade_get_os_id (item), ==, "org.fedoraproject.fedora");
+	g_assert_cmpstr (pk_system_upgrade_get_version (item), ==, "42");
+	g_assert_cmpstr (pk_system_upgrade_get_name (item), ==, "Fedora 42");
+	g_assert_cmpstr (pk_system_upgrade_get_summary (item), ==, "The latest stable Fedora release");
+	g_assert_cmpint (pk_system_upgrade_get_kind (item), ==, PK_RELEASE_KIND_ENUM_STABLE);
+	g_assert_cmpuint (pk_system_upgrade_get_download_size (item), ==, 1500000000);
+	g_assert_cmpstr (pk_system_upgrade_get_url (item), ==, "https://fedoraproject.org/wiki/Releases/42");
+
+	/* the backend left os-id unset, so the daemon filled in the running OS */
+	item = g_ptr_array_index (upgrades, 1);
+	g_assert_cmpstr (pk_system_upgrade_get_id (item), ==, "fedora-43-beta");
+	g_assert_nonnull (pk_system_upgrade_get_os_id (item));
+	g_assert_cmpstr (pk_system_upgrade_get_os_id (item), !=, "");
+	g_assert_cmpstr (pk_system_upgrade_get_version (item), ==, "43");
+	g_assert_null (pk_system_upgrade_get_summary (item));
+	g_assert_cmpint (pk_system_upgrade_get_kind (item), ==, PK_RELEASE_KIND_ENUM_DEVELOPMENT);
+	g_assert_cmpuint (pk_system_upgrade_get_download_size (item), ==, 0);
+	g_assert_null (pk_system_upgrade_get_url (item));
+	g_clear_object (&results);
+
+	/* UpgradeSystem takes the ID from the list; simulate so nothing is changed */
+	results = pk_client_upgrade_system (client,
+					pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_SIMULATE),
+					"fedora-42",
+					NULL,
+					NULL,
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_nonnull (results);
+	g_assert_cmpint (pk_results_get_exit_code (results), ==, PK_EXIT_ENUM_SUCCESS);
+	g_clear_object (&results);
+
+	/* an ID that would be rejected as a filename component is refused */
+	results = pk_client_upgrade_system (client,
+					pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_SIMULATE),
+					"../etc",
+					NULL,
+					NULL,
+					NULL,
+					&error);
+	g_assert_nonnull (error);
+	g_assert_null (results);
+	g_clear_error (&error);
+
+	results = pk_client_repo_set_data (client, "dummy", "use-system-upgrade", "0", NULL, NULL, NULL, &error);
+	g_assert_no_error (error);
+}
+
+static void
 pk_test_client_cancellation_func (void)
 {
 	g_auto(GStrv)
@@ -2005,6 +2078,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/libpackagekit/client/cancellation", pk_test_client_cancellation_func);
 	g_test_add_func ("/libpackagekit/client/local-files", pk_test_client_local_files_func);
 	g_test_add_func ("/libpackagekit/client/purge-flag", pk_test_client_purge_flag_func);
+	g_test_add_func ("/libpackagekit/client/system-upgrades", pk_test_client_system_upgrades_func);
 	g_test_add_func ("/libpackagekit/package-sack", pk_test_package_sack_func);
 	g_test_add_func ("/libpackagekit/task", pk_test_task_func);
 	g_test_add_func ("/libpackagekit/task-wrapper", pk_test_task_wrapper_func);

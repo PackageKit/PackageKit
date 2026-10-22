@@ -2503,16 +2503,22 @@ backend_get_system_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 		vector<parser::ProductFileData::Upgrade> upgrades = it->upgrades();
 		for (vector<parser::ProductFileData::Upgrade>::iterator it2 = upgrades.begin (); it2 != upgrades.end (); it2++) {
 			if (it2->notify ()){
-				PkReleaseKindEnum status = PK_RELEASE_KIND_ENUM_UNKNOWN;
+				PkReleaseKindEnum kind = PK_RELEASE_KIND_ENUM_UNKNOWN;
 				if (it2->status () == "stable") {
-					status = PK_RELEASE_KIND_ENUM_STABLE;
+					kind = PK_RELEASE_KIND_ENUM_STABLE;
 				} else if (it2->status () == "unstable") {
-					status = PK_RELEASE_KIND_ENUM_UNSTABLE;
+					kind = PK_RELEASE_KIND_ENUM_DEVELOPMENT;
 				}
-				pk_backend_job_system_upgrade (job,
-							   status,
-							   it2->name ().c_str (),
-							   it2->summary ().c_str ());
+				g_autoptr(PkSystemUpgrade) upgrade =
+				    pk_system_upgrade_new_full (it2->name ().c_str (),
+								NULL,
+								NULL,
+								it2->name ().c_str (),
+								it2->summary ().c_str (),
+								kind,
+								0,
+								NULL);
+				pk_backend_job_system_upgrade (job, upgrade);
 			}
 		}
 	}

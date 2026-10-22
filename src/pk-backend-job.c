@@ -1771,18 +1771,27 @@ pk_backend_job_files (PkBackendJob *job, const gchar *package_id, GPtrArray *fil
 	job->download_files++;
 }
 
+/**
+ * pk_backend_job_system_upgrade:
+ * @job: A #PkBackendJob instance.
+ * @upgrade: One operating system release this system can be upgraded to.
+ *
+ * Report one result of GetSystemUpgrades. The upgrade must have an ID; all
+ * other fields are optional.
+ */
 void
-pk_backend_job_system_upgrade (PkBackendJob *job,
-			       PkReleaseKindEnum kind,
-			       const gchar *id,
-			       const gchar *summary)
+pk_backend_job_system_upgrade (PkBackendJob *job, PkSystemUpgrade *upgrade)
 {
-	g_autoptr(PkSystemUpgrade) item = NULL;
+	const gchar *id;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (kind != PK_RELEASE_KIND_ENUM_UNKNOWN);
-	g_return_if_fail (id != NULL);
-	g_return_if_fail (summary != NULL);
+	g_return_if_fail (PK_IS_SYSTEM_UPGRADE (upgrade));
+
+	id = pk_system_upgrade_get_id (upgrade);
+	if (id == NULL || id[0] == '\0') {
+		g_warning ("ignoring OS upgrade without an ID");
+		return;
+	}
 
 	/* have we already set an error? */
 	if (job->set_error) {
@@ -1790,14 +1799,10 @@ pk_backend_job_system_upgrade (PkBackendJob *job,
 		return;
 	}
 
-	/* form PkSystemUpgrade struct */
-	item = pk_system_upgrade_new ();
-	g_object_set (item, "state", kind, "id", id, "summary", summary, NULL);
-
 	/* emit */
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_SYSTEM_UPGRADE,
-				   g_object_ref (item),
+				   g_object_ref (upgrade),
 				   g_object_unref);
 }
 

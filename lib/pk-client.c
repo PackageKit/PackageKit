@@ -1242,6 +1242,48 @@ results_add_update_detail_from_variant (PkResults *results,
 	pk_results_add_update_detail (results, item);
 }
 
+/**
+ * results_add_system_upgrade_from_variant:
+ *
+ * Parse the `a{sv}` of a SystemUpgrade signal.
+ */
+static void
+results_add_system_upgrade_from_variant (PkResults *results,
+					 GVariant *parameters,
+					 PkRoleEnum role,
+					 const gchar *transaction_id)
+{
+	g_autoptr(PkSystemUpgrade) item = NULL;
+	g_autoptr(GVariantIter) dict = NULL;
+	const gchar *key;
+	GVariant *value;
+
+	g_variant_get (parameters, "(a{sv})", &dict);
+	item = pk_system_upgrade_new ();
+	g_object_set (item, "role", role, "transaction-id", transaction_id, NULL);
+
+	while (g_variant_iter_loop (dict, "{&sv}", &key, &value)) {
+		if (g_strcmp0 (key, "kind") == 0) {
+			guint kind = g_variant_get_uint32 (value);
+			if (kind >= PK_RELEASE_KIND_ENUM_LAST)
+				kind = PK_RELEASE_KIND_ENUM_UNKNOWN;
+			g_object_set (item, "kind", kind, NULL);
+		} else if (g_strcmp0 (key, "download-size") == 0) {
+			g_object_set (item, "download-size", g_variant_get_uint64 (value), NULL);
+		} else if (g_strcmp0 (key, "id") == 0 || g_strcmp0 (key, "os-id") == 0 ||
+			   g_strcmp0 (key, "version") == 0 || g_strcmp0 (key, "name") == 0 ||
+			   g_strcmp0 (key, "summary") == 0 || g_strcmp0 (key, "url") == 0) {
+			g_object_set (item, key, g_variant_get_string (value, NULL), NULL);
+		}
+	}
+
+	if (pk_system_upgrade_get_id (item) == NULL) {
+		g_warning ("ignoring SystemUpgrade signal without an id");
+		return;
+	}
+	pk_results_add_system_upgrade (results, item);
+}
+
 /*
  * pk_client_signal_cb:
  **/
@@ -1418,22 +1460,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "SystemUpgrade") == 0) {
-		g_autoptr(PkSystemUpgrade) item = NULL;
-		g_variant_get (parameters, "(u&s&s)", &tmp_uint, &tmp_str[1], &tmp_str[2]);
-		item = pk_system_upgrade_new ();
-		g_object_set (item,
-			      "state",
-			      tmp_uint,
-			      "id",
-			      tmp_str[1],
-			      "summary",
-			      tmp_str[2],
-			      "role",
-			      state->role,
-			      "transaction-id",
-			      state->transaction_id,
-			      NULL);
-		pk_results_add_system_upgrade (state->results, item);
+		results_add_system_upgrade_from_variant (state->results,
+							 parameters,
+							 state->role,
+							 state->transaction_id);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "RequireRestart") == 0) {
