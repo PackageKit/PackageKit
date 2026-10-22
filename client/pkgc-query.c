@@ -951,10 +951,10 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 }
 
 /**
- * pkgc_query_show_os_upgrade:
+ * pkgc_query_list_os_upgrades:
  */
 static gint
-pkgc_query_show_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
+pkgc_query_list_os_upgrades (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -963,12 +963,12 @@ pkgc_query_show_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, g
 	    ctx,
 	    cmd,
 	    NULL,
-	    /* TRANSLATORS: Description for pkgcli show-os-upgrade */
-	    _("Show distribution version upgrades, if any are available."));
+	    /* TRANSLATORS: Description for pkgcli list-os-upgrades */
+	    _("List the operating system releases this system can be upgraded to."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
-	/* Get available distribution upgrades */
+	/* Get available OS upgrades */
 	pk_client_get_system_upgrades_async (PK_CLIENT (ctx->task),
 					     ctx->cancellable,
 					     pkgc_context_on_progress_cb,
@@ -1167,10 +1167,10 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 
 	pkgc_context_register_command (
 	    ctx,
-	    "show-os-upgrade",
-	    pkgc_query_show_os_upgrade,
-	    /* TRANSLATORS: Description for show-os-upgrade command in pkgcli help */
-	    _("Show available distribution upgrades"));
+	    "list-os-upgrades",
+	    pkgc_query_list_os_upgrades,
+	    /* TRANSLATORS: Description for list-os-upgrades command in pkgcli help */
+	    _("List available operating system upgrades"));
 
 	pkgc_context_register_command (
 	    ctx,

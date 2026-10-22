@@ -271,11 +271,12 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>show-os-upgrade</command></term>
+        <term><command>list-os-upgrades</command></term>
         <listitem>
           <para>
-            Check for and display information about available operating system or
-            distribution upgrades, such as upgrades to a newer OS release.
+            List the operating system releases this system can be upgraded to,
+            with the upgrade ID to pass to <command>os-upgrade</command>, the
+            kind of release and, where known, the download size and release notes.
           </para>
         </listitem>
       </varlistentry>
@@ -325,18 +326,22 @@
         <listitem>
           <para>
             Install available updates for all installed packages on the system,
-            or for specific packages if specified as arguments. With
+            or for specific packages if specified as arguments. This stays within
+            the current operating system release, see <command>os-upgrade</command>
+            for upgrading to a new release. With
             <literal>--purge</literal>, residual data of packages removed by the
             update is deleted as well.
           </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>upgrade</command></term>
+        <term><command>os-upgrade <replaceable>ID</replaceable></command></term>
         <listitem>
           <para>
-            Perform a system upgrade to newer package versions or a new distribution
-            release. This may involve major version updates and significant changes.
+            Upgrade the operating system to the release with the given upgrade ID,
+            as shown by <command>list-os-upgrades</command>. This changes the
+            release the package manager targets and brings the whole installation
+            in line with it.
           </para>
         </listitem>
       </varlistentry>

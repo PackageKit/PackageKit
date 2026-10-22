@@ -688,16 +688,14 @@ pkgc_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 }
 
 /**
- * pkgc_upgrade:
+ * pkgc_os_upgrade:
  *
- * Upgrade the system to a new distribution version or do an advanced update.
+ * Upgrade the operating system to the release with the given upgrade ID.
  */
 static gint
-pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
+pkgc_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
-	const char *upgrade_id = NULL;
-	g_autoptr(GError) error = NULL;
 
 	pkgc_manage_reset_options ();
 
@@ -705,71 +703,26 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	option_context = pkgc_option_context_for_command (
 	    ctx,
 	    cmd,
-	    "[UPGRADE-ID]",
-	    /* TRANSLATORS: Description of pkgcli upgrade. */
-	    _("Upgrade all packages, or upgrade the operating system to the release\n"
-	      "with the given upgrade ID as shown by show-os-upgrade."));
+	    "ID",
+	    /* TRANSLATORS: Description of pkgcli os-upgrade. Do not translate "list-os-upgrades"/"update" */
+	    _("Upgrade the operating system to the release with the given upgrade ID.\n"
+	      "The available upgrade IDs are shown by `list-os-upgrades`.\n"
+	      "This command does not update packages within the current release, use `update` for that."));
+	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 
-	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
 
-	/* Parse the optional upgrade ID */
-	if (argc >= 2)
-		upgrade_id = argv[1];
-
-	/* Upgrade the OS */
-	if (upgrade_id) {
-		pk_task_upgrade_system_async (PK_TASK (ctx->task),
-					      upgrade_id,
-					      ctx->cancellable,
-					      pkgc_context_on_progress_cb,
-					      ctx,
-					      pkgc_manage_on_task_finished_cb,
-					      ctx);
-	} else {
-		/* Just update all packages */
-		g_autoptr(PkResults) results = NULL;
-		g_autoptr(PkPackageSack) sack = NULL;
-		g_auto(GStrv) package_ids = NULL;
-
-		/* Clear any previous error */
-		g_clear_error (&error);
-
-		/* Get current updates */
-		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
-						    ctx->filters,
-						    ctx->cancellable,
-						    pkgc_context_on_progress_cb,
-						    ctx,
-						    &error);
-		if (results == NULL) {
-			pkgc_print_error (ctx, _("Failed to get updates: %s"), error->message);
-			ctx->exit_code = PKGC_EXIT_FAILURE;
-			return ctx->exit_code;
-		}
-
-		sack = pk_results_get_package_sack (results);
-		pk_package_sack_remove_by_filter (sack, &pkgc_update_system_filter_helper, NULL);
-
-		package_ids = pk_package_sack_get_ids (sack);
-
-		if (package_ids == NULL || g_strv_length (package_ids) == 0) {
-			pkgc_print_info (ctx, _("No packages require updating"));
-			return PKGC_EXIT_SUCCESS;
-		}
-
-		/* Now update them */
-		pk_task_update_packages_async (PK_TASK (ctx->task),
-					       package_ids,
-					       ctx->cancellable,
-					       pkgc_context_on_progress_cb,
-					       ctx,
-					       pkgc_manage_on_task_finished_cb,
-					       ctx);
-	}
+	pk_task_upgrade_system_async (PK_TASK (ctx->task),
+				  argv[1],
+				  ctx->cancellable,
+				  pkgc_context_on_progress_cb,
+				  ctx,
+				  pkgc_manage_on_task_finished_cb,
+				  ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;
@@ -1153,10 +1106,10 @@ pkgc_register_manage_commands (PkgcliContext *ctx)
 
 	pkgc_context_register_command (
 	    ctx,
-	    "upgrade",
-	    pkgc_upgrade,
-	    /* TRANSLATORS: Description for upgrade command in pkgcli help */
-	    _("Upgrade the system"));
+	    "os-upgrade",
+	    pkgc_os_upgrade,
+	    /* TRANSLATORS: Description for os-upgrade command in pkgcli help */
+	    _("Upgrade the operating system to a new release"));
 
 	pkgc_context_register_command (
 	    ctx,
