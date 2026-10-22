@@ -414,18 +414,19 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		/* sort the packages and print them as a table */
 		g_ptr_array_sort (package_array, pk_console_package_sort_func);
 		pk_console_table_set_indent (pkg_table, 2);
+		pk_console_table_set_max_width (pkg_table, 0, PK_CONSOLE_NAME_WIDTH_MAX);
+		pk_console_table_set_max_width (pkg_table, 1, PK_CONSOLE_VERSION_WIDTH_MAX);
+		pk_console_table_set_max_width (pkg_table, 2, PK_CONSOLE_ARCH_WIDTH_MAX);
+		pk_console_table_set_max_width (pkg_table, 3, PK_CONSOLE_ORIGIN_WIDTH_MAX);
 		pk_console_table_set_flexible (pkg_table, 4);
 		for (guint i = 0; i < package_array->len; i++) {
 			PkPackage *package = g_ptr_array_index (package_array, i);
-			g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
 
-			if (split == NULL)
-				continue;
 			pk_console_table_add_row (pkg_table,
-						  split[PK_PACKAGE_ID_NAME],
-						  split[PK_PACKAGE_ID_VERSION],
-						  split[PK_PACKAGE_ID_ARCH],
-						  split[PK_PACKAGE_ID_ORIGIN],
+						  pk_package_get_name (package),
+						  pk_package_get_version (package),
+						  pk_package_get_arch (package),
+						  pk_package_get_origin (package),
 						  pk_package_get_summary (package));
 		}
 		rendered = pk_console_table_render (pkg_table, width, FALSE);

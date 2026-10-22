@@ -48,11 +48,6 @@
 #define SYMBOL_UP      "▲"
 #define SYMBOL_DOWN    "▼"
 
-/* values longer than this do not widen their column in package lists */
-#define PKGC_NAME_WIDTH_MAX    30
-#define PKGC_VERSION_WIDTH_MAX 20
-#define PKGC_ARCH_WIDTH_MAX    8
-
 /* indentation of the text below a "Description:" label */
 #define PKGC_TEXT_INDENT 2
 
@@ -688,18 +683,8 @@ void
 pkgc_print_packages (PkgcliContext *ctx, GPtrArray *packages, gboolean show_summary)
 {
 	g_autoptr(GPtrArray) sorted = NULL;
-	/* clang-format off */
-	const struct {
-		guint field;
-		guint max_width;
-	} columns[] = {
-		{ PK_PACKAGE_ID_NAME,    PKGC_NAME_WIDTH_MAX },
-		{ PK_PACKAGE_ID_VERSION, PKGC_VERSION_WIDTH_MAX },
-		{ PK_PACKAGE_ID_ARCH,    PKGC_ARCH_WIDTH_MAX },
-		{ PK_PACKAGE_ID_ORIGIN,  0 },
-	};
-	/* clang-format on */
-	guint widths[G_N_ELEMENTS (columns)] = { 0 };
+	g_autoptr(PkConsoleTable) table = NULL;
+	g_autofree gchar *rendered = NULL;
 	guint wrap_width = pkgc_util_get_wrap_width (PKGC_DETAIL_INDENT);
 
 	if (packages == NULL || packages->len == 0)
@@ -711,30 +696,21 @@ pkgc_print_packages (PkgcliContext *ctx, GPtrArray *packages, gboolean show_summ
 		return;
 	}
 
+	/* the columns are the state symbol, name, version, architecture, origin
+	 * and update severity; very long values must not push the following
+	 * columns of all other lines far to the right */
+	table = pk_console_table_new (6);
+	pk_console_table_set_spacing (table, 0, 1);
+	pk_console_table_set_max_width (table, 1, PK_CONSOLE_NAME_WIDTH_MAX);
+	pk_console_table_set_max_width (table, 2, PK_CONSOLE_VERSION_WIDTH_MAX);
+	pk_console_table_set_max_width (table, 3, PK_CONSOLE_ARCH_WIDTH_MAX);
+	pk_console_table_set_max_width (table, 4, PK_CONSOLE_ORIGIN_WIDTH_MAX);
+
 	sorted = pkgc_util_make_sorted_shallow_copy (packages, pk_console_package_sort_func);
-
-	/* pad the fields to align the rest of the line, but do not let a few very
-	 * long values push everything else far to the right */
-	for (guint i = 0; i < sorted->len; i++) {
-		g_auto(GStrv) split = pk_package_id_split (
-		    pk_package_get_id (g_ptr_array_index (sorted, i)));
-		if (split == NULL)
-			continue;
-		for (guint c = 0; c < G_N_ELEMENTS (columns); c++)
-			widths[c] = MAX (widths[c], pk_console_str_width (split[columns[c].field]));
-	}
-	for (guint c = 0; c < G_N_ELEMENTS (columns); c++)
-		widths[c] = MIN (widths[c], columns[c].max_width);
-
 	for (guint i = 0; i < sorted->len; i++) {
 		PkPackage *package = g_ptr_array_index (sorted, i);
-		g_auto(GStrv) split = pk_package_id_split (pk_package_get_id (package));
-		g_autoptr(GString) line = NULL;
-		const gchar *summary;
+		const gchar *summary = pk_package_get_summary (package);
 		const gchar *info_color, *info_symbol, *severity_color, *severity_text;
-
-		if (split == NULL)
-			continue;
 
 		pkgc_package_get_style (package,
 					&info_color,
@@ -742,52 +718,35 @@ pkgc_print_packages (PkgcliContext *ctx, GPtrArray *packages, gboolean show_summ
 					&severity_color,
 					&severity_text);
 
-		line = g_string_new (NULL);
-		g_string_append_printf (line,
-					"%s%s%s",
-					pkgc_get_color (ctx, info_color),
-					info_symbol,
-					pkgc_get_reset_color (ctx));
+		pk_console_table_add_row (table,
+					  info_symbol,
+					  pk_package_get_name (package),
+					  pk_package_get_version (package),
+					  pk_package_get_arch (package),
+					  pk_package_get_origin (package),
+					  severity_text);
+		pk_console_table_set_color (table, 0, info_color);
+		pk_console_table_set_color (table, 1, COLOR_BOLD);
+		for (guint c = 2; c <= 4; c++)
+			pk_console_table_set_color (table, c, COLOR_GRAY);
+		pk_console_table_set_color (table, 5, severity_color);
 
-		for (guint c = 0; c < G_N_ELEMENTS (columns); c++) {
-			const gchar *text = split[columns[c].field];
-			guint text_width = pk_console_str_width (text);
-
-			if (widths[c] == 0 && text_width == 0)
-				continue;
-
-			/* pad outside of the color codes, so they do not count towards the width */
-			g_string_append_printf (
-			    line,
-			    "%s%s%s%s",
-			    c == 0 ? " " : "  ",
-			    pkgc_get_color (ctx, c == 0 ? COLOR_BOLD : COLOR_GRAY),
-			    text,
-			    pkgc_get_reset_color (ctx));
-			for (guint w = text_width; w < widths[c]; w++)
-				g_string_append_c (line, ' ');
-		}
-
-		if (severity_text != NULL)
-			g_string_append_printf (line,
-						"  %s%s%s",
-						pkgc_get_color (ctx, severity_color),
-						severity_text,
-						pkgc_get_reset_color (ctx));
-
-		/* never leave trailing whitespace from the padding */
-		while (line->len > 0 && line->str[line->len - 1] == ' ')
-			g_string_truncate (line, line->len - 1);
-		g_print ("%s\n", line->str);
-
-		summary = pk_package_get_summary (package);
 		if (show_summary && summary != NULL && summary[0] != '\0') {
 			g_autofree gchar *wrapped = pk_console_text_wrap (summary,
 									  wrap_width,
 									  PKGC_DETAIL_INDENT);
-			g_print ("%*s%s\n", PKGC_DETAIL_INDENT, "", wrapped);
+			g_autofree gchar *detail = g_strdup_printf ("%*s%s",
+								    PKGC_DETAIL_INDENT,
+								    "",
+								    wrapped);
+			pk_console_table_add_text (table, detail);
 		}
 	}
+
+	rendered = pk_console_table_render (table,
+					    pk_console_get_width (),
+					    pkgc_can_use_colors (ctx));
+	g_print ("%s", rendered);
 }
 
 /**

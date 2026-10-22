@@ -37,6 +37,12 @@ gchar *pk_console_strpad (const gchar *text,
 
 #define PK_CONSOLE_DEFAULT_WIDTH 100
 
+/* values longer than this do not widen their column in package lists */
+#define PK_CONSOLE_NAME_WIDTH_MAX    30
+#define PK_CONSOLE_VERSION_WIDTH_MAX 20
+#define PK_CONSOLE_ARCH_WIDTH_MAX    8
+#define PK_CONSOLE_ORIGIN_WIDTH_MAX  20
+
 guint			      pk_console_get_width (void);
 gchar			     *pk_console_text_wrap (const gchar *text,
 						    guint	 width,
