@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"PO-Revision-Date: 2026-10-17 14:12+0000\n"
+"PO-Revision-Date: 2026-10-23 08:02+0000\n"
 "Last-Translator: Anders Jonsson <haaninjo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -64,10 +64,8 @@ msgstr "Installera uppdateringar; detta kan ta ett tag…"
 
 #. TRANSLATORS: we've started doing an offline OS upgrade
 #: client/pk-offline-update.c:430
-#, fuzzy
-#| msgid "Installing system upgrade; this could take a while..."
 msgid "Installing operating system upgrade; this could take a while..."
-msgstr "Installerar systemuppgradering; detta kan ta ett tag…"
+msgstr "Installerar operativsystemuppgradering; detta kan ta ett tag…"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -210,6 +208,9 @@ msgid ""
 "The available upgrade IDs are shown by `list-os-upgrades`.\n"
 "This command does not update packages within the current release, use `update` for that."
 msgstr ""
+"Uppgradera operativsystemet till utgåvan med givet uppgraderings-ID.\n"
+"Tillgängliga uppgraderings-ID:n visas av `list-os-upgrades`.\n"
+"Detta kommando uppdaterar inte paket inom aktuell utgåva, Använd `update` för det."
 
 #: client/pkgc-manage.c:750
 #, c-format
@@ -347,7 +348,7 @@ msgstr "Uppdatera paket"
 #. TRANSLATORS: Description for upgrade-os command in pkgcli help
 #: client/pkgc-manage.c:1112
 msgid "Upgrade the operating system to a new release"
-msgstr ""
+msgstr "Uppgradera operativsystemet till en ny utgåva"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1119
@@ -393,10 +394,8 @@ msgid "Monitor PackageKit bus events"
 msgstr "Övervaka busshändelser för PackageKit"
 
 #: client/pkgc-query.c:127
-#, fuzzy
-#| msgid "There are no upgrades available at this time."
 msgid "There are no OS upgrades available."
-msgstr "Det finns inga uppgraderingar tillgängliga just nu."
+msgstr "Det finns inga OS-uppgraderingar tillgängliga."
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:256
@@ -428,7 +427,7 @@ msgstr "Roller: %s"
 #. TRANSLATORS: Option of pkgcli history
 #: client/pkgc-query.c:335
 msgid "Show all details of every transaction"
-msgstr ""
+msgstr "Visa alla detaljer för varje transaktion"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:346
@@ -530,7 +529,7 @@ msgstr "Grupper:"
 #. TRANSLATORS: Description for pkgcli list-os-upgrades
 #: client/pkgc-query.c:967
 msgid "List the operating system releases this system can be upgraded to."
-msgstr ""
+msgstr "Lista operativsystemutgåvorna detta system kan uppgraderas till."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -625,10 +624,8 @@ msgstr "Lista tillgängliga filter och grupper"
 
 #. TRANSLATORS: Description for list-os-upgrades command in pkgcli help
 #: client/pkgc-query.c:1173
-#, fuzzy
-#| msgid "Getting system upgrades"
 msgid "List available operating system upgrades"
-msgstr "Hämtar systemuppgraderingar"
+msgstr "Lista tillgängliga operativsystemuppgraderingar"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1180
@@ -888,50 +885,38 @@ msgstr "Utfärdad:"
 
 #. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
 #: client/pkgc-util.c:1167
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade:"
-msgstr "Uppgradera system"
+msgstr "Uppgradera:"
 
 #. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
 #: client/pkgc-util.c:1173
-#, fuzzy
-#| msgid "Name"
 msgid "Name:"
-msgstr "Namn"
+msgstr "Namn:"
 
 #. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
 #: client/pkgc-util.c:1179
-#, fuzzy
-#| msgid "Repairing system"
 msgid "Operating system:"
-msgstr "Reparerar systemet"
+msgstr "Operativsystem:"
 
 #. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
 #: client/pkgc-util.c:1189
 msgid "Kind:"
-msgstr ""
+msgstr "Sort:"
 
 #. TRANSLATORS: Label for the download size of an OS upgrade
 #: client/pkgc-util.c:1195
-#, fuzzy
-#| msgid "Download Size:"
 msgid "Download size:"
 msgstr "Hämtningsstorlek:"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1282
-#, fuzzy
-#| msgid "Enabled"
 msgid "enabled"
-msgstr "Aktiverad"
+msgstr "aktiverat"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1285
-#, fuzzy
-#| msgid "Disabled"
 msgid "disabled"
-msgstr "Inaktiverad"
+msgstr "inaktiverat"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1401
@@ -994,17 +979,15 @@ msgstr "Påverkade paket:"
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1506
 msgid "Date"
-msgstr ""
+msgstr "Datum"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1508
 msgid "Action"
-msgstr ""
+msgstr "Åtgärd"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1511
-#, fuzzy
-#| msgid "Package"
 msgid "Packages"
 msgstr "Paket"
 
@@ -1015,10 +998,8 @@ msgstr "Längd"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1515
-#, fuzzy
-#| msgid "User ID"
 msgid "User"
-msgstr "Användar-ID"
+msgstr "Användare"
 
 #: client/pkgc-util.c:1646
 msgid "More than one package matches:"
@@ -1377,10 +1358,8 @@ msgstr "Autentisering krävs för att ställa in nätverksproxyn som används f�
 #. system to a new release as this can make the system unbootable or
 #. stop other applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:233
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrade the operating system"
-msgstr "Uppgradera systemet"
+msgstr "Uppgradera operativsystemet"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:234
 msgid "Authentication is required to upgrade the operating system"
@@ -1889,10 +1868,8 @@ msgstr "Hämtar transaktionshistorik"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1289
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrading the system"
-msgstr "Uppgradera systemet"
+msgstr "Uppgraderar systemet"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1293
@@ -1987,10 +1964,8 @@ msgstr "Användarvillkoren godkändes inte."
 
 #. TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too
 #: lib/pk-task-text.c:216
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "The following packages have to be removed, including their configuration files and data:"
-msgstr "Följande paket måste installeras om:"
+msgstr "Följande paket måste tas bort, inklusive deras konfigurationsfiler och data:"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/pk-task-text.c:219
@@ -2019,10 +1994,8 @@ msgstr "Följande paket måste nedgraderas:"
 
 #. TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too
 #: lib/pk-task-text.c:245
-#, fuzzy
-#| msgid "The following packages have to be obsoleted:"
 msgid "The following packages have to be obsoleted, including their configuration files and data:"
-msgstr "Följande paket måste bli föråldrade:"
+msgstr "Följande paket måste föråldras, inklusive deras konfigurationsfiler och data:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/pk-task-text.c:248
@@ -2036,52 +2009,48 @@ msgstr "Följande paket är inte pålitliga:"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:301
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to install"
 msgid_plural "%u to install"
-msgstr[0] "Ominstallera"
-msgstr[1] "Ominstallera"
+msgstr[0] "%u att installera"
+msgstr[1] "%u att installera"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:305
-#, fuzzy, c-format
-#| msgid "Security update"
+#, c-format
 msgid "%u to update"
 msgid_plural "%u to update"
-msgstr[0] "Säkerhetsuppdatera"
-msgstr[1] "Säkerhetsuppdatera"
+msgstr[0] "%u att uppdatera"
+msgstr[1] "%u att uppdatera"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:309
 #, c-format
 msgid "%u to remove"
 msgid_plural "%u to remove"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u att ta bort"
+msgstr[1] "%u att ta bort"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
 #: lib/pk-task-text.c:314
-#, fuzzy, c-format
-#| msgid "Downgrade"
+#, c-format
 msgid "%u to downgrade"
 msgid_plural "%u to downgrade"
-msgstr[0] "Nedgradera"
-msgstr[1] "Nedgradera"
+msgstr[0] "%u att nedgradera"
+msgstr[1] "%u att nedgradera"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
 #: lib/pk-task-text.c:321
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to reinstall"
 msgid_plural "%u to reinstall"
-msgstr[0] "Ominstallera"
-msgstr[1] "Ominstallera"
+msgstr[0] "%u att ominstallera"
+msgstr[1] "%u att ominstallera"
 
 #. TRANSLATORS: separator between the parts of the transaction summary
 #: lib/pk-task-text.c:327
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:439
