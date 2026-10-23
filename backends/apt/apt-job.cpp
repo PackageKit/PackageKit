@@ -1651,7 +1651,7 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
     PkgList obsoleting;
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
-        if ((*m_cache)[pkg].NewInstall() == true) {
+        if ((*m_cache)[pkg].NewInstall() || (*m_cache)[pkg].ReInstall()) {
             // installing;
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
@@ -2153,11 +2153,9 @@ bool AptJob::installPackages(PkBitfield flags)
         return true;
     }
 
-    // Create the download object
-    AcqPackageKitStatus Stat(this);
-
-    // get a fetcher
-    pkgAcquire fetcher(&Stat);
+    // The progress object must outlive the fetcher that calls it.
+    std::unique_ptr<AcqPackageKitStatus> downloadProgress;
+    pkgAcquire fetcher;
     if (!simulate) {
         // Only lock the archive directory if we will download
         if (fetcher.GetLock(_config->FindDir("Dir::Cache::Archives")) == false) {
@@ -2180,7 +2178,19 @@ bool AptJob::installPackages(PkBitfield flags)
     if (!checkDownloadRequirements(fetcher))
         return false;
 
-    // Make sure we are not installing any untrusted package is untrusted is not set
+    // Still run acquisition for local/cached archives so APT validates them,
+    // but do not present those transactions as network downloads.
+    const bool needsDownload = std::any_of(fetcher.ItemsBegin(), fetcher.ItemsEnd(), [](const auto *item) {
+        return !item->Local && !item->Complete;
+    });
+    downloadProgress = std::make_unique<AcqPackageKitStatus>(this, needsDownload);
+    fetcher.SetLog(downloadProgress.get());
+
+    // Report the archive authentication checks separately from downloading.
+    if (!simulate && fetcher.ItemsBegin() != fetcher.ItemsEnd()) {
+        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_SIG_CHECK);
+        pk_backend_job_set_percentage(m_job, PK_BACKEND_PERCENTAGE_INVALID);
+    }
     if (!checkTrusted(fetcher, flags) && !simulate) {
         return false;
     }
@@ -2197,7 +2207,7 @@ bool AptJob::installPackages(PkBitfield flags)
     }
 
     // Download and check if we can continue
-    if (fetcher.Run() != pkgAcquire::Continue && m_cancel == false) {
+    if (fetcher.ItemsBegin() != fetcher.ItemsEnd() && fetcher.Run() != pkgAcquire::Continue && m_cancel == false) {
         // We failed and we did not cancel
         show_errors(m_job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED);
         return false;
@@ -2218,7 +2228,10 @@ bool AptJob::installPackages(PkBitfield flags)
         return true;
     }
 
-    return runDpkg(*PM);
+    const bool success = runDpkg(*PM);
+    if (success && !m_cancel)
+        pk_backend_job_set_percentage(m_job, 100);
+    return success;
 }
 
 bool AptJob::checkDownloadRequirements(pkgAcquire &fetcher)
@@ -2271,7 +2284,8 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
     // Right now it's not safe to cancel
     pk_backend_job_set_allow_cancel(m_job, false);
 
-    // Download should be finished by now, changing it's status
+    // APT orders the transaction and checks its configuration before starting dpkg.
+    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_COMMIT);
     pk_backend_job_set_percentage(m_job, PK_BACKEND_PERCENTAGE_INVALID);
 
     // we could try to see if this is the case
@@ -2349,7 +2363,7 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
         g_free(cmd);
 
         // Pass the write end of the pipe to the install function
-        auto *progress = new Progress::PackageManagerProgressFd(readFromChildFD[1]);
+        auto *progress = new AptInstallProgress(readFromChildFD[1]);
         res = PM.DoInstallPostFork(progress);
         delete progress;
 
@@ -2369,7 +2383,7 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
     fcntl(dpkgStatusFD[0], F_SETFL, O_NONBLOCK);
     fcntl(pty_master, F_SETFL, O_NONBLOCK);
 
-    DpkgProgress dpkgProgress(*this, m_child_pid);
+    DpkgProgress dpkgProgress(*this, m_child_pid, m_pkgs);
 
     // process messages from child
     int ret = 0;
