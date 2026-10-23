@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-10-17 10:34+0200\n"
+"POT-Creation-Date: 2026-10-22 10:19+0200\n"
 "PO-Revision-Date: 2026-10-18 19:51+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remus-gabriel@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
@@ -23,46 +23,48 @@ msgstr ""
 "X-Generator: Weblate 2026.11.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:165
+#: client/pk-offline-update.c:166
 #, c-format
 msgid "%i%%"
 msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:171
+#. * advise of the new percentage completion when installing OS upgrades
+#: client/pk-offline-update.c:172
 msgid "Installing System Upgrade"
 msgstr "Se instalează înnoirea sistemului"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:175
+#: client/pk-offline-update.c:176
 msgid "Installing Updates"
 msgstr "Se instalează actualizările"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:206
+#: client/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "Se repornește după instalarea actualizărilor…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:245
+#: client/pk-offline-update.c:246
 msgid "Shutting down after installing updates…"
 msgstr "Se oprește calculatorul după instalarea actualizărilor…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:391
+#: client/pk-offline-update.c:392
 msgid "Installing updates; this could take a while..."
 msgstr "Se instalează actualizările, aceasta ar putea dura..."
 
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:429
-msgid "Installing system upgrade; this could take a while..."
+#. TRANSLATORS: we've started doing an offline OS upgrade
+#: client/pk-offline-update.c:430
+#, fuzzy
+#| msgid "Installing system upgrade; this could take a while..."
+msgid "Installing operating system upgrade; this could take a while..."
 msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:131
+#: client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
 msgstr "Demonul a eșuat în mijlocul tranzacției!"
 
@@ -118,152 +120,148 @@ msgid "Affected applications need to be restarted to complete the changes."
 msgstr "Aplicațiile afectate trebuie repornite pentru ca modificările să fie aplicate."
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:256
+#: client/pkgc-manage.c:250
 msgid "Refresh the package metadata cache."
 msgstr "Împrospătează conținutul spațiului de stocare (cache) al metadatelor pachetelor."
 
-#: client/pkgc-manage.c:282
+#: client/pkgc-manage.c:276
 msgid "Package metadata refreshed"
 msgstr "Metadatele pachetelor au fost actualizate"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:307
+#: client/pkgc-manage.c:301
 msgid "Install one or more packages or local package files."
 msgstr "Instalează unul sau mai multe pachete sau fișiere de pachete locale."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:369 client/pkgc-manage.c:383
+#: client/pkgc-manage.c:363 client/pkgc-manage.c:377
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "Nu s-a putut găsi niciun pachet disponibil: %s"
 
-#: client/pkgc-manage.c:388
+#: client/pkgc-manage.c:382
 msgid "The selected package is already installed."
 msgstr "Pachetul select este deja instalat."
 
-#: client/pkgc-manage.c:444 client/pkgc-util.c:1288
+#: client/pkgc-manage.c:438 client/pkgc-util.c:1702
 #, c-format
 msgid "Package not found: %s"
 msgstr "Pachetul nu a fost găsit: %s"
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:485
+#: client/pkgc-manage.c:479
 msgid "Remove one or more packages from the system."
 msgstr "Elimină unul sau mai multe pachete din sistem."
 
-#: client/pkgc-manage.c:506
+#: client/pkgc-manage.c:500
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "Nu s-au putut găsi pachetele instalate: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:548
+#: client/pkgc-manage.c:542
 msgid "Download packages to the specified directory without installing."
 msgstr "Descarcă pachetele în directorul specificat fără a le instala."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
-#: client/pkgc-manage.c:561 client/pkgc-query.c:450 client/pkgc-query.c:797
+#: client/pkgc-manage.c:555 client/pkgc-query.c:545 client/pkgc-query.c:889
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Nu s-a putut găsi pachetul: %s"
 
-#: client/pkgc-manage.c:569
+#: client/pkgc-manage.c:563
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "Directorul nu există: %s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:613
+#: client/pkgc-manage.c:607
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Actualizează toate pachetele sau anumite pachete la cele mai recente versiuni ale acestora."
 
-#: client/pkgc-manage.c:636
+#: client/pkgc-manage.c:630
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "Nu s-au găsit pachete pentru actualizare: %s"
 
-#: client/pkgc-manage.c:666 client/pkgc-manage.c:767 client/pkgc-manage.c:999
+#: client/pkgc-manage.c:660 client/pkgc-manage.c:934
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Obținerea actualizărilor a eșuat: %s"
 
-#: client/pkgc-manage.c:678 client/pkgc-manage.c:778 client/pkgc-manage.c:1007
+#: client/pkgc-manage.c:672 client/pkgc-manage.c:942
 msgid "No packages require updating"
 msgstr "Niciun pachet nu necesită actualizarea"
 
-#. TRANSLATORS: Description of pkgcli upgrade.
-#. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:718
+#. TRANSLATORS: Description of pkgcli upgrade-os. Do not translate "list-os-upgrades"/"update"
+#: client/pkgc-manage.c:708
 msgid ""
-"Upgrade all packages or perform a distribution upgrade.\n"
-"\n"
-"Types: minimal, default, complete"
+"Upgrade the operating system to the release with the given upgrade ID.\n"
+"The available upgrade IDs are shown by `list-os-upgrades`.\n"
+"This command does not update packages within the current release, use `update` for that."
 msgstr ""
-"Actualizează toate pachetele sau efectuează o actualizare a distribuției.\n"
-"\n"
-"Tipuri: minimal, implicit, complet"
 
-#: client/pkgc-manage.c:815
+#: client/pkgc-manage.c:750
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "Citirea acțiunii de actualizare fără conexiune la Internet a eșuat: %s"
 
-#: client/pkgc-manage.c:825
+#: client/pkgc-manage.c:760
 msgid "Offline update is not triggered."
 msgstr "Actualizarea fără conexiune la Internet nu este declanșată."
 
-#: client/pkgc-manage.c:834
+#: client/pkgc-manage.c:769
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Actualizarea fără conexiune la Internet este declanșată. Acțiunea după actualizare: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:845
+#: client/pkgc-manage.c:780
 msgid "Prepared packages:"
 msgstr "Pachete pregătite:"
 
-#: client/pkgc-manage.c:859
+#: client/pkgc-manage.c:794
 msgid "No offline update is prepared."
 msgstr "Nu este pregătită nicio actualizare fără conexiune la Internet."
 
-#: client/pkgc-manage.c:862
+#: client/pkgc-manage.c:797
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Citirea actualizărilor fără conexiune la Internet pregătite, a eșuat: %s"
 
-#: client/pkgc-manage.c:873
+#: client/pkgc-manage.c:808
 msgid "No results from last offline update available."
 msgstr "Nu sunt disponibile rezultate de la ultima actualizare fără conexiune la Internet."
 
-#: client/pkgc-manage.c:880
+#: client/pkgc-manage.c:815
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "Ultima actualizare fără conexiune la Internet a eșuat: %s: %s"
 
-#: client/pkgc-manage.c:887
+#: client/pkgc-manage.c:822
 msgid "Last offline update completed successfully"
 msgstr "Ultima actualizare fără conexiune la Internet a fost finalizată cu succes"
 
-#: client/pkgc-manage.c:897
+#: client/pkgc-manage.c:832
 #, c-format
 msgid "Updated: %s"
 msgstr "Actualizat: %s"
 
-#: client/pkgc-manage.c:921
+#: client/pkgc-manage.c:856
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "Declanșarea actualizării fără conectare la Internet a eșuat: %s"
 
-#: client/pkgc-manage.c:925
+#: client/pkgc-manage.c:860
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "Actualizare fără conexiune la Internet programată. Sistemul se va actualiza la următoarea repornire."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:945
+#: client/pkgc-manage.c:880
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -281,146 +279,157 @@ msgstr ""
 "  cancel  - anulează o actualizare fără conexiune la Internet planificată\n"
 "  status  - afișează informații despre starea unei actualizări fără conexiune la Internet pregătite sau finalizate"
 
-#: client/pkgc-manage.c:967
+#: client/pkgc-manage.c:902
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "Anularea actualizării fără conexiune la Internet a eșuat: %s"
 
-#: client/pkgc-manage.c:971
+#: client/pkgc-manage.c:906
 msgid "Offline update cancelled"
 msgstr "Actualizarea fără conexiune la Internet a fost anulată"
 
-#: client/pkgc-manage.c:1028
+#: client/pkgc-manage.c:963
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "Solicitare necunoscută de actualizare fără conexiune la Internet: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:1049
+#: client/pkgc-manage.c:984
 msgid "Install a package signature for GPG verification."
 msgstr "Instalează o semnătură de pachet pentru verificarea GPG."
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:1085
+#: client/pkgc-manage.c:1020
 msgid "Attempt to repair the package management system."
 msgstr "Încearcă să repare sistemul de gestionare a pachetelor."
 
-#: client/pkgc-manage.c:1101
+#: client/pkgc-manage.c:1036
 msgid "System repaired successfully"
 msgstr "Sistemul a fost reparat cu succes"
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:1123
+#: client/pkgc-manage.c:1058
 msgid "Safely terminate the PackageKit daemon."
 msgstr "Termină în siguranță execuția demonului PackageKit."
 
-#: client/pkgc-manage.c:1129
+#: client/pkgc-manage.c:1064
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "Cererea de terminare a execuției demonului a eșuat: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
-#: client/pkgc-manage.c:1149
+#: client/pkgc-manage.c:1084
 msgid "Refresh package metadata"
 msgstr "Reîmprospătează metadatele pachetului"
 
 #. TRANSLATORS: Description for install command in pkgcli help
-#: client/pkgc-manage.c:1156
+#: client/pkgc-manage.c:1091
 msgid "Install packages"
 msgstr "Instalează pachetele"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
-#: client/pkgc-manage.c:1163
+#: client/pkgc-manage.c:1098
 msgid "Remove packages"
 msgstr "Elimină pachetele"
 
 #. TRANSLATORS: Description for update command in pkgcli help
-#: client/pkgc-manage.c:1170
+#: client/pkgc-manage.c:1105
 msgid "Update packages"
 msgstr "Actualizează pachetele"
 
-#. TRANSLATORS: Description for upgrade command in pkgcli help
-#: client/pkgc-manage.c:1177
-msgid "Upgrade the system"
-msgstr "Înnoiește sistemul"
+#. TRANSLATORS: Description for upgrade-os command in pkgcli help
+#: client/pkgc-manage.c:1112
+msgid "Upgrade the operating system to a new release"
+msgstr ""
 
 #. TRANSLATORS: Description for download command in pkgcli help
-#: client/pkgc-manage.c:1184
+#: client/pkgc-manage.c:1119
 msgid "Download packages"
 msgstr "Descarcă pachetele"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
-#: client/pkgc-manage.c:1191
+#: client/pkgc-manage.c:1126
 msgid "Manage offline system updates"
 msgstr "Gestionează actualizările fără conexiune la internet ale sistemului"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
-#: client/pkgc-manage.c:1198
+#: client/pkgc-manage.c:1133
 msgid "Install package signature"
 msgstr "Instalează semnătura pachetului"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
-#: client/pkgc-manage.c:1205
+#: client/pkgc-manage.c:1140
 msgid "Repair package system"
 msgstr "Repară sistemul de gestionare al pachetelor"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
-#: client/pkgc-manage.c:1212
+#: client/pkgc-manage.c:1147
 msgid "Safely stop the PackageKit daemon"
 msgstr "Oprește în siguranță demonul PackageKit"
 
-#: client/pkgc-monitor.c:400
+#: client/pkgc-monitor.c:384
 msgid "Failed to get daemon state"
 msgstr "Obținerea stării demonului a eșuat"
 
-#: client/pkgc-monitor.c:470
+#: client/pkgc-monitor.c:454
 msgid "Failed to get properties"
 msgstr "Obținerea proprietăților a eșuat"
 
 #. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:492
+#: client/pkgc-monitor.c:476
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Monitorizează evenimentele D-Bus ale PackageKit"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
-#: client/pkgc-monitor.c:614
+#: client/pkgc-monitor.c:594
 msgid "Monitor PackageKit bus events"
 msgstr "Monitorizează evenimentele magistralei PackageKit"
 
+#: client/pkgc-query.c:127
+#, fuzzy
+#| msgid "There are no upgrades available at this time."
+msgid "There are no OS upgrades available."
+msgstr "Nu sunt înnoiri disponibile în acest moment."
+
 #. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:174
+#: client/pkgc-query.c:256
 msgid "Show PackageKit backend information."
 msgstr "Afișează informații despre motorul intern al PackageKit."
 
-#: client/pkgc-query.c:218
+#: client/pkgc-query.c:300
 #, c-format
 msgid "Backend: %s"
 msgstr "Motorul intern: %s"
 
-#: client/pkgc-query.c:221
+#: client/pkgc-query.c:303
 #, c-format
 msgid "Description: %s"
 msgstr "Descriere: %s"
 
-#: client/pkgc-query.c:224
+#: client/pkgc-query.c:306
 #, c-format
 msgid "Author: %s"
 msgstr "Autor: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:230
+#: client/pkgc-query.c:312
 #, c-format
 msgid "Roles: %s"
 msgstr "Roluri: %s"
 
+#. TRANSLATORS: Option of pkgcli history
+#: client/pkgc-query.c:335
+msgid "Show all details of every transaction"
+msgstr ""
+
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:254
+#: client/pkgc-query.c:346
 msgid "Show recent package management transactions."
 msgstr "Afișează tranzacțiile recente de gestionare a pachetelor."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:295
+#: client/pkgc-query.c:390
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -438,497 +447,578 @@ msgstr ""
 "  file    - căutare după numele fișierului\n"
 "  group   - căutare după grupul de pachete"
 
-#: client/pkgc-query.c:323
+#: client/pkgc-query.c:418
 msgid "No search pattern specified"
 msgstr "Nu s-a specificat niciun model de căutare"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:384
+#: client/pkgc-query.c:479
 msgid "List all packages or those matching a pattern."
 msgstr "Afișează toate pachetele sau cele care corespund unui model."
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:429
+#: client/pkgc-query.c:524
 msgid "Show information about one or more packages."
 msgstr "Afișează informații despre unul sau mai multe pachete."
 
-#: client/pkgc-query.c:488 client/pkgc-query.c:777
+#: client/pkgc-query.c:583 client/pkgc-query.c:869
 msgid "Check dependencies recursively"
 msgstr "Verifică dependențele în mod recursiv"
 
 #. TRANSLATORS: Description for pkgcli list-dependencies
-#: client/pkgc-query.c:499
+#: client/pkgc-query.c:594
 msgid "Show dependencies for one or more packages."
 msgstr "Afișează dependențele pentru unul sau mai multe pachete."
 
-#: client/pkgc-query.c:507 client/pkgc-query.c:591 client/pkgc-query.c:708
+#: client/pkgc-query.c:602 client/pkgc-query.c:686 client/pkgc-query.c:800
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "Nu s-au putut rezolva pachetele: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:540
+#: client/pkgc-query.c:635
 msgid "Show which packages provide the specified capability."
 msgstr "Afișează pachetele care oferă funcționalitatea specificată."
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:572
+#: client/pkgc-query.c:667
 msgid "List all files contained in one or more packages."
 msgstr "Listează toate fișierele conținute într-unul sau mai multe pachete."
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:668
+#: client/pkgc-query.c:760
 msgid "List all currently available package updates."
 msgstr "Listează toate actualizările de pachete disponibile în prezent."
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:701
+#: client/pkgc-query.c:793
 msgid "Show detailed information about the specified package update."
 msgstr "Afișează informații detaliate despre actualizarea pachetului specificat."
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:740
+#: client/pkgc-query.c:832
 msgid "Resolve package names to package IDs."
 msgstr "Transformă numele pachetelor în ID-uri de pachete."
 
 #. TRANSLATORS: Description for pkgcli list-requiring
-#: client/pkgc-query.c:788
+#: client/pkgc-query.c:880
 msgid "Show which packages require the specified packages."
 msgstr "Afișează pachetele care necesită pachetele specificate."
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:832
+#: client/pkgc-query.c:924
 msgid "List all available filters and groups for package organization."
 msgstr "Listează toate filtrele și grupurile disponibile pentru organizarea pachetelor."
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:840
+#: client/pkgc-query.c:932
 msgid "Filters:"
 msgstr "Filtre:"
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:852
+#: client/pkgc-query.c:944
 msgid "Groups:"
 msgstr "Grupuri:"
 
-#. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:875
-msgid "Show distribution version upgrades, if any are available."
-msgstr "Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
+#. TRANSLATORS: Description for pkgcli list-os-upgrades
+#: client/pkgc-query.c:967
+msgid "List the operating system releases this system can be upgraded to."
+msgstr ""
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkgc-query.c:907
+#: client/pkgc-query.c:999
 msgid "Failed to get the time since this action was last completed"
 msgstr "A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:920
+#: client/pkgc-query.c:1012
 msgid "Elapsed time"
 msgstr "Timpul scurs"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:945
+#: client/pkgc-query.c:1037
 msgid "Get time in seconds since the last specified action."
 msgstr "Obține timpul în secunde de la ultima acțiune specificată."
 
 #. TRANSLATORS: The user didn't specify what action to use
-#: client/pkgc-query.c:956
+#: client/pkgc-query.c:1048
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Este necesară o acțiune, de exemplu, „update-packages”"
 
 #. TRANSLATORS: The user specified an invalid action
-#: client/pkgc-query.c:964
+#: client/pkgc-query.c:1056
 msgid "A correct role is required"
 msgstr "Este necesar un rol corect"
 
 #. TRANSLATORS: Description for backend command in pkgcli help
-#: client/pkgc-query.c:988
+#: client/pkgc-query.c:1080
 msgid "Show backend information"
 msgstr "Afișează informații despre motorul intern"
 
 #. TRANSLATORS: Description for history command in pkgcli help
-#: client/pkgc-query.c:995
+#: client/pkgc-query.c:1087
 msgid "Show transaction history"
 msgstr "Afișează istoricul tranzacțiilor"
 
 #. TRANSLATORS: Description for search command in pkgcli help
-#: client/pkgc-query.c:1002
+#: client/pkgc-query.c:1094
 msgid "Search for packages"
 msgstr "Caută după pachete"
 
 #. TRANSLATORS: Description for list command in pkgcli help
-#: client/pkgc-query.c:1009
+#: client/pkgc-query.c:1101
 msgid "List packages"
 msgstr "Listează pachetele"
 
 #. TRANSLATORS: Description for show command in pkgcli help
-#: client/pkgc-query.c:1016
+#: client/pkgc-query.c:1108
 msgid "Show package information"
 msgstr "Afișează informații despre pachet"
 
 #. TRANSLATORS: Description for list-dependencies command in pkgcli help
-#: client/pkgc-query.c:1023
+#: client/pkgc-query.c:1115
 msgid "List dependencies of the specified package(s)"
 msgstr "Listează dependențele pachetului (pachetelor) specificat(e)"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
-#: client/pkgc-query.c:1031
+#: client/pkgc-query.c:1123
 msgid "List other packages requiring the specified package(s)"
 msgstr "Listează alte pachete care necesită pachetul (pachetele) specificat(e)"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
-#: client/pkgc-query.c:1039
+#: client/pkgc-query.c:1131
 msgid "List packages providing a capability"
 msgstr "Listează pachetele care furnizează funcționalitatea specificată"
 
 #. TRANSLATORS: Description for files command in pkgcli help
-#: client/pkgc-query.c:1046
+#: client/pkgc-query.c:1138
 msgid "Show files in package"
 msgstr "Afișează fișierele din pachet"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
-#: client/pkgc-query.c:1053
+#: client/pkgc-query.c:1145
 msgid "Get available updates"
 msgstr "Obține actualizările disponibile"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
-#: client/pkgc-query.c:1060
+#: client/pkgc-query.c:1152
 msgid "Get update details"
 msgstr "Obține detaliile privind actualizarea"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
-#: client/pkgc-query.c:1067
+#: client/pkgc-query.c:1159
 msgid "Resolve package names"
 msgstr "Rezolvă numele pachetelor"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
-#: client/pkgc-query.c:1074
+#: client/pkgc-query.c:1166
 msgid "List available filters and groups"
 msgstr "Listează filtrele și grupurile disponibile"
 
-#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
-#: client/pkgc-query.c:1081
-msgid "Show available distribution upgrades"
-msgstr "Afișează actualizările de distribuție disponibile"
+#. TRANSLATORS: Description for list-os-upgrades command in pkgcli help
+#: client/pkgc-query.c:1173
+#, fuzzy
+#| msgid "Getting system upgrades"
+msgid "List available operating system upgrades"
+msgstr "Se obțin înnoirile de sistem"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
-#: client/pkgc-query.c:1088
+#: client/pkgc-query.c:1180
 msgid "Get time since last action"
 msgstr "Obține timpul scurs de la ultima acțiune"
 
 #. TRANSLATORS: Description for pkgcli repo-list
-#: client/pkgc-repo.c:82
+#: client/pkgc-repo.c:79
 msgid "List all configured package repositories."
 msgstr "Listează toate depozitele de pachete configurate."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:116
+#: client/pkgc-repo.c:113
 msgid "Enable the specified repository."
 msgstr "Activează depozitul specificat."
 
-#: client/pkgc-repo.c:135
+#: client/pkgc-repo.c:132
 #, c-format
 msgid "Repository '%s' enabled"
 msgstr "Depozitul „%s” este activat"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:157
+#: client/pkgc-repo.c:154
 msgid "Disable the specified repository."
 msgstr "Dezactivează depozitul specificat."
 
-#: client/pkgc-repo.c:176
+#: client/pkgc-repo.c:173
 #, c-format
 msgid "Repository '%s' disabled"
 msgstr "Depozitul „%s” este dezactivat"
 
-#: client/pkgc-repo.c:199
+#: client/pkgc-repo.c:196
 msgid "Automatically remove orphaned packages"
 msgstr "Elimină automat pachetele orfane"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:211
+#: client/pkgc-repo.c:208
 msgid "Remove the specified repository."
 msgstr "Elimină depozitul specificat."
 
-#: client/pkgc-repo.c:231
+#: client/pkgc-repo.c:228
 #, c-format
 msgid "Repository '%s' removed"
 msgstr "Depozitul „%s” a fost eliminat"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
-#: client/pkgc-repo.c:249
+#: client/pkgc-repo.c:246
 msgid "List repositories"
 msgstr "Listează depozitele"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
-#: client/pkgc-repo.c:256
+#: client/pkgc-repo.c:253
 msgid "Enable a repository"
 msgstr "Activează un depozit"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
-#: client/pkgc-repo.c:263
+#: client/pkgc-repo.c:260
 msgid "Disable a repository"
 msgstr "Dezactivează un depozit"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
-#: client/pkgc-repo.c:270
+#: client/pkgc-repo.c:267
 msgid "Remove a repository"
 msgstr "Elimină un depozit"
 
-#: client/pkgc-util.c:97
+#: client/pkgc-util.c:110
 msgid "Not connected to PackageKit daemon"
 msgstr "Nu este conectat la demonul PackageKit"
 
 #. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:134
+#: client/pkgc-util.c:209
 #, c-format
 msgid "%u seconds"
 msgstr "%u secunde"
 
 #. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:140
+#: client/pkgc-util.c:215
 #, c-format
 msgid "%u min %u sec"
 msgstr "%u min %u sec"
 
 #. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:143
+#: client/pkgc-util.c:218
 #, c-format
 msgid "%u min"
 msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:150
+#: client/pkgc-util.c:225
 #, c-format
 msgid "%u h %u min"
 msgstr "%u oră(e) %u min"
 
 #. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:153
+#: client/pkgc-util.c:228
 #, c-format
 msgid "%u h"
 msgstr "%u oră(e)"
 
 #. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:160
+#: client/pkgc-util.c:235
 #, c-format
 msgid "%u days %u h"
 msgstr "%u zile %u oră(e)"
 
 #. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:163
+#: client/pkgc-util.c:238
 #, c-format
 msgid "%u days"
 msgstr "%u zile"
 
-#: client/pkgc-util.c:278
+#: client/pkgc-util.c:362
 msgid "Error"
 msgstr "Eroare"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:310
+#: client/pkgc-util.c:394
 msgid "Warning:"
 msgstr "Avertisment:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
-#: client/pkgc-util.c:409
+#: client/pkgc-util.c:493
 #, c-format
 msgid "Alias: %s"
 msgstr "Alias: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:443 client/pkgcli.c:194
+#: client/pkgc-util.c:527 client/pkgcli.c:194
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Nu s-au putut analiza opțiunile: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:451
+#: client/pkgc-util.c:535
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Utilizare: %s %s %s"
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:566
+#: client/pkgc-util.c:635
 msgid "high"
 msgstr "ridicată"
 
 #. TRANSLATORS: the severity of a package update, keep this short
-#: client/pkgc-util.c:571
+#: client/pkgc-util.c:640
 msgid "critical"
 msgstr "critică"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:687 client/pkgc-util.c:859
+#: client/pkgc-util.c:813 client/pkgc-util.c:994
 msgid "Package:"
 msgstr "Pachet:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:691
+#. TRANSLATORS: Label for the version of an OS release, e.g. "44"
+#: client/pkgc-util.c:817 client/pkgc-util.c:1185
 msgid "Version:"
 msgstr "Versiunea:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:697
+#. TRANSLATORS: Label for the summary of an OS upgrade
+#: client/pkgc-util.c:823 client/pkgc-util.c:1206
 msgid "Summary:"
 msgstr "Sumar:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:705
+#: client/pkgc-util.c:835
 msgid "Description:"
 msgstr "Descriere:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:712
+#: client/pkgc-util.c:846
 msgid "License:"
 msgstr "Licență:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:719
+#. TRANSLATORS: Label for the release notes URL of an OS upgrade
+#: client/pkgc-util.c:853 client/pkgc-util.c:1201
 msgid "URL:"
 msgstr "Adresa URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:727
+#: client/pkgc-util.c:860
 msgid "Group:"
 msgstr "Grup:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:735
+#: client/pkgc-util.c:870
 msgid "Installed Size:"
 msgstr "Dimensiunea instalată:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:744
+#: client/pkgc-util.c:879
 msgid "Download Size:"
 msgstr "Dimensiunea de descărcat:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:855
+#: client/pkgc-util.c:990
 msgid "Update Details:"
 msgstr "Detalii actualizare:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:866
+#: client/pkgc-util.c:1001
 msgid "Updates:"
 msgstr "Actualizări:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:875
+#: client/pkgc-util.c:1010
 msgid "Obsoletes:"
 msgstr "Învechite:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
-#: client/pkgc-util.c:886
+#: client/pkgc-util.c:1021
 msgid "Issues:"
 msgstr "Probleme:"
 
 #. TRANSLATORS: Label for CVE records in update details
-#: client/pkgc-util.c:888
+#: client/pkgc-util.c:1023
 msgid "CVEs:"
 msgstr "CVE-uri:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
-#: client/pkgc-util.c:890
+#: client/pkgc-util.c:1025
 msgid "Advisory:"
 msgstr "Recomandări:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
-#: client/pkgc-util.c:892
+#: client/pkgc-util.c:1027
 msgid "References:"
 msgstr "Referințe:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:928
+#: client/pkgc-util.c:1064
 msgid "Restart:"
 msgstr "Repornire:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:937
+#: client/pkgc-util.c:1080
 msgid "Update text:"
 msgstr "Textul actualizării:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:944
+#: client/pkgc-util.c:1098
 msgid "Changes:"
 msgstr "Modificări:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:951
+#: client/pkgc-util.c:1109
 msgid "State:"
 msgstr "Stare:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:960
+#: client/pkgc-util.c:1118
 msgid "Issued:"
 msgstr "Emisă:"
 
+#. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
+#: client/pkgc-util.c:1167
+#, fuzzy
+#| msgid "Upgrade System"
+msgid "Upgrade:"
+msgstr "Înnoiește sistemul"
+
+#. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
+#: client/pkgc-util.c:1173
+#, fuzzy
+#| msgid "Name"
+msgid "Name:"
+msgstr "Denumire"
+
+#. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
+#: client/pkgc-util.c:1179
+#, fuzzy
+#| msgid "Repairing system"
+msgid "Operating system:"
+msgstr "Se repară sistemul"
+
+#. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
+#: client/pkgc-util.c:1189
+msgid "Kind:"
+msgstr ""
+
+#. TRANSLATORS: Label for the download size of an OS upgrade
+#: client/pkgc-util.c:1195
+#, fuzzy
+#| msgid "Download Size:"
+msgid "Download size:"
+msgstr "Dimensiunea de descărcat:"
+
+#. TRANSLATORS: state of a repository in the repository list
+#: client/pkgc-util.c:1282
+#, fuzzy
+#| msgid "Enabled"
+msgid "enabled"
+msgstr "Activat"
+
+#. TRANSLATORS: state of a repository in the repository list
+#: client/pkgc-util.c:1285
+#, fuzzy
+#| msgid "Disabled"
+msgid "disabled"
+msgstr "Dezactivat"
+
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:1076
+#: client/pkgc-util.c:1401
 msgid "Transaction:"
 msgstr "Tranzacție:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:1080
+#: client/pkgc-util.c:1405
 msgid "System time:"
 msgstr "Ora sistemului:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1084
+#: client/pkgc-util.c:1409
 msgid "Succeeded:"
 msgstr "Reușită:"
 
-#: client/pkgc-util.c:1088
+#: client/pkgc-util.c:1413
 msgid "True"
 msgstr "Adevărat"
 
-#: client/pkgc-util.c:1089
+#: client/pkgc-util.c:1414
 msgid "False"
 msgstr "Fals"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1093
+#: client/pkgc-util.c:1418
 msgid "Role:"
 msgstr "Rol:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1100
+#: client/pkgc-util.c:1425
 msgid "Duration:"
 msgstr "Durata:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1107
+#: client/pkgc-util.c:1432
 msgid "Command line:"
 msgstr "Linia de comandă:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1113
+#: client/pkgc-util.c:1438
 msgid "User ID:"
 msgstr "ID utilizator:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1122
+#: client/pkgc-util.c:1447
 msgid "Username:"
 msgstr "Numele utilizatorului:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1128
+#: client/pkgc-util.c:1453
 msgid "Real name:"
 msgstr "Numele real:"
 
 #. TRANSLATORS: Label for affected packages in transaction
-#: client/pkgc-util.c:1136
+#: client/pkgc-util.c:1465
 msgid "Affected packages:"
 msgstr "Pachete afectate:"
 
-#: client/pkgc-util.c:1232
+#. TRANSLATORS: column header in the transaction history
+#: client/pkgc-util.c:1506
+msgid "Date"
+msgstr ""
+
+#. TRANSLATORS: column header in the transaction history
+#: client/pkgc-util.c:1508
+msgid "Action"
+msgstr ""
+
+#. TRANSLATORS: column header in the transaction history
+#: client/pkgc-util.c:1511
+#, fuzzy
+#| msgid "Package"
+msgid "Packages"
+msgstr "Pachet"
+
+#. TRANSLATORS: column header in the transaction history
+#: client/pkgc-util.c:1513
+msgid "Duration"
+msgstr "Durata"
+
+#. TRANSLATORS: column header in the transaction history
+#: client/pkgc-util.c:1515
+#, fuzzy
+#| msgid "User ID"
+msgid "User"
+msgstr "ID utilizator"
+
+#: client/pkgc-util.c:1646
 msgid "More than one package matches:"
 msgstr "Mai mult de un pachet se potrivește:"
 
 #. prompt user for selection
-#: client/pkgc-util.c:1244
+#: client/pkgc-util.c:1658
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Alegeți pachetul corect: "
@@ -1214,12 +1304,16 @@ msgstr "Este necesară autentificarea pentru a accepta EULA"
 #. admin authentication has been obtained, otherwise packages can still
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
+#. - This action is also required for any transaction that carries the
+#. purge flag (e.g. UpdatePackages), as purging deletes the
+#. configuration files and data of every package the transaction
+#. removes.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:462
+#: data/policy/org.freedesktop.packagekit.policy.in:152 src/pk-direct.c:462
 msgid "Remove package"
 msgstr "Elimină pachetul"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:149
+#: data/policy/org.freedesktop.packagekit.policy.in:153
 msgid "Authentication is required to remove software"
 msgstr "Este necesară autentificarea pentru a elimina software"
 
@@ -1229,11 +1323,11 @@ msgstr "Este necesară autentificarea pentru a elimina software"
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#: data/policy/org.freedesktop.packagekit.policy.in:167
+#: data/policy/org.freedesktop.packagekit.policy.in:171
 msgid "Update software"
 msgstr "Actualizează software-ul"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:168
+#: data/policy/org.freedesktop.packagekit.policy.in:172
 msgid "Authentication is required to update software"
 msgstr "Este necesară autentificarea pentru a actualiza software"
 
@@ -1241,45 +1335,47 @@ msgstr "Este necesară autentificarea pentru a actualiza software"
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-#: data/policy/org.freedesktop.packagekit.policy.in:183
+#: data/policy/org.freedesktop.packagekit.policy.in:187
 msgid "Change software repository parameters"
 msgstr "Schimbă parametrii depozitului de software"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:184
+#: data/policy/org.freedesktop.packagekit.policy.in:188
 msgid "Authentication is required to change software repository parameters"
 msgstr "Este necesară autentificarea pentru a schimba parametrii depozitului de software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#: data/policy/org.freedesktop.packagekit.policy.in:198
+#: data/policy/org.freedesktop.packagekit.policy.in:202
 msgid "Refresh system repositories"
 msgstr "Împrospătează depozitele sistemului"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:199
+#: data/policy/org.freedesktop.packagekit.policy.in:203
 msgid "Authentication is required to refresh the system repositories"
 msgstr "Este necesară autentificarea pentru a împrospăta depozitele sistemului"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#: data/policy/org.freedesktop.packagekit.policy.in:213
+#: data/policy/org.freedesktop.packagekit.policy.in:217
 msgid "Set network proxy"
 msgstr "Definește proxy-ul de rețea"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:214
+#: data/policy/org.freedesktop.packagekit.policy.in:218
 msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la descărcarea programelor"
 
 #. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#: data/policy/org.freedesktop.packagekit.policy.in:229
-msgid "Upgrade System"
+#. - Normal users require admin authentication to upgrade the operating
+#. system to a new release as this can make the system unbootable or
+#. stop other applications from working.
+#: data/policy/org.freedesktop.packagekit.policy.in:233
+#, fuzzy
+#| msgid "Upgrade the system"
+msgid "Upgrade the operating system"
 msgstr "Înnoiește sistemul"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:230
+#: data/policy/org.freedesktop.packagekit.policy.in:234
 msgid "Authentication is required to upgrade the operating system"
 msgstr "Este necesară autentificarea pentru a înnoi sistemul de operare"
 
@@ -1287,11 +1383,11 @@ msgstr "Este necesară autentificarea pentru a înnoi sistemul de operare"
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
-#: data/policy/org.freedesktop.packagekit.policy.in:245
+#: data/policy/org.freedesktop.packagekit.policy.in:249
 msgid "Repair System"
 msgstr "Repară sistemul"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:246
+#: data/policy/org.freedesktop.packagekit.policy.in:250
 msgid "Authentication is required to repair the installed software"
 msgstr "Este necesară autentificarea pentru a repara software-ul instalat"
 
@@ -1302,219 +1398,219 @@ msgstr "Este necesară autentificarea pentru a repara software-ul instalat"
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
-#: data/policy/org.freedesktop.packagekit.policy.in:260
-#: data/policy/org.freedesktop.packagekit.policy.in:276
+#: data/policy/org.freedesktop.packagekit.policy.in:264
+#: data/policy/org.freedesktop.packagekit.policy.in:280
 msgid "Trigger offline updates"
 msgstr "Declanșează actualizări fără conectare la Internet"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:261
-#: data/policy/org.freedesktop.packagekit.policy.in:277
+#: data/policy/org.freedesktop.packagekit.policy.in:265
+#: data/policy/org.freedesktop.packagekit.policy.in:281
 msgid "Authentication is required to trigger offline updates"
 msgstr "Este necesară autentificarea pentru a declanșa actualizări fără conectare la Internet"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
-#: data/policy/org.freedesktop.packagekit.policy.in:291
+#: data/policy/org.freedesktop.packagekit.policy.in:295
 msgid "Clear offline update message"
 msgstr "Curăță mesajul despre actualizarea fără conectare la Internet"
 
-#: data/policy/org.freedesktop.packagekit.policy.in:292
+#: data/policy/org.freedesktop.packagekit.policy.in:296
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Este necesară autentificarea pentru a curăța mesajul despre actualizările fără conectare la Internet"
 
-#: lib/pk-console-private.c:227
+#: lib/pk-console-private.c:737
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Introduceți un număr între 1 și %i: "
 
-#: lib/pk-console-private.c:334
+#: lib/pk-console-private.c:844
 msgid "[N/y]"
 msgstr "[N/d]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
-#: lib/pk-console-private.c:334
+#: lib/pk-console-private.c:844
 msgid "[Y/n]"
 msgstr "[D/n]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
-#: lib/pk-console-private.c:351
+#: lib/pk-console-private.c:861
 msgctxt "Answer"
 msgid "y"
 msgstr "d"
 
 #. TRANSLATORS: full "yes" answer
-#: lib/pk-console-private.c:355
+#: lib/pk-console-private.c:865
 msgctxt "Answer"
 msgid "yes"
 msgstr "da"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
-#: lib/pk-console-private.c:362
+#: lib/pk-console-private.c:872
 msgctxt "Answer"
 msgid "n"
 msgstr "n"
 
 #. TRANSLATORS: full "no" answer
-#: lib/pk-console-private.c:366
+#: lib/pk-console-private.c:876
 msgctxt "Answer"
 msgid "no"
 msgstr "nu"
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:391
+#: lib/pk-console-private.c:901
 msgid "Unknown state"
 msgstr "Stare necunoscută"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:395
+#: lib/pk-console-private.c:905
 msgid "Starting"
 msgstr "Se pornește"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:399
+#: lib/pk-console-private.c:909
 msgid "Waiting in queue"
 msgstr "Se așteaptă la coadă"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:403
+#: lib/pk-console-private.c:913
 msgid "Running"
 msgstr "Se rulează"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:407
+#: lib/pk-console-private.c:917
 msgid "Querying"
 msgstr "Se interoghează"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:411
+#: lib/pk-console-private.c:921
 msgid "Getting information"
 msgstr "Se obțin informații"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:415
+#: lib/pk-console-private.c:925
 msgid "Removing packages"
 msgstr "Se elimină pachetele"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:419 lib/pk-enum.c:1358
+#: lib/pk-console-private.c:929 lib/pk-enum.c:1277
 msgid "Downloading packages"
 msgstr "Se descarcă pachetele"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:423
+#: lib/pk-console-private.c:933
 msgid "Installing packages"
 msgstr "Se instalează pachetele"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:427
+#: lib/pk-console-private.c:937
 msgid "Refreshing software list"
 msgstr "Se împrospătează lista de software"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:431
+#: lib/pk-console-private.c:941
 msgid "Installing updates"
 msgstr "Se instalează actualizările"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:435
+#: lib/pk-console-private.c:945
 msgid "Cleaning up packages"
 msgstr "Se curăță pachetele"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:439
+#: lib/pk-console-private.c:949
 msgid "Obsoleting packages"
 msgstr "Se marchează ca învechite, pachetele anterioare"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:443
+#: lib/pk-console-private.c:953
 msgid "Resolving dependencies"
 msgstr "Se rezolvă dependențele"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:447
+#: lib/pk-console-private.c:957
 msgid "Checking signatures"
 msgstr "Se verifică semnăturile"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:451
+#: lib/pk-console-private.c:961
 msgid "Testing changes"
 msgstr "Se testează modificările"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:455
+#: lib/pk-console-private.c:965
 msgid "Committing changes"
 msgstr "Se efectueazăt modificările"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:459
+#: lib/pk-console-private.c:969
 msgid "Requesting data"
 msgstr "Se cer date"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:463
+#: lib/pk-console-private.c:973
 msgid "Finished"
 msgstr "Încheiat"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:467
+#: lib/pk-console-private.c:977
 msgid "Cancelling"
 msgstr "Se renunță"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:471
+#: lib/pk-console-private.c:981
 msgid "Downloading repository information"
 msgstr "Se descarcă informații din depozit"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:475
+#: lib/pk-console-private.c:985
 msgid "Downloading list of packages"
 msgstr "Se descarcă lista de pachete"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:479
+#: lib/pk-console-private.c:989
 msgid "Downloading file lists"
 msgstr "Se descarcă listele cu fișiere"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:483
+#: lib/pk-console-private.c:993
 msgid "Downloading lists of changes"
 msgstr "Se descarcă listele cu modificări"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:487
+#: lib/pk-console-private.c:997
 msgid "Downloading update information"
 msgstr "Se descarcă informațiile despre actualizări"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:491
+#: lib/pk-console-private.c:1001
 msgid "Repackaging files"
 msgstr "Se reîmpachetează fișiere"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:495
+#: lib/pk-console-private.c:1005
 msgid "Loading cache"
 msgstr "Se încarcă conținutul spațiului de prestocare (cache)"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:499
+#: lib/pk-console-private.c:1009
 msgid "Waiting for package manager lock"
 msgstr "Se așteaptă blocajul gestionarului de pachete"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:503
+#: lib/pk-console-private.c:1013
 msgid "Waiting for authentication"
 msgstr "Se așteaptă autentificarea"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:507
+#: lib/pk-console-private.c:1017
 msgid "Copying files"
 msgstr "Se copiază fișiere"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:511
+#: lib/pk-console-private.c:1021
 msgid "Running hooks"
 msgstr "Se execută scripturile aferente tranzacției"
 
@@ -1532,265 +1628,267 @@ msgid "Show debugging options"
 msgstr "Arată opțiunile de depanare"
 
 #. TRANSLATORS: The type of update
-#: lib/pk-enum.c:1089
+#: lib/pk-enum.c:1008
 msgid "Blocked"
 msgstr "Blocată"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1093 lib/pk-enum.c:1211
+#: lib/pk-enum.c:1012 lib/pk-enum.c:1130
 msgid "Installed"
 msgstr "Instalat"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/pk-enum.c:1097
+#: lib/pk-enum.c:1016
 msgid "Available"
 msgstr "Disponibil"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
-#: lib/pk-enum.c:1101
+#: lib/pk-enum.c:1020
 msgid "Install"
 msgstr "Instalează"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
-#: lib/pk-enum.c:1105
+#: lib/pk-enum.c:1024
 msgid "Remove"
 msgstr "Elimină"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
-#: lib/pk-enum.c:1109
+#: lib/pk-enum.c:1028
 msgid "Reinstall"
 msgstr "Reinstalează"
 
 #. TRANSLATORS: The state of a package: package is obsolete
-#: lib/pk-enum.c:1113
+#: lib/pk-enum.c:1032
 msgid "Obsolete"
 msgstr "Obsolet"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
-#: lib/pk-enum.c:1117
+#: lib/pk-enum.c:1036
 msgid "Downgrade"
 msgstr "Retrogradare"
 
 #. TRANSLATORS: The state of a package: package is to be updated
-#: lib/pk-enum.c:1121
+#: lib/pk-enum.c:1040
 msgid "Update"
 msgstr "Actualizare"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
-#: lib/pk-enum.c:1125
+#: lib/pk-enum.c:1044
 msgid "Security update"
 msgstr "Actualizare de securitate"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
-#: lib/pk-enum.c:1129
+#: lib/pk-enum.c:1048
 msgid "Enhancement update"
 msgstr "Actualizare de îmbunătățire"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1154
+#: lib/pk-enum.c:1073
 msgid "Downloading"
 msgstr "Se descarcă"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1158
+#: lib/pk-enum.c:1077
 msgid "Updating"
 msgstr "Se actualizează"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1162 lib/pk-enum.c:1297
+#: lib/pk-enum.c:1081 lib/pk-enum.c:1216
 msgid "Installing"
 msgstr "Se instalează"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1166 lib/pk-enum.c:1293
+#: lib/pk-enum.c:1085 lib/pk-enum.c:1212
 msgid "Removing"
 msgstr "Se elimină"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1170
+#: lib/pk-enum.c:1089
 msgid "Cleaning up"
 msgstr "Se curăță"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1174
+#: lib/pk-enum.c:1093
 msgid "Obsoleting"
 msgstr "Se marchează ca învechit"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1178
+#: lib/pk-enum.c:1097
 msgid "Reinstalling"
 msgstr "Se reinstalează"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1203
+#: lib/pk-enum.c:1122
 msgid "Downloaded"
 msgstr "Descărcat"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1207
+#: lib/pk-enum.c:1126
 msgid "Updated"
 msgstr "Actualizat"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1215
+#: lib/pk-enum.c:1134
 msgid "Removed"
 msgstr "Eliminat"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1219
+#: lib/pk-enum.c:1138
 msgid "Cleaned up"
 msgstr "Curățat"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1223
+#: lib/pk-enum.c:1142
 msgid "Obsoleted"
 msgstr "Marcat ca învechit"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1227
+#: lib/pk-enum.c:1146
 msgid "Reinstalled"
 msgstr "Reinstalat"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1252
+#: lib/pk-enum.c:1171
 msgid "Unknown role type"
 msgstr "Tip de rol necunoscut"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1256
+#: lib/pk-enum.c:1175
 msgid "Getting dependencies"
 msgstr "Se obțin dependențele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1260
+#: lib/pk-enum.c:1179
 msgid "Getting update details"
 msgstr "Se obțin detaliile actualizării"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1265
+#: lib/pk-enum.c:1184
 msgid "Getting details"
 msgstr "Se obțin detaliile"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1269
+#: lib/pk-enum.c:1188
 msgid "Getting dependents"
 msgstr "Se obțin dependențele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1273
+#: lib/pk-enum.c:1192
 msgid "Getting updates"
 msgstr "Se obțin actualizări"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1277
+#: lib/pk-enum.c:1196
 msgid "Searching by details"
 msgstr "Se caută după detalii"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1281
+#: lib/pk-enum.c:1200
 msgid "Searching by file"
 msgstr "Se caută după fișier"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1285
+#: lib/pk-enum.c:1204
 msgid "Searching groups"
 msgstr "Se caută grupuri"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1289
+#: lib/pk-enum.c:1208
 msgid "Searching by name"
 msgstr "Se caută după nume"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1301
+#: lib/pk-enum.c:1220
 msgid "Installing files"
 msgstr "Se instalează fișiere"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1305
+#: lib/pk-enum.c:1224
 msgid "Refreshing cache"
 msgstr "Se împrospătează conținutul spațiului de prestocare (cache)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1309
+#: lib/pk-enum.c:1228
 msgid "Updating packages"
 msgstr "Se actualizează pachetele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1313
+#: lib/pk-enum.c:1232
 msgid "Canceling"
 msgstr "Se renunță"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1317
+#: lib/pk-enum.c:1236
 msgid "Getting repositories"
 msgstr "Se obțin depozitele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1321
+#: lib/pk-enum.c:1240
 msgid "Modifying repository"
 msgstr "Se modifică depozitul"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1325
+#: lib/pk-enum.c:1244
 msgid "Setting data"
 msgstr "Se configurează datele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1329
+#: lib/pk-enum.c:1248
 msgid "Removing repository"
 msgstr "Se elimină depozitul"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1333
+#: lib/pk-enum.c:1252
 msgid "Resolving"
 msgstr "Se rezolvă"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1338
+#: lib/pk-enum.c:1257
 msgid "Getting file list"
 msgstr "Se obține lista de fișiere"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1342
+#: lib/pk-enum.c:1261
 msgid "Getting provides"
 msgstr "Se obține lista fișierelor ce sunt furnizate de către pachet(e)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1346
+#: lib/pk-enum.c:1265
 msgid "Installing signature"
 msgstr "Se instalează semnătura"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1350
+#: lib/pk-enum.c:1269
 msgid "Getting packages"
 msgstr "Se obțin pachetele"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1354
+#: lib/pk-enum.c:1273
 msgid "Accepting EULA"
 msgstr "Se acceptă EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1362
-msgid "Getting upgrades"
-msgstr "Se obțin înnoirile"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1366
-msgid "Getting transaction history"
-msgstr "Se obține istoricul tranzacțiilor"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1370
+#: lib/pk-enum.c:1281
 msgid "Getting system upgrades"
 msgstr "Se obțin înnoirile de sistem"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1374
+#: lib/pk-enum.c:1285
+msgid "Getting transaction history"
+msgstr "Se obține istoricul tranzacțiilor"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1289
+#, fuzzy
+#| msgid "Upgrade the system"
+msgid "Upgrading the system"
+msgstr "Înnoiește sistemul"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1293
 msgid "Repairing system"
 msgstr "Se repară sistemul"
 
@@ -1880,48 +1978,116 @@ msgstr "Acceptați acest acord?"
 msgid "The agreement was not accepted."
 msgstr "Acordul nu a fost acceptat."
 
+#. TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too
+#: lib/pk-task-text.c:216
+#, fuzzy
+#| msgid "The following packages have to be reinstalled:"
+msgid "The following packages have to be removed, including their configuration files and data:"
+msgstr "Următoarele pachete trebuiesc reinstalate:"
+
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: lib/pk-task-text.c:215
+#: lib/pk-task-text.c:219
 msgid "The following packages have to be removed:"
 msgstr "Următoarele pachete trebuiesc eliminate:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: lib/pk-task-text.c:220
+#: lib/pk-task-text.c:224
 msgid "The following packages have to be installed:"
 msgstr "Următoarele pachete trebuiesc instalate:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: lib/pk-task-text.c:226
+#: lib/pk-task-text.c:229
 msgid "The following packages have to be updated:"
 msgstr "Următoarele pachete trebuiesc actualizate:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: lib/pk-task-text.c:231
+#: lib/pk-task-text.c:234
 msgid "The following packages have to be reinstalled:"
 msgstr "Următoarele pachete trebuiesc reinstalate:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: lib/pk-task-text.c:236
+#: lib/pk-task-text.c:239
 msgid "The following packages have to be downgraded:"
 msgstr "Următoarele pachete trebuiesc retrogradate:"
 
+#. TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too
+#: lib/pk-task-text.c:245
+#, fuzzy
+#| msgid "The following packages have to be obsoleted:"
+msgid "The following packages have to be obsoleted, including their configuration files and data:"
+msgstr "Următoarele pachete trebuiesc marcate ca învechite:"
+
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
-#: lib/pk-task-text.c:241
+#: lib/pk-task-text.c:248
 msgid "The following packages have to be obsoleted:"
 msgstr "Următoarele pachete trebuiesc marcate ca învechite:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
-#: lib/pk-task-text.c:246
+#: lib/pk-task-text.c:253
 msgid "The following packages are untrusted:"
 msgstr "Următoarele pachete nu sunt de încredere:"
 
+#. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
+#: lib/pk-task-text.c:301
+#, fuzzy, c-format
+#| msgid "Reinstall"
+msgid "%u to install"
+msgid_plural "%u to install"
+msgstr[0] "Reinstalează"
+msgstr[1] "Reinstalează"
+msgstr[2] "Reinstalează"
+
+#. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
+#: lib/pk-task-text.c:305
+#, fuzzy, c-format
+#| msgid "Security update"
+msgid "%u to update"
+msgid_plural "%u to update"
+msgstr[0] "Actualizare de securitate"
+msgstr[1] "Actualizare de securitate"
+msgstr[2] "Actualizare de securitate"
+
+#. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
+#: lib/pk-task-text.c:309
+#, c-format
+msgid "%u to remove"
+msgid_plural "%u to remove"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
+#: lib/pk-task-text.c:314
+#, fuzzy, c-format
+#| msgid "Downgrade"
+msgid "%u to downgrade"
+msgid_plural "%u to downgrade"
+msgstr[0] "Retrogradare"
+msgstr[1] "Retrogradare"
+msgstr[2] "Retrogradare"
+
+#. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
+#: lib/pk-task-text.c:321
+#, fuzzy, c-format
+#| msgid "Reinstall"
+msgid "%u to reinstall"
+msgid_plural "%u to reinstall"
+msgstr[0] "Reinstalează"
+msgstr[1] "Reinstalează"
+msgstr[2] "Reinstalează"
+
+#. TRANSLATORS: separator between the parts of the transaction summary
+#: lib/pk-task-text.c:327
+msgid ", "
+msgstr ""
+
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/pk-task-text.c:379
+#: lib/pk-task-text.c:439
 msgid "Proceed with changes?"
 msgstr "Continuați cu modificările?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: lib/pk-task-text.c:384
+#: lib/pk-task-text.c:444
 msgid "The transaction did not proceed."
 msgstr "Tranzacția nu a continuat."
 
@@ -2035,49 +2201,67 @@ msgid "Don't clear environment on startup"
 msgstr "Nu curăța mediul la pornire"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:156
+#: src/pk-main.c:163
 msgid "PackageKit service"
 msgstr "Serviciul PackageKit"
 
 #. TRANSLATORS: The placeholder is an error message
-#: src/pk-main.c:185
+#: src/pk-main.c:192
 #, c-format
 msgid "Failed to load config file: %s"
 msgstr "Încărcarea fișierului de configurare a eșuat: %s"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:230
+#: src/pk-main.c:237
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "Nu s-a reușit să se rezolve automat: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:249
+#: src/pk-main.c:256
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2550
+#: src/pk-transaction.c:2588
 msgid "The software is not from a trusted source."
 msgstr "Software-ul nu este dintr-o sursă de încredere."
 
-#: src/pk-transaction.c:2558
+#: src/pk-transaction.c:2596
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Nu actualizați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
 
-#: src/pk-transaction.c:2560
+#: src/pk-transaction.c:2598
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Nu actualizați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
 
-#: src/pk-transaction.c:2571
+#: src/pk-transaction.c:2609
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Nu instalați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
 
-#: src/pk-transaction.c:2573
+#: src/pk-transaction.c:2611
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
+
+#~ msgid ""
+#~ "Upgrade all packages or perform a distribution upgrade.\n"
+#~ "\n"
+#~ "Types: minimal, default, complete"
+#~ msgstr ""
+#~ "Actualizează toate pachetele sau efectuează o actualizare a distribuției.\n"
+#~ "\n"
+#~ "Tipuri: minimal, implicit, complet"
+
+#~ msgid "Show distribution version upgrades, if any are available."
+#~ msgstr "Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
+
+#~ msgid "Show available distribution upgrades"
+#~ msgstr "Afișează actualizările de distribuție disponibile"
+
+#~ msgid "Getting upgrades"
+#~ msgstr "Se obțin înnoirile"
 
 #~ msgid "Vendor:"
 #~ msgstr "Furnizor:"
@@ -2112,14 +2296,8 @@ msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este s
 #~ msgid "(seconds)"
 #~ msgstr "(secunde)"
 
-#~ msgid "Duration"
-#~ msgstr "Durata"
-
 #~ msgid "Command line"
 #~ msgstr "Linia de comandă"
-
-#~ msgid "User ID"
-#~ msgstr "ID utilizator"
 
 #~ msgid "Username"
 #~ msgstr "Nume utilizator"
@@ -2147,9 +2325,6 @@ msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este s
 
 #~ msgid "Parent"
 #~ msgstr "Părinte"
-
-#~ msgid "Name"
-#~ msgstr "Denumire"
 
 #~ msgid "Icon"
 #~ msgstr "Pictogramă"
@@ -2180,12 +2355,6 @@ msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este s
 
 #~ msgid "Issued"
 #~ msgstr "Emisă"
-
-#~ msgid "Enabled"
-#~ msgstr "Activat"
-
-#~ msgid "Disabled"
-#~ msgstr "Dezactivat"
 
 #~ msgid "System restart required by:"
 #~ msgstr "Repornirea sistemului este cerută de:"
@@ -2228,9 +2397,6 @@ msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este s
 
 #~ msgid "There are no updates available at this time."
 #~ msgstr "Nu sunt actualizări disponibile în acest moment."
-
-#~ msgid "There are no upgrades available at this time."
-#~ msgstr "Nu sunt înnoiri disponibile în acest moment."
 
 #~ msgid "Please restart the computer to complete the update as important security updates have been installed."
 #~ msgstr "Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
