@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"PO-Revision-Date: 2026-10-18 19:51+0000\n"
+"PO-Revision-Date: 2026-10-25 06:45+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remus-gabriel@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
@@ -57,10 +57,8 @@ msgstr "Se instalează actualizările, aceasta ar putea dura..."
 
 #. TRANSLATORS: we've started doing an offline OS upgrade
 #: client/pk-offline-update.c:430
-#, fuzzy
-#| msgid "Installing system upgrade; this could take a while..."
 msgid "Installing operating system upgrade; this could take a while..."
-msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
+msgstr "Se instalează actualizarea sistemului de operare; acest lucru ar putea dura ceva timp..."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -203,6 +201,9 @@ msgid ""
 "The available upgrade IDs are shown by `list-os-upgrades`.\n"
 "This command does not update packages within the current release, use `update` for that."
 msgstr ""
+"Înnoiește sistemul de operare la versiunea corespunzătoare ID-ului de actualizare specificat.\n"
+"ID-urile de înnoire disponibile pot fi vizualizate folosind „list-os-upgrades”.\n"
+"Această comandă nu actualizează pachetele din cadrul versiunii curente; pentru aceasta, utilizați „update”."
 
 #: client/pkgc-manage.c:750
 #, c-format
@@ -340,7 +341,7 @@ msgstr "Actualizează pachetele"
 #. TRANSLATORS: Description for upgrade-os command in pkgcli help
 #: client/pkgc-manage.c:1112
 msgid "Upgrade the operating system to a new release"
-msgstr ""
+msgstr "Actualizează sistemul de operare la o nouă versiune majoră"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1119
@@ -386,10 +387,8 @@ msgid "Monitor PackageKit bus events"
 msgstr "Monitorizează evenimentele magistralei PackageKit"
 
 #: client/pkgc-query.c:127
-#, fuzzy
-#| msgid "There are no upgrades available at this time."
 msgid "There are no OS upgrades available."
-msgstr "Nu sunt înnoiri disponibile în acest moment."
+msgstr "Nu sunt disponibile înnoiri ale sistemului de operare."
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:256
@@ -421,7 +420,7 @@ msgstr "Roluri: %s"
 #. TRANSLATORS: Option of pkgcli history
 #: client/pkgc-query.c:335
 msgid "Show all details of every transaction"
-msgstr ""
+msgstr "Afișează toate detaliile, ale fiecărei tranzacții"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:346
@@ -523,7 +522,7 @@ msgstr "Grupuri:"
 #. TRANSLATORS: Description for pkgcli list-os-upgrades
 #: client/pkgc-query.c:967
 msgid "List the operating system releases this system can be upgraded to."
-msgstr ""
+msgstr "Listează versiunile de sistem de operare la care poate fi înnoit acest sistem."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -618,10 +617,8 @@ msgstr "Listează filtrele și grupurile disponibile"
 
 #. TRANSLATORS: Description for list-os-upgrades command in pkgcli help
 #: client/pkgc-query.c:1173
-#, fuzzy
-#| msgid "Getting system upgrades"
 msgid "List available operating system upgrades"
-msgstr "Se obțin înnoirile de sistem"
+msgstr "Listează înnoirile disponibile pentru sistemul de operare"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1180
@@ -881,50 +878,38 @@ msgstr "Emisă:"
 
 #. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
 #: client/pkgc-util.c:1167
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade:"
-msgstr "Înnoiește sistemul"
+msgstr "Înnoire:"
 
 #. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
 #: client/pkgc-util.c:1173
-#, fuzzy
-#| msgid "Name"
 msgid "Name:"
-msgstr "Denumire"
+msgstr "Nume:"
 
 #. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
 #: client/pkgc-util.c:1179
-#, fuzzy
-#| msgid "Repairing system"
 msgid "Operating system:"
-msgstr "Se repară sistemul"
+msgstr "Sistemul de operare:"
 
 #. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
 #: client/pkgc-util.c:1189
 msgid "Kind:"
-msgstr ""
+msgstr "Tipul:"
 
 #. TRANSLATORS: Label for the download size of an OS upgrade
 #: client/pkgc-util.c:1195
-#, fuzzy
-#| msgid "Download Size:"
 msgid "Download size:"
 msgstr "Dimensiunea de descărcat:"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1282
-#, fuzzy
-#| msgid "Enabled"
 msgid "enabled"
-msgstr "Activat"
+msgstr "activat"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1285
-#, fuzzy
-#| msgid "Disabled"
 msgid "disabled"
-msgstr "Dezactivat"
+msgstr "dezactivat"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1401
@@ -987,19 +972,17 @@ msgstr "Pachete afectate:"
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1506
 msgid "Date"
-msgstr ""
+msgstr "Data"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1508
 msgid "Action"
-msgstr ""
+msgstr "Acțiune"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1511
-#, fuzzy
-#| msgid "Package"
 msgid "Packages"
-msgstr "Pachet"
+msgstr "Pachete"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1513
@@ -1008,10 +991,8 @@ msgstr "Durata"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1515
-#, fuzzy
-#| msgid "User ID"
 msgid "User"
-msgstr "ID utilizator"
+msgstr "Utilizator"
 
 #: client/pkgc-util.c:1646
 msgid "More than one package matches:"
@@ -1370,10 +1351,8 @@ msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosi
 #. system to a new release as this can make the system unbootable or
 #. stop other applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:233
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrade the operating system"
-msgstr "Înnoiește sistemul"
+msgstr "Înnoiește sistemul de operare"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:234
 msgid "Authentication is required to upgrade the operating system"
@@ -1882,10 +1861,8 @@ msgstr "Se obține istoricul tranzacțiilor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1289
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrading the system"
-msgstr "Înnoiește sistemul"
+msgstr "Se înnoiește sistemul"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1293
@@ -1980,10 +1957,8 @@ msgstr "Acordul nu a fost acceptat."
 
 #. TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too
 #: lib/pk-task-text.c:216
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "The following packages have to be removed, including their configuration files and data:"
-msgstr "Următoarele pachete trebuiesc reinstalate:"
+msgstr "Următoarele pachete trebuie eliminate, inclusiv fișierele de configurare și datele aferente acestora:"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/pk-task-text.c:219
@@ -2012,10 +1987,8 @@ msgstr "Următoarele pachete trebuiesc retrogradate:"
 
 #. TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too
 #: lib/pk-task-text.c:245
-#, fuzzy
-#| msgid "The following packages have to be obsoleted:"
 msgid "The following packages have to be obsoleted, including their configuration files and data:"
-msgstr "Următoarele pachete trebuiesc marcate ca învechite:"
+msgstr "Următoarele pachete trebuie să fie marcate ca învechite, inclusiv fișierele de configurare și datele aferente:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/pk-task-text.c:248
@@ -2029,57 +2002,53 @@ msgstr "Următoarele pachete nu sunt de încredere:"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:301
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to install"
 msgid_plural "%u to install"
-msgstr[0] "Reinstalează"
-msgstr[1] "Reinstalează"
-msgstr[2] "Reinstalează"
+msgstr[0] "%u de instalat"
+msgstr[1] "%u de instalat"
+msgstr[2] "%u de instalat"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:305
-#, fuzzy, c-format
-#| msgid "Security update"
+#, c-format
 msgid "%u to update"
 msgid_plural "%u to update"
-msgstr[0] "Actualizare de securitate"
-msgstr[1] "Actualizare de securitate"
-msgstr[2] "Actualizare de securitate"
+msgstr[0] "%u de actualizat"
+msgstr[1] "%u de actualizat"
+msgstr[2] "%u de actualizat"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:309
 #, c-format
 msgid "%u to remove"
 msgid_plural "%u to remove"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%u de eliminat"
+msgstr[1] "%u de eliminat"
+msgstr[2] "%u de eliminat"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
 #: lib/pk-task-text.c:314
-#, fuzzy, c-format
-#| msgid "Downgrade"
+#, c-format
 msgid "%u to downgrade"
 msgid_plural "%u to downgrade"
-msgstr[0] "Retrogradare"
-msgstr[1] "Retrogradare"
-msgstr[2] "Retrogradare"
+msgstr[0] "%u de retrogradat"
+msgstr[1] "%u de retrogradat"
+msgstr[2] "%u de retrogradat"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
 #: lib/pk-task-text.c:321
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to reinstall"
 msgid_plural "%u to reinstall"
-msgstr[0] "Reinstalează"
-msgstr[1] "Reinstalează"
-msgstr[2] "Reinstalează"
+msgstr[0] "%u de reinstalat"
+msgstr[1] "%u de reinstalat"
+msgstr[2] "%u de reinstalat"
 
 #. TRANSLATORS: separator between the parts of the transaction summary
 #: lib/pk-task-text.c:327
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:439
