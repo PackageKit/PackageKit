@@ -1,0 +1,32 @@
+Package: small
+Status: install ok installed
+Architecture: amd64
+Version: 1.0
+Installed-Size: 10
+Maintainer: PackageKit Tests <packagekit@example.org>
+Description: Small progress test package
+
+Package: large
+Status: install ok installed
+Architecture: amd64
+Version: 1.0
+Installed-Size: 90
+Maintainer: PackageKit Tests <packagekit@example.org>
+Description: Large progress test package
+
+Package: remove-small
+Status: install ok installed
+Architecture: amd64
+Version: 1.0
+Installed-Size: 1
+Maintainer: PackageKit Tests <packagekit@example.org>
+Description: Small removal test package
+
+Package: remove-large
+Status: install ok installed
+Architecture: amd64
+Version: 1.0
+Installed-Size: 100000
+Maintainer: PackageKit Tests <packagekit@example.org>
+Description: Large removal test package
+
