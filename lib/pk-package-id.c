@@ -28,6 +28,7 @@
 
 #include <glib.h>
 
+#include "pk-common-private.h"
 #include "pk-package-id.h"
 
 /**
@@ -66,7 +67,8 @@ out:
  * pk_package_id_check:
  * @package_id: the PackageID to check
  *
- * Check if a Packageid is well formed.
+ * Check if a Packageid is well formed, that is, valid UTF-8 without any
+ * control characters and made up of the right number of sections.
  *
  * Return value: %TRUE if the PackageID was well formed.
  *
@@ -82,8 +84,8 @@ pk_package_id_check (const gchar *package_id)
 	if (package_id == NULL)
 		return FALSE;
 
-	/* UTF8 */
-	ret = g_utf8_validate (package_id, -1, NULL);
+	/* UTF8 without any control characters */
+	ret = pk_check_string_safe (package_id, -1);
 	if (!ret)
 		return FALSE;
 

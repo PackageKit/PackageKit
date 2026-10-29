@@ -2317,26 +2317,42 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 		return FALSE;
 	}
 
-	/* just check for valid UTF-8 */
-	if (!g_utf8_validate (text, -1, NULL)) {
-		g_set_error (error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_INPUT_INVALID,
-			     "Invalid input passed to daemon: %s",
-			     text);
+	/* no caller-supplied string (e.g. a search term, which needs no
+	 * authorization) has a legitimate use for line or field separators
+	 * or terminal escape sequences */
+	if (!pk_check_string_safe (text, length)) {
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon: "
+				     "not valid UTF-8 or contains a control character");
 		return FALSE;
 	}
 
-	/* no caller-supplied string (e.g. a search term, which needs no
-	 * authorization) has a legitimate use for line or field separators;
-	 * reject them so that a backend handing the string to a line-oriented
-	 * tool can never be made to see an additional command */
-	if (strpbrk (text, "\t\n\r") != NULL) {
-		g_set_error_literal (
-		    error,
-		    PK_TRANSACTION_ERROR,
-		    PK_TRANSACTION_ERROR_INPUT_INVALID,
-		    "Invalid input passed to daemon: contains a control character");
+	return TRUE;
+}
+
+/**
+ * pk_transaction_identifier_validate:
+ * @text: The identifier to check, e.g. a locale or a key ID
+ * @what: A human-readable name of the identifier for the error message
+ * @error: The #GError to store any failure, or %NULL
+ *
+ * Tests a caller-supplied identifier. As backends may use it as part of a
+ * filesystem path or pass it on to tools in the environment, only a single
+ * path segment consisting of a conservative set of ASCII characters is allowed.
+ *
+ * Return value: %TRUE if the identifier is valid
+ **/
+static gboolean
+pk_transaction_identifier_validate (const gchar *text, const gchar *what, GError **error)
+{
+	if (!pk_check_path_segment_safe (text, -1, TRUE)) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid %s passed to daemon",
+			     what);
 		return FALSE;
 	}
 	return TRUE;
@@ -2975,7 +2991,7 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 	g_variant_get (params, "(&s)", &eula_id);
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (eula_id, &error);
+	ret = pk_transaction_identifier_validate (eula_id, "EULA ID", &error);
 	if (!ret) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
@@ -3639,6 +3655,7 @@ pk_transaction_get_history (PkTransaction *transaction,
 	guint n_items = 0;
 	PkBitfield flags;
 	PkHistoryItem *item;
+	g_autoptr(GError) error = NULL;
 	g_autofree gchar **names = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -3647,6 +3664,15 @@ pk_transaction_get_history (PkTransaction *transaction,
 	g_variant_get (params, "(tu^a&s)", &flags, &count, &names);
 
 	g_debug ("GetHistory method called");
+
+	/* check each name for sanity */
+	for (guint i = 0; names[i] != NULL; i++) {
+		if (!pk_transaction_strvalidate (names[i], &error)) {
+			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+			pk_transaction_dbus_return (context, error);
+			return;
+		}
+	}
 
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_HISTORY);
 
@@ -4200,15 +4226,19 @@ pk_transaction_install_signature (PkTransaction *transaction,
 	}
 
 	/* check for sanity */
-	ret = pk_transaction_strvalidate (key_id, &error);
+	ret = pk_transaction_identifier_validate (key_id, "key ID", &error);
 	if (!ret) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
 
-	/* check package_id (';;;repo-id' is used for the repo key) */
-	ret = pk_package_id_check (package_id);
-	if (!ret && !g_str_has_prefix (package_id, ";;;")) {
+	/* check package_id (';;;repo-id' is used for the repo key, which is
+	 * no valid package ID, so we can only check it for being safe) */
+	if (g_str_has_prefix (package_id, ";;;"))
+		ret = pk_check_string_safe (package_id, -1);
+	else
+		ret = pk_package_id_check (package_id);
+	if (!ret) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
@@ -4430,8 +4460,10 @@ pk_transaction_repo_set_data (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check for sanity */
-	ret = pk_transaction_strvalidate (repo_id, &error);
+	/* check for sanity, some parameters (e.g. a repo removal) take no value */
+	ret = pk_transaction_strvalidate (repo_id, &error) &&
+	      pk_transaction_strvalidate (parameter, &error) &&
+	      (value[0] == '\0' || pk_transaction_strvalidate (value, &error));
 	if (!ret) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
@@ -4798,10 +4830,27 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			 GVariant *value,
 			 GError **error)
 {
+	/* we may log unknown hint names */
+	if (!pk_check_string_safe (key, -1)) {
+		g_set_error_literal (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid hint name passed to daemon");
+		return FALSE;
+	}
+
 	if (g_strcmp0 (key, "locale") == 0) {
+		const gchar *locale;
+
 		if (!pk_transaction_hint_check_type (key, value, G_VARIANT_TYPE_STRING, error))
 			return FALSE;
-		pk_backend_job_set_locale (transaction->job, g_variant_get_string (value, NULL));
+
+		/* backends hand the locale to setlocale() and to the environment
+		 * of the tools they run, which look up files by its name */
+		locale = g_variant_get_string (value, NULL);
+		if (!pk_transaction_identifier_validate (locale, "locale", error))
+			return FALSE;
+		pk_backend_job_set_locale (transaction->job, locale);
 		return TRUE;
 	}
 

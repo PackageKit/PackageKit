@@ -403,6 +403,40 @@ pk_test_enum_func (void)
 }
 
 static void
+pk_test_string_safe_func (void)
+{
+	const gchar *valid[] = { "",
+				 "richardhughes",
+				 "Grüße aus Köln",
+				 "/usr/bin/foo",
+				 "font(:lang=de)",
+				 "foo;1:2.36-9~rc1;x86_64;debian;",
+				 NULL };
+	const gchar *invalid[] = { "richard$\xffhughes",
+				   "overlong\xc0\xaf",
+				   "surrogate\xed\xa0\x80",
+				   "evil\tsecond",
+				   "evil\nsecond",
+				   "evil\x1b[2J",
+				   "evil\x7f",
+				   "evil\xc2\x9b"
+				   "2J", /* U+009B, the C1 CSI */
+				   NULL };
+
+	for (guint i = 0; valid[i] != NULL; i++)
+		g_assert_true (pk_check_string_safe (valid[i], -1));
+	for (guint i = 0; invalid[i] != NULL; i++)
+		g_assert_false (pk_check_string_safe (invalid[i], -1));
+	g_assert_false (pk_check_string_safe (NULL, -1));
+
+	/* only the first @len bytes are checked, and they must not contain a nul byte */
+	g_assert_true (pk_check_string_safe ("ok\nevil", 2));
+	g_assert_false (pk_check_string_safe ("ok\nevil", 3));
+	g_assert_false (pk_check_string_safe ("ok\0evil", 7));
+	g_assert_true (pk_check_string_safe ("ok", 0));
+}
+
+static void
 pk_test_package_id_func (void)
 {
 	gboolean ret;
@@ -424,6 +458,16 @@ pk_test_package_id_func (void)
 	/* check valid */
 	ret = pk_package_id_check ("moo;0.0.1;i386;fedora;");
 	g_assert_true (ret);
+
+	/* check valid - epoch, tilde and a local path */
+	ret = pk_package_id_check ("moo;1:0.0.1~rc1;i386;fedora;/tmp/moo.rpm");
+	g_assert_true (ret);
+
+	/* check not valid - control characters */
+	ret = pk_package_id_check ("moo;0.0.1\n;i386;fedora;");
+	g_assert_true (!ret);
+	ret = pk_package_id_check ("moo;0.0.1;i386;fedora;\x1b[2J");
+	g_assert_true (!ret);
 
 	/* id build */
 	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora", NULL);
@@ -1389,6 +1433,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/libpackagekit/enum", pk_test_enum_func);
 	g_test_add_func ("/libpackagekit/file", pk_test_file_func);
 	g_test_add_func ("/libpackagekit/bitfield", pk_test_bitfield_func);
+	g_test_add_func ("/libpackagekit/string-safe", pk_test_string_safe_func);
 	g_test_add_func ("/libpackagekit/package-id", pk_test_package_id_func);
 	g_test_add_func ("/libpackagekit/package-ids", pk_test_package_ids_func);
 	g_test_add_func ("/libpackagekit/results", pk_test_results_func);
