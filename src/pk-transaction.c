@@ -619,15 +619,14 @@ pk_transaction_error_code_cb (PkBackendJob *job, PkError *item, PkTransaction *t
 	/* add to results */
 	pk_results_set_error_code (transaction->results, item);
 
-	if (!transaction->exclusive && code == PK_ERROR_ENUM_LOCK_REQUIRED) {
-		/* the backend failed to get lock for this action, this means this transaction has to be run in exclusive mode */
-		g_debug (
-		    "changing transaction to exclusive mode (after failing with lock-required)");
-		transaction->exclusive = TRUE;
-	} else {
-		/* emit, as it is not the internally-handled LOCK_REQUIRED code */
-		pk_transaction_error_code_emit (transaction, code, details);
+	/* the backend failed to get a lock for this action, so the scheduler runs
+	 * it again in exclusive mode; clients only hear of it if that never works */
+	if (code == PK_ERROR_ENUM_LOCK_REQUIRED) {
+		pk_transaction_make_exclusive (transaction);
+		return;
 	}
+
+	pk_transaction_error_code_emit (transaction, code, details);
 }
 
 /**
@@ -1082,6 +1081,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* don't really finish the transaction if we only completed to wait for lock */
 	if (exit_enum != PK_EXIT_ENUM_CANCELLED &&
 	    pk_transaction_is_finished_with_lock_required (transaction)) {
+		/* the backend is done with this attempt all the same */
+		pk_backend_stop_job (transaction->backend, transaction->job);
+
 		/* finish only for the transaction list */
 		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 		return;
@@ -1190,8 +1192,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* this disconnects any pending signals */
 	pk_backend_job_disconnect_vfuncs (transaction->job);
 
-	/* destroy the job */
-	pk_backend_stop_job (transaction->backend, transaction->job);
+	/* destroy the job, unless it ran out of lock retries and was not started again */
+	if (pk_backend_job_get_started (transaction->job))
+		pk_backend_stop_job (transaction->backend, transaction->job);
 
 	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
@@ -4174,7 +4177,7 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-static void
+void
 pk_transaction_refresh_cache (PkTransaction *transaction,
 			      GVariant *params,
 			      GDBusMethodInvocation *context)
@@ -5378,10 +5381,11 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	transaction->results = pk_results_new ();
 	transaction->emitted_error_code = FALSE;
 
-	/* reset transaction state */
-	/* first set state manually, otherwise set_state will refuse to switch to an earlier stage */
+	/* the next attempt starts with a clean job */
+	pk_backend_job_reset (transaction->job);
+
+	/* reset transaction state, set_state() refuses to go back to an earlier one */
 	transaction->state = PK_TRANSACTION_STATE_READY;
-	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 
 	g_debug ("transaction has been reset after lock-required issue.");
 }

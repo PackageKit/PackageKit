@@ -299,9 +299,8 @@ display, `download_size` is in bytes and `url` points to the release notes.
 ### 5.4 Errors, interaction, logging
 
 `error`: `code` is `enum_error`, `details` is optional free text. Only the
-first error of a job counts (a `lock-required` error may be replaced).
-`finished` must still follow. The exit code is derived as for compiled
-backends.
+first error of a job counts. `finished` must still follow. The exit code is
+derived as for compiled backends.
 
 ```json
 {"ev":"error","job":"42","code":"package-not-found","details":"No package matches 'foo'"}

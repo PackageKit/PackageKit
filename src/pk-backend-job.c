@@ -116,7 +116,6 @@ struct _PkBackendJob
 	gboolean interactive;
 	gboolean locked;
 	GHashTable *emitted;
-	PkErrorEnum last_error_code;
 	PkRoleEnum role;
 	PkStatusEnum status;
 	GTimer *timer;
@@ -140,6 +139,35 @@ pk_backend_job_disconnect_vfuncs (PkBackendJob *job)
 		item->vfunc = NULL;
 		item->user_data = NULL;
 	}
+}
+
+/**
+ * pk_backend_job_reset:
+ *
+ * Forgets what the stopped job did while it ran, so it can run once more.
+ * Its parameters and hints are kept.
+ **/
+void
+pk_backend_job_reset (PkBackendJob *job)
+{
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+	g_return_if_fail (!job->started);
+
+	job->finished = FALSE;
+	job->has_sent_package = FALSE;
+	job->set_error = FALSE;
+	job->set_eula = FALSE;
+	job->set_signature = FALSE;
+	job->download_size_remaining = 0;
+	job->download_files = 0;
+	job->percentage = 0;
+	job->remaining = 0;
+	job->speed = 0;
+	job->exit = PK_EXIT_ENUM_UNKNOWN;
+	job->allow_cancel = TRUE;
+	job->locked = FALSE;
+	job->status = PK_STATUS_ENUM_UNKNOWN;
+	g_hash_table_remove_all (job->emitted);
 }
 
 gboolean
@@ -1982,17 +2010,10 @@ pk_backend_job_error_code (PkBackendJob *job, PkErrorEnum error_code, const gcha
 	buffer = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	/* did we set a duplicate error? (we can override LOCK_REQUIRED errors,
-	 * so the transaction list can fail transactions) */
+	/* did we set a duplicate error? */
 	if (job->set_error) {
-		if (job->last_error_code == PK_ERROR_ENUM_LOCK_REQUIRED) {
-			/* reset the exit status, we're resetting the error now */
-			job->exit = PK_EXIT_ENUM_UNKNOWN;
-			job->finished = FALSE;
-		} else {
-			g_warning ("More than one error emitted! You tried to set '%s'", buffer);
-			return;
-		}
+		g_warning ("More than one error emitted! You tried to set '%s'", buffer);
+		return;
 	}
 	job->set_error = TRUE;
 
@@ -2009,9 +2030,6 @@ pk_backend_job_error_code (PkBackendJob *job, PkErrorEnum error_code, const gcha
 	if (error_code == PK_ERROR_ENUM_UNFINISHED_TRANSACTION) {
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_REPAIR_REQUIRED);
 	}
-
-	/* save so we can check the parallel failure later */
-	job->last_error_code = error_code;
 
 	/* form PkError struct */
 	error = pk_error_new ();
@@ -2214,7 +2232,6 @@ pk_backend_job_init (PkBackendJob *job)
 {
 	job->timer = g_timer_new ();
 	job->cancellable = g_cancellable_new ();
-	job->last_error_code = PK_ERROR_ENUM_UNKNOWN;
 	job->locale = g_strdup ("C");
 	job->cache_age = G_MAXUINT;
 	job->allow_cancel = TRUE;
