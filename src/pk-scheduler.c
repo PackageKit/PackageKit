@@ -528,7 +528,6 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction, PkScheduler *s
 {
 	PkSchedulerItem *item;
 	PkTransactionState state;
-	PkBackendJob *job;
 	const gchar *tid;
 
 	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
@@ -563,18 +562,8 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction, PkScheduler *s
 		g_debug ("transaction finished and requires lock now, attempt %i", item->tries);
 
 		if (item->tries > PK_SCHEDULER_MAX_LOCK_RETRIES) {
-			/* fail the transaction */
-			job = pk_transaction_get_backend_job (item->transaction);
-
 			/* we finally failed completely to get a package manager lock */
-			pk_backend_job_error_code (
-			    job,
-			    PK_ERROR_ENUM_CANNOT_GET_LOCK,
-			    "Unable to lock package database! There is probably another "
-			    "application using it already.");
-
-			/* now really finish & fail the transaction */
-			pk_backend_job_finished (job);
+			pk_transaction_fail_after_lock_error (item->transaction);
 			return;
 		}
 	} else {
@@ -605,7 +594,7 @@ pk_scheduler_no_commit_cb (gpointer user_data)
 {
 	PkSchedulerItem *item = (PkSchedulerItem *) user_data;
 	g_warning ("ID %s was not committed in time!", item->tid);
-	pk_transaction_cancel_bg (item->transaction);
+	pk_transaction_cancel_uncommitted (item->transaction);
 	pk_scheduler_remove_internal (item->scheduler, item);
 
 	/* never repeat */
@@ -815,8 +804,9 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
  *
  * Makes way for another package manager: everything that has not reached
  * the backend yet is stopped, as are running background transactions if the
- * backend can cancel them, and every transaction that asks to run from now
- * on is refused. Running foreground transactions are left to finish.
+ * backend can cancel them at that point, and every transaction that asks to
+ * run from now on is refused. Running foreground transactions are left to
+ * finish.
  **/
 void
 pk_scheduler_yield (PkScheduler *scheduler)

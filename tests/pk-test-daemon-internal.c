@@ -2501,6 +2501,273 @@ pk_test_scheduler_lock_required_func (void)
 }
 
 static void
+pk_test_scheduler_wait_not_cancellable (PkTransaction *transaction)
+{
+	PkBackendJob *job = pk_transaction_get_backend_job (transaction);
+	gint64 deadline = g_get_monotonic_time () + 20 * G_USEC_PER_SEC;
+	guint tick_id = g_timeout_add (50, pk_test_scheduler_tick_cb, NULL);
+
+	while (pk_backend_job_get_allow_cancel (job)) {
+		g_assert_cmpint (g_get_monotonic_time (), <, deadline);
+		g_main_context_iteration (NULL, TRUE);
+	}
+	g_source_remove (tick_id);
+}
+
+static void
+pk_test_scheduler_yield_not_cancellable_func (void)
+{
+	gboolean ret;
+	guint subscription_id;
+	PkTransaction *transaction;
+	GError *error = NULL;
+	g_autofree gchar *tid = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
+
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
+	ret = pk_backend_load (backend, NULL);
+	g_assert_true (ret);
+
+	tlist = pk_scheduler_new (conf);
+	pk_scheduler_set_backend (tlist, backend);
+
+	client_errors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	client_exits = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	g_assert_no_error (error);
+	subscription_id = g_dbus_connection_signal_subscribe (connection,
+							      NULL,
+							      PK_DBUS_INTERFACE_TRANSACTION,
+							      NULL,
+							      NULL,
+							      NULL,
+							      G_DBUS_SIGNAL_FLAGS_NONE,
+							      pk_test_scheduler_signal_cb,
+							      NULL,
+							      NULL);
+
+	/* the dummy backend does not allow cancelling the end of a refresh */
+	tid = pk_test_scheduler_create_transaction (tlist);
+	transaction = pk_scheduler_get_transaction (tlist, tid);
+	pk_transaction_skip_auth_checks (transaction, TRUE);
+	pk_backend_job_set_background (pk_transaction_get_backend_job (transaction), TRUE);
+	pk_transaction_refresh_cache (transaction, g_variant_new ("(b)", FALSE), NULL);
+	pk_test_scheduler_wait_started (transaction);
+	pk_test_scheduler_wait_not_cancellable (transaction);
+
+	pk_scheduler_yield (tlist);
+
+	/* so the background refresh is left to finish, like a foreground one */
+	pk_test_scheduler_wait_finished (tid);
+	g_assert_false (g_hash_table_contains (client_errors, tid));
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (client_exits, tid)),
+			  ==,
+			  PK_EXIT_ENUM_SUCCESS);
+	g_assert_false (pk_scheduler_is_busy (tlist));
+
+	g_dbus_connection_signal_unsubscribe (connection, subscription_id);
+	g_clear_pointer (&client_errors, g_hash_table_unref);
+	g_clear_pointer (&client_exits, g_hash_table_unref);
+	g_object_unref (db);
+}
+
+static void
+pk_test_scheduler_background_not_cancellable_func (void)
+{
+	gboolean ret;
+	guint subscription_id;
+	const gchar *search[] = { "power", NULL };
+	PkTransaction *transaction;
+	GError *error = NULL;
+	g_autofree gchar *tid_bg = NULL;
+	g_autofree gchar *tid_fg = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
+
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
+	ret = pk_backend_load (backend, NULL);
+	g_assert_true (ret);
+
+	tlist = pk_scheduler_new (conf);
+	pk_scheduler_set_backend (tlist, backend);
+
+	client_errors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	client_exits = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	g_assert_no_error (error);
+	subscription_id = g_dbus_connection_signal_subscribe (connection,
+							      NULL,
+							      PK_DBUS_INTERFACE_TRANSACTION,
+							      NULL,
+							      NULL,
+							      NULL,
+							      G_DBUS_SIGNAL_FLAGS_NONE,
+							      pk_test_scheduler_signal_cb,
+							      NULL,
+							      NULL);
+
+	/* the dummy backend does not allow cancelling the end of a refresh */
+	tid_bg = pk_test_scheduler_create_transaction (tlist);
+	transaction = pk_scheduler_get_transaction (tlist, tid_bg);
+	pk_transaction_skip_auth_checks (transaction, TRUE);
+	pk_backend_job_set_background (pk_transaction_get_backend_job (transaction), TRUE);
+	pk_transaction_refresh_cache (transaction, g_variant_new ("(b)", FALSE), NULL);
+	pk_test_scheduler_wait_started (transaction);
+	pk_test_scheduler_wait_not_cancellable (transaction);
+
+	/* a foreground transaction cancels background ones... */
+	tid_fg = pk_test_scheduler_create_transaction (tlist);
+	transaction = pk_scheduler_get_transaction (tlist, tid_fg);
+	pk_transaction_search_names (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), search),
+	    NULL);
+
+	/* ...but this one is left to finish */
+	pk_test_scheduler_wait_finished (tid_bg);
+	g_assert_false (g_hash_table_contains (client_errors, tid_bg));
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (client_exits, tid_bg)),
+			  ==,
+			  PK_EXIT_ENUM_SUCCESS);
+	pk_test_scheduler_wait_finished (tid_fg);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (client_exits, tid_fg)),
+			  ==,
+			  PK_EXIT_ENUM_SUCCESS);
+
+	g_dbus_connection_signal_unsubscribe (connection, subscription_id);
+	g_clear_pointer (&client_errors, g_hash_table_unref);
+	g_clear_pointer (&client_exits, g_hash_table_unref);
+	g_object_unref (db);
+}
+
+static void
+pk_test_scheduler_lock_holder_finished_cb (PkBackendJob *job, gpointer object, gpointer user_data)
+{
+	gboolean *finished = (gboolean *) user_data;
+	*finished = TRUE;
+}
+
+/* anything may stop a transaction that waits to run, e.g. a Cancel() or a
+ * DaemonYield call that arrives right after the scheduler gave up on it */
+static void
+pk_test_scheduler_lock_give_up_finished_cb (PkTransaction *transaction, PkScheduler *tlist)
+{
+	if (pk_transaction_get_state (transaction) == PK_TRANSACTION_STATE_READY)
+		pk_scheduler_yield (tlist);
+}
+
+static void
+pk_test_scheduler_lock_give_up_func (void)
+{
+	gboolean ret;
+	gboolean holder_finished = FALSE;
+	gint64 deadline;
+	guint subscription_id;
+	guint tick_id;
+	PkTransaction *transaction;
+	GError *error = NULL;
+	g_autofree gchar *tid = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkBackendJob) holder = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
+
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
+	ret = pk_backend_load (backend, NULL);
+	g_assert_true (ret);
+
+	tlist = pk_scheduler_new (conf);
+	pk_scheduler_set_backend (tlist, backend);
+
+	client_errors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	client_exits = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	g_assert_no_error (error);
+	subscription_id = g_dbus_connection_signal_subscribe (connection,
+							      NULL,
+							      PK_DBUS_INTERFACE_TRANSACTION,
+							      NULL,
+							      NULL,
+							      NULL,
+							      G_DBUS_SIGNAL_FLAGS_NONE,
+							      pk_test_scheduler_signal_cb,
+							      NULL,
+							      NULL);
+
+	/* something the scheduler does not know about holds the lock of the
+	 * dummy backend, so running a transaction exclusively does not help */
+	holder = pk_backend_job_new (conf);
+	pk_backend_job_set_vfunc (holder,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  PK_BACKEND_JOB_VFUNC (pk_test_scheduler_lock_holder_finished_cb),
+				  &holder_finished);
+	pk_backend_start_job (backend, holder);
+	pk_backend_refresh_cache (backend, holder, FALSE);
+
+	/* a refresh fails with LOCK_REQUIRED every time it runs, until the
+	 * scheduler gives up on it */
+	tid = pk_test_scheduler_create_transaction (tlist);
+	transaction = pk_scheduler_get_transaction (tlist, tid);
+	pk_transaction_skip_auth_checks (transaction, TRUE);
+	g_signal_connect_after (transaction,
+				"finished",
+				G_CALLBACK (pk_test_scheduler_lock_give_up_finished_cb),
+				tlist);
+	pk_transaction_refresh_cache (transaction, g_variant_new ("(b)", FALSE), NULL);
+
+	pk_test_scheduler_wait_finished (tid);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (client_errors, tid)),
+			  ==,
+			  PK_ERROR_ENUM_CANNOT_GET_LOCK);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (client_exits, tid)),
+			  ==,
+			  PK_EXIT_ENUM_FAILED);
+	g_assert_false (pk_scheduler_is_busy (tlist));
+
+	/* the holder has to be done, and its thread to have let go of it */
+	deadline = g_get_monotonic_time () + 20 * G_USEC_PER_SEC;
+	tick_id = g_timeout_add (50, pk_test_scheduler_tick_cb, NULL);
+	while (!holder_finished || G_OBJECT (holder)->ref_count > 1) {
+		g_assert_cmpint (g_get_monotonic_time (), <, deadline);
+		g_main_context_iteration (NULL, TRUE);
+	}
+	g_source_remove (tick_id);
+	pk_backend_stop_job (backend, holder);
+
+	g_dbus_connection_signal_unsubscribe (connection, subscription_id);
+	g_clear_pointer (&client_errors, g_hash_table_unref);
+	g_clear_pointer (&client_exits, g_hash_table_unref);
+	g_object_unref (db);
+}
+
+static void
 pk_test_backend_job_staged_files_func (void)
 {
 	const gchar *path;
@@ -2620,8 +2887,13 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/scheduler-yield", pk_test_scheduler_yield_func);
+	g_test_add_func ("/packagekit/scheduler-yield-not-cancellable",
+			 pk_test_scheduler_yield_not_cancellable_func);
+	g_test_add_func ("/packagekit/scheduler-background-not-cancellable",
+			 pk_test_scheduler_background_not_cancellable_func);
 	g_test_add_func ("/packagekit/scheduler-lock-required",
 			 pk_test_scheduler_lock_required_func);
+	g_test_add_func ("/packagekit/scheduler-lock-give-up", pk_test_scheduler_lock_give_up_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);
 	g_test_add_func ("/packagekit/proxy-store", pk_test_proxy_store_func);
 

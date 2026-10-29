@@ -55,6 +55,7 @@ PkTransaction	  *pk_transaction_new (GKeyFile	     *conf,
 gboolean	   pk_transaction_run (PkTransaction *transaction) G_GNUC_WARN_UNUSED_RESULT;
 /* internal status */
 void		   pk_transaction_cancel_bg (PkTransaction *transaction);
+void		   pk_transaction_cancel_uncommitted (PkTransaction *transaction);
 void		   pk_transaction_yield (PkTransaction *transaction);
 gboolean	   pk_transaction_get_background (PkTransaction *transaction);
 PkRoleEnum	   pk_transaction_get_role (PkTransaction *transaction);
@@ -70,6 +71,7 @@ const gchar	  *pk_transaction_get_tid (PkTransaction *transaction);
 gboolean	   pk_transaction_is_exclusive (PkTransaction *transaction);
 gboolean	   pk_transaction_is_finished_with_lock_required (PkTransaction *transaction);
 void		   pk_transaction_reset_after_lock_error (PkTransaction *transaction);
+void		   pk_transaction_fail_after_lock_error (PkTransaction *transaction);
 void		   pk_transaction_make_exclusive (PkTransaction *transaction);
 void		   pk_transaction_skip_auth_checks (PkTransaction *transaction,
 						    gboolean	   skip_checks);

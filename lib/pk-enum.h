@@ -388,7 +388,6 @@ typedef enum {
  * @PK_ERROR_ENUM_UNFINISHED_TRANSACTION: Transaction unfinished
  * @PK_ERROR_ENUM_REPO_ALREADY_SET:
  *
- *
  * The error type
  **/
 typedef enum {

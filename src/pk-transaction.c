@@ -2482,7 +2482,9 @@ pk_transaction_refused_auth_idle_cb (gpointer user_data)
 	g_autoptr(PkTransaction) transaction = PK_TRANSACTION (user_data);
 
 	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
-	pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
+	pk_transaction_finished_emit (transaction,
+				      pk_backend_job_get_exit_code (transaction->job),
+				      0);
 	return G_SOURCE_REMOVE;
 }
 
@@ -2513,13 +2515,16 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 
 	/* failed because the request was cancelled */
 	if (g_cancellable_is_cancelled (transaction->cancellable)) {
+		PkExitEnum exit_enum = pk_backend_job_get_exit_code (transaction->job);
+
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		transaction->waiting_for_auth = FALSE;
 		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
 
-		/* failed with an error while the user was being asked for authorization */
-		if (transaction->emitted_error_code) {
-			pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_CANCELLED, 0);
+		/* stopped while the user was being asked for authorization, and
+		 * the error was emitted already */
+		if (exit_enum != PK_EXIT_ENUM_UNKNOWN) {
+			pk_transaction_finished_emit (data->transaction, exit_enum, 0);
 			goto out;
 		}
 
@@ -3019,11 +3024,17 @@ pk_transaction_cancel_pending (PkTransaction *transaction,
 		pk_transaction_finished_emit (transaction, exit_enum, 0);
 		return TRUE;
 	case PK_TRANSACTION_STATE_WAITING_FOR_AUTH:
+		/* already being stopped */
+		if (g_cancellable_is_cancelled (transaction->cancellable))
+			return TRUE;
+
 		/* the polkit callback would finish the transaction a second
-		 * time, so abort the check and let the callback finish it.
-		 * While the state is still changing the check has not been
-		 * started, and pk_transaction_authorize_actions() skips it */
+		 * time, so abort the check and let the callback finish it with
+		 * our exit code. While the state is still changing the check
+		 * has not been started, and pk_transaction_authorize_actions()
+		 * skips it */
 		pk_transaction_daemon_error_emit (transaction, error_enum, details);
+		pk_backend_job_set_exit_code (transaction->job, exit_enum);
 		g_cancellable_cancel (transaction->cancellable);
 		return TRUE;
 	case PK_TRANSACTION_STATE_RUNNING:
@@ -3065,6 +3076,13 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 		return;
 	}
 
+	/* the backend must not be interrupted right now, e.g. while it changes
+	 * the system, so this one is left to finish */
+	if (!pk_backend_job_get_allow_cancel (transaction->job)) {
+		g_debug ("cannot cancel %s, the backend does not allow it now", transaction->tid);
+		return;
+	}
+
 	/* set the state, as cancelling might take a few seconds */
 	pk_backend_job_set_status (transaction->job, PK_STATUS_ENUM_CANCEL);
 
@@ -3079,12 +3097,36 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_cancel_uncommitted:
+ *
+ * Stops a transaction that was not committed in time, either because the client
+ * never asked it to do anything or because the user never answered the
+ * authorization request.
+ **/
+void
+pk_transaction_cancel_uncommitted (PkTransaction *transaction)
+{
+	g_autofree gchar *details = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	/* the polkit callback tells the client that the authentication timed out */
+	if (transaction->state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH) {
+		g_cancellable_cancel (transaction->cancellable);
+		return;
+	}
+
+	details = g_strdup_printf ("%s was not committed in time", transaction->tid);
+	pk_transaction_cancel_pending (transaction, PK_ERROR_ENUM_TRANSACTION_CANCELLED, details);
+}
+
+/**
  * pk_transaction_yield:
  *
  * Stops the transaction because the daemon makes way for another package management tool.
  * Anything that has not reached the backend yet is always stopped, running foreground
  * transactions are left to finish, and running background ones are only stopped if the
- * backend can cancel them.
+ * backend can cancel them at that point.
  **/
 void
 pk_transaction_yield (PkTransaction *transaction)
@@ -3112,6 +3154,13 @@ pk_transaction_yield (PkTransaction *transaction)
 		return;
 	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_CANCEL)) {
 		g_debug ("cannot stop %s, the backend cannot cancel", transaction->tid);
+		return;
+	}
+
+	/* the backend must not be interrupted right now, e.g. while it changes
+	 * the system, so this one is left to finish as well */
+	if (!pk_backend_job_get_allow_cancel (transaction->job)) {
+		g_debug ("cannot stop %s, the backend does not allow it now", transaction->tid);
 		return;
 	}
 
@@ -3211,6 +3260,15 @@ skip_uid:
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "Cancel not supported by backend");
+		goto out;
+	}
+
+	/* the backend must not be interrupted right now, or is being cancelled already */
+	if (!pk_backend_job_get_allow_cancel (transaction->job)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_CANNOT_CANCEL,
+			     "The transaction cannot be cancelled right now");
 		goto out;
 	}
 
@@ -5388,6 +5446,25 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	transaction->state = PK_TRANSACTION_STATE_READY;
 
 	g_debug ("transaction has been reset after lock-required issue.");
+}
+
+/**
+ * pk_transaction_fail_after_lock_error:
+ *
+ * Gives up on a transaction that was reset after failing to get the lock too
+ * often. It is finished right away, so it never looks like it is waiting to run.
+ **/
+void
+pk_transaction_fail_after_lock_error (PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	pk_transaction_daemon_error_emit (
+	    transaction,
+	    PK_ERROR_ENUM_CANNOT_GET_LOCK,
+	    "Unable to lock package database! There is probably another "
+	    "application using it already.");
+	pk_transaction_finished_cb (transaction->job, PK_EXIT_ENUM_FAILED, transaction);
 }
 
 static void

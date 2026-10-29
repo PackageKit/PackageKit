@@ -191,7 +191,8 @@
     <!--
       Cancel:
 
-      This method cancels a transaction that is already running
+      This method cancels a transaction that is already running.
+      It fails with the `CannotCancel` error while `AllowCancel` is false.
     -->
     <method name="Cancel">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>

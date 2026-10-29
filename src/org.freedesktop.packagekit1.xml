@@ -213,9 +213,9 @@
       This stops the transactions of all users, so the caller needs the
       `org.freedesktop.packagekit.daemon-yield` authorization. Transactions
       that are waiting to run or for authorization, and running background
-      transactions the backend can cancel, finish with the
-      `daemon-yielded` error and the `cancelled` exit code. Running
-      foreground transactions are left to finish, and any transaction that
+      transactions the backend can cancel at that point, finish with the
+      `daemon-yielded` error and the `cancelled` exit code. Other running
+      transactions are left to finish, and any transaction that
       is asked to run until the daemon has quit is refused the same way.
       The daemon quits once no transaction is running anymore.
     -->
