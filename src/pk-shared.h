@@ -56,6 +56,9 @@ gboolean pk_ioprio_set_idle (GPid pid);
 guint	 pk_string_replace (GString	*string,
 			    const gchar *search,
 			    const gchar *replace);
+gboolean pk_check_path_segment_safe (const gchar *str,
+				     gssize	  len,
+				     gboolean	  ascii_only);
 
 gchar	*pk_get_cmdline_for_pid (guint32 pid);
 

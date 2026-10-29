@@ -41,7 +41,7 @@
 
 /**
  * pk_iso8601_present:
- * 
+ *
  * Get the current date / time as an ISO8601 string.
  *
  * Return value: The current iso8601 date and time
@@ -365,4 +365,39 @@ pk_get_distro_version_id (GError **error)
 		return NULL;
 
 	return version_id;
+}
+
+/**
+ * pk_check_string_safe:
+ * @str: The string to test.
+ * @len: The length of the string in bytes, or -1 if it is nul-terminated.
+ *
+ * Verify that a string from an untrusted source is valid UTF-8 and does not
+ * contain any control characters (C0, DEL or C1). When such a string is
+ * embedded into line- or tab-separated data (e.g. a configuration file or a
+ * log line), it always stays within the line and field it was placed in, and
+ * printing it can not emit terminal escape sequences.
+ *
+ * An empty string is considered safe, while a NULL string is not.
+ *
+ * Returns: %TRUE if the string is valid UTF-8 without control characters.
+ */
+gboolean
+pk_check_string_safe (const gchar *str, gssize len)
+{
+	const gchar *end;
+
+	if (str == NULL)
+		return FALSE;
+
+	/* on success, @end points right behind the last validated byte */
+	if (!g_utf8_validate (str, len, &end))
+		return FALSE;
+
+	for (const gchar *p = str; p < end; p = g_utf8_next_char (p)) {
+		if (g_unichar_iscntrl (g_utf8_get_char (p)))
+			return FALSE;
+	}
+
+	return TRUE;
 }

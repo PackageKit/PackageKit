@@ -27,6 +27,7 @@
 
 #include "config.h"
 
+#include <limits.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <unistd.h>
@@ -489,6 +490,84 @@ pk_string_replace (GString *string, const gchar *search, const gchar *replace)
 	} while (TRUE);
 out:
 	return count;
+}
+
+/**
+ * pk_path_segment_char_valid:
+ *
+ * Check if a character may appear in a filesystem path segment.
+ */
+static inline gboolean
+pk_path_segment_char_valid (gunichar c, gboolean ascii_only)
+{
+	if (c < 0x80) {
+		/* we use a strict allowlist for ASCII characters */
+		if (g_ascii_isalnum ((gchar) c))
+			return TRUE;
+		return c == '-' || c == '_' || c == '.' || c == '+' || c == '@' || c == ' ';
+	}
+	if (ascii_only)
+		return FALSE;
+
+	/* for anything else, we only permit printable characters (which excludes
+	 * control, format, surrogate and unassigned ones) and never allow any
+	 * kind of whitespace besides the plain ASCII space */
+	return g_unichar_isprint (c) && !g_unichar_isspace (c);
+}
+
+/**
+ * pk_check_path_segment_safe:
+ * @str: The string to test.
+ * @len: The length of the string in bytes, or -1 if it is nul-terminated.
+ * @ascii_only: %TRUE to reject any non-ASCII character.
+ *
+ * Verify that a string can safely be used as a single segment of a filesystem
+ * path, that is, that it can not escape the directory it is used in and does
+ * not contain any character that may confuse other tools operating on the
+ * resulting path.
+ *
+ * We deliberately use a strict allowlist here (ASCII alphanumerics as well as
+ * `-`, `_`, `.`, `+`, `@` and the plain space, plus any printable non-ASCII
+ * UTF-8 character unless @ascii_only is set), as this function is used to
+ * validate names which we read from untrusted, remotely obtained metadata.
+ * The string also must not be longer than `NAME_MAX` bytes.
+ *
+ * Every string rejected by pk_check_string_safe() is rejected here as well.
+ *
+ * Returns: %TRUE if the string is safe to use as a path segment.
+ */
+gboolean
+pk_check_path_segment_safe (const gchar *str, gssize len, gboolean ascii_only)
+{
+	const gchar *end;
+
+	if (str == NULL)
+		return FALSE;
+	if (len < 0)
+		len = pk_strlen (str, NAME_MAX + 1);
+
+	/* no filesystem would accept a longer name anyway */
+	if (len == 0 || len > NAME_MAX)
+		return FALSE;
+
+	/* never permit relative path components, hidden entries or names
+	 * with leading/trailing spaces */
+	if (str[0] == '.' || str[0] == ' ' || str[len - 1] == ' ')
+		return FALSE;
+
+	/* the allowlist already excludes every control character, so on top
+	 * of it we only need to validate the UTF-8 encoding, which also rejects
+	 * any nul byte within @len */
+	end = str + len;
+	for (const gchar *p = str; p < end; p = g_utf8_next_char (p)) {
+		gunichar c = g_utf8_get_char_validated (p, end - p);
+		if (c == (gunichar) -1 || c == (gunichar) -2)
+			return FALSE;
+		if (!pk_path_segment_char_valid (c, ascii_only))
+			return FALSE;
+	}
+
+	return TRUE;
 }
 
 /**

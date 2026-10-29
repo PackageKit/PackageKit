@@ -29,8 +29,10 @@
 
 G_BEGIN_DECLS
 
-gchar *pk_get_distro_name (GError **error);
-gchar *pk_get_distro_version_id (GError **error);
+gchar	*pk_get_distro_name (GError **error);
+gchar	*pk_get_distro_version_id (GError **error);
+gboolean pk_check_string_safe (const gchar *str,
+			       gssize	    len);
 
 G_END_DECLS
 

@@ -37,6 +37,7 @@
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gio/gunixfdlist.h>
+#include <pk-common-private.h>
 #include <pk-offline.h>
 #include <pk-offline-private.h>
 #include <pk-version.h>
@@ -656,6 +657,29 @@ get_polkit_flags_for_dbus_invocation (GDBusMethodInvocation *invocation)
 	return flags;
 }
 
+static gboolean
+pk_engine_proxy_setting_check (const gchar *name, const gchar *value, GError **error)
+{
+	/* blank is allowed and means unset */
+	if (pk_strlen (value, 1024) >= 1024) {
+		g_set_error (error,
+			     PK_ENGINE_ERROR,
+			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+			     "%s was too long",
+			     name);
+		return FALSE;
+	}
+	if (value != NULL && !pk_check_string_safe (value, -1)) {
+		g_set_error (error,
+			     PK_ENGINE_ERROR,
+			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+			     "%s contains invalid characters",
+			     name);
+		return FALSE;
+	}
+	return TRUE;
+}
+
 static void
 pk_engine_set_proxy (PkEngine *engine,
 		     const gchar *proxy_http,
@@ -666,8 +690,7 @@ pk_engine_set_proxy (PkEngine *engine,
 		     const gchar *pac,
 		     GDBusMethodInvocation *context)
 {
-	guint len;
-	GError *error = NULL;
+	g_autoptr(GError) error = NULL;
 	gboolean ret;
 	const gchar *sender;
 	PkEngineDbusState *state;
@@ -683,22 +706,13 @@ pk_engine_set_proxy (PkEngine *engine,
 
 	g_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
 
-	/* check length of http */
-	len = pk_strlen (proxy_http, 1024);
-	if (len >= 1024) {
-		error = g_error_new_literal (PK_ENGINE_ERROR,
-					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-					     "http proxy was too long");
-		g_dbus_method_invocation_return_gerror (context, error);
-		goto out;
-	}
-
-	/* check length of ftp */
-	len = pk_strlen (proxy_ftp, 1024);
-	if (len >= 1024) {
-		error = g_error_new_literal (PK_ENGINE_ERROR,
-					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
-					     "ftp proxy was too long");
+	/* check every setting, as all of them end up in the environment of the backends */
+	if (!pk_engine_proxy_setting_check ("http proxy", proxy_http, &error) ||
+	    !pk_engine_proxy_setting_check ("https proxy", proxy_https, &error) ||
+	    !pk_engine_proxy_setting_check ("ftp proxy", proxy_ftp, &error) ||
+	    !pk_engine_proxy_setting_check ("socks proxy", proxy_socks, &error) ||
+	    !pk_engine_proxy_setting_check ("no-proxy list", no_proxy, &error) ||
+	    !pk_engine_proxy_setting_check ("PAC", pac, &error)) {
 		g_dbus_method_invocation_return_gerror (context, error);
 		goto out;
 	}

@@ -810,6 +810,62 @@ pk_test_spawn_func (void)
 }
 
 static void
+pk_test_path_segment_func (void)
+{
+	g_autofree gchar *name_max = g_strnfill (255, 'a');
+	g_autofree gchar *name_too_long = g_strnfill (256, 'a');
+	const gchar *valid[] = { "en_GB.UTF-8", "sr_RS@latin", "C",	 "BB7576AC",
+				 "foo+bar",	"two words",   name_max, NULL };
+	const gchar *valid_unicode[] = { "Grüße", "日本語", NULL };
+	const gchar *invalid[] = { "",
+				   ".",
+				   "..",
+				   ".hidden",
+				   "../../../tmp/evil",
+				   "/tmp/evil",
+				   "a/b",
+				   " leading",
+				   "trailing ",
+				   "a;b",
+				   "a:b",
+				   "a\\b",
+				   "a\tb",
+				   "a\nb",
+				   "a\x1b[2J",
+				   "a\x7f",
+				   "a\xffz",
+				   "a\xc0\xaf",	     /* overlong encoding of '/' */
+				   "a\xed\xa0\x80",  /* UTF-16 surrogate */
+				   "a\xc2\x9b",	     /* U+009B, the C1 CSI */
+				   "a\xc2\xa0z",     /* U+00A0, no-break space */
+				   "a\xe2\x80\xaez", /* U+202E, right-to-left override */
+				   "a\xe2\x80\xa8z", /* U+2028, line separator */
+				   name_too_long,
+				   NULL };
+
+	for (guint i = 0; valid[i] != NULL; i++) {
+		g_assert_true (pk_check_path_segment_safe (valid[i], -1, FALSE));
+		g_assert_true (pk_check_path_segment_safe (valid[i], -1, TRUE));
+	}
+	for (guint i = 0; valid_unicode[i] != NULL; i++) {
+		g_assert_true (pk_check_path_segment_safe (valid_unicode[i], -1, FALSE));
+		g_assert_false (pk_check_path_segment_safe (valid_unicode[i], -1, TRUE));
+	}
+	for (guint i = 0; invalid[i] != NULL; i++) {
+		g_assert_false (pk_check_path_segment_safe (invalid[i], -1, FALSE));
+		g_assert_false (pk_check_path_segment_safe (invalid[i], -1, TRUE));
+	}
+	g_assert_false (pk_check_path_segment_safe (NULL, -1, FALSE));
+
+	/* only the first @len bytes are checked, and they must not contain a nul byte */
+	g_assert_true (pk_check_path_segment_safe ("abc/def", 3, FALSE));
+	g_assert_false (pk_check_path_segment_safe ("abc/def", 4, FALSE));
+	g_assert_false (pk_check_path_segment_safe ("abc\0def", 7, FALSE));
+	g_assert_false (pk_check_path_segment_safe ("abc", 0, FALSE));
+	g_assert_true (pk_check_path_segment_safe (name_too_long, 255, FALSE));
+}
+
+static void
 pk_test_transaction_func (void)
 {
 	gboolean ret;
@@ -852,6 +908,18 @@ pk_test_transaction_func (void)
 	ret = pk_transaction_strvalidate ("evil\rsecond", &error);
 	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
 	g_assert_true (!ret);
+	g_clear_error (&error);
+
+	/* reject terminal escape sequences */
+	ret = pk_transaction_strvalidate ("evil\x1b[2J", &error);
+	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
+	g_assert_true (!ret);
+	g_clear_error (&error);
+
+	/* but accept non-ASCII text */
+	ret = pk_transaction_strvalidate ("Grüße aus Köln", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
 	g_clear_error (&error);
 
 	/* validate distro IDs */
@@ -1577,6 +1645,7 @@ main (int argc, char **argv)
 	g_test_init (&argc, &argv, NULL);
 
 	/* components */
+	g_test_add_func ("/packagekit/path-segment", pk_test_path_segment_func);
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
