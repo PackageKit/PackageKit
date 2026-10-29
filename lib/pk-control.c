@@ -560,10 +560,10 @@ pk_control_get_tid_finish (PkControl *control, GAsyncResult *res, GError **error
 /**********************************************************************/
 
 /*
- * pk_control_suggest_daemon_quit_cb:
+ * pk_control_daemon_yield_cb:
  **/
 static void
-pk_control_suggest_daemon_quit_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
+pk_control_daemon_yield_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	g_autoptr(GTask) task = G_TASK (user_data);
@@ -582,35 +582,38 @@ pk_control_suggest_daemon_quit_cb (GObject *source_object, GAsyncResult *res, gp
 }
 
 /*
- * pk_control_suggest_daemon_quit_internal:
+ * pk_control_daemon_yield_internal:
  **/
 static void
-pk_control_suggest_daemon_quit_internal (PkControl *control, GTask *task)
+pk_control_daemon_yield_internal (PkControl *control, GTask *task)
 {
 	PkControlPrivate *priv = GET_PRIVATE(control);
+	PkControlFlags flags = GPOINTER_TO_UINT (g_task_get_task_data (task));
 	GCancellable *cancellable;
 
 	g_assert (PK_IS_CONTROL (control));
 	g_assert (G_IS_TASK (task));
 
+	/* the daemon asks polkit before it replies, which may mean waiting
+	 * for the user to type a password */
 	cancellable = g_task_get_cancellable (task);
 	g_dbus_proxy_call (priv->proxy,
-			   "SuggestDaemonQuit",
+			   "DaemonYield",
 			   NULL,
-			   G_DBUS_CALL_FLAGS_NONE,
-			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
+			   (flags & PK_CONTROL_FLAGS_INTERACTIVE) != 0
+			       ? G_DBUS_CALL_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION
+			       : G_DBUS_CALL_FLAGS_NONE,
+			   -1,
 			   cancellable,
-			   pk_control_suggest_daemon_quit_cb,
+			   pk_control_daemon_yield_cb,
 			   g_steal_pointer (&task));
 }
 
 /*
- * pk_control_suggest_daemon_quit_proxy_cb:
+ * pk_control_daemon_yield_proxy_cb:
  **/
 static void
-pk_control_suggest_daemon_quit_proxy_cb (GObject *source_object,
-					 GAsyncResult *res,
-					 gpointer user_data)
+pk_control_daemon_yield_proxy_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
 	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GDBusProxy) proxy = NULL;
@@ -624,25 +627,33 @@ pk_control_suggest_daemon_quit_proxy_cb (GObject *source_object,
 	}
 
 	pk_control_proxy_connect (control, proxy);
-	pk_control_suggest_daemon_quit_internal (control, g_steal_pointer (&task));
+	pk_control_daemon_yield_internal (control, g_steal_pointer (&task));
 }
 
 /**
- * pk_control_suggest_daemon_quit_async:
+ * pk_control_daemon_yield_async:
  * @control: a valid #PkControl instance
+ * @flags: #PkControlFlags for the call
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
  *
- * Suggests to the daemon that it should quit as soon as possible.
+ * Asks the daemon to make way for another package manager: it stops all
+ * pending and background work, refuses new transactions and quits as soon
+ * as running foreground transactions are done.
  *
- * Since: 0.6.2
+ * This stops the transactions of all users, so the caller needs the
+ * org.freedesktop.packagekit.daemon-yield authorization. See the DaemonYield
+ * D-Bus method for what happens to the transactions.
+ *
+ * Since: 2.0.0
  **/
 void
-pk_control_suggest_daemon_quit_async (PkControl *control,
-				      GCancellable *cancellable,
-				      GAsyncReadyCallback callback,
-				      gpointer user_data)
+pk_control_daemon_yield_async (PkControl *control,
+			       PkControlFlags flags,
+			       GCancellable *cancellable,
+			       GAsyncReadyCallback callback,
+			       gpointer user_data)
 {
 	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
@@ -657,17 +668,18 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 		g_task_report_error (control,
 				     callback,
 				     user_data,
-				     pk_control_suggest_daemon_quit_async,
+				     pk_control_daemon_yield_async,
 				     g_steal_pointer (&error));
 		return;
 	}
 
 	task = g_task_new (control, cancellable, callback, user_data);
-	g_task_set_source_tag (task, pk_control_suggest_daemon_quit_async);
+	g_task_set_source_tag (task, pk_control_daemon_yield_async);
+	g_task_set_task_data (task, GUINT_TO_POINTER (flags), NULL);
 
 	/* skip straight to the D-Bus method if already connection */
 	if (priv->proxy != NULL) {
-		pk_control_suggest_daemon_quit_internal (control, g_steal_pointer (&task));
+		pk_control_daemon_yield_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -676,30 +688,29 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 					  PK_DBUS_PATH,
 					  PK_DBUS_INTERFACE,
 					  priv->cancellable,
-					  pk_control_suggest_daemon_quit_proxy_cb,
+					  pk_control_daemon_yield_proxy_cb,
 					  g_steal_pointer (&task));
 	}
 }
 
 /**
- * pk_control_suggest_daemon_quit_finish:
+ * pk_control_daemon_yield_finish:
  * @control: a valid #PkControl instance
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
  * Gets the result from the asynchronous function.
  *
- * Returns: %TRUE if the suggestion was sent
+ * Returns: %TRUE if the daemon is making way
  *
- * Since: 0.6.2
+ * Since: 2.0.0
  **/
 gboolean
-pk_control_suggest_daemon_quit_finish (PkControl *control, GAsyncResult *res, GError **error)
+pk_control_daemon_yield_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 	g_return_val_if_fail (g_task_is_valid (res, control), FALSE);
-	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_suggest_daemon_quit_async),
-			      FALSE);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_daemon_yield_async), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	return g_task_propagate_boolean (G_TASK (res), error);

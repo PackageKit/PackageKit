@@ -70,6 +70,13 @@ Only when that is done, we initialize other libraries to send the message.
   timing out Tid request after a present number of seconds, and the effect can be
   limited with a config variable (SimultaneousTransactionsForUid).
 
+- A client could keep the system from ever being updated by calling
+  DaemonYield over and over, as it stops the waiting and background
+  transactions of every user and refuses new ones until the daemon has quit.
+  This is mitigated by requiring admin authentication for it
+  (org.freedesktop.packagekit.daemon-yield); native package managers that use
+  it run as root and do not need to ask.
+
 - Local DoS by repeatedly calling non-privileged methods such as Resolve and
   SearchName. This could be mitigated by limiting the number of requests per
   second for a certain seat, although no code has been written to do this at

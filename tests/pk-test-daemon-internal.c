@@ -2095,7 +2095,7 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	/* run a second (and exclusive!) action in parallel */
-	array = g_strsplit ("libawesome;42;i386;debian;", " ", -1);
+	array = g_strsplit ("libawesome;42;amd64;debian;", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (
@@ -2219,6 +2219,211 @@ pk_test_scheduler_parallel_func (void)
 	g_object_unref (db);
 }
 
+/* what the clients were told, by transaction ID */
+static GHashTable *yield_errors = NULL;
+static GHashTable *yield_exits = NULL;
+
+static void
+pk_test_scheduler_yield_signal_cb (GDBusConnection *connection,
+				   const gchar *sender_name,
+				   const gchar *object_path,
+				   const gchar *interface_name,
+				   const gchar *signal_name,
+				   GVariant *parameters,
+				   gpointer user_data)
+{
+	guint code;
+
+	if (g_strcmp0 (signal_name, "ErrorCode") == 0) {
+		g_variant_get (parameters, "(u&s)", &code, NULL);
+		g_hash_table_insert (yield_errors, g_strdup (object_path), GUINT_TO_POINTER (code));
+	} else if (g_strcmp0 (signal_name, "Finished") == 0) {
+		g_variant_get (parameters, "(uu)", &code, NULL);
+		g_hash_table_insert (yield_exits, g_strdup (object_path), GUINT_TO_POINTER (code));
+	}
+}
+
+static gboolean
+pk_test_scheduler_yield_tick_cb (gpointer user_data)
+{
+	return G_SOURCE_CONTINUE;
+}
+
+static void
+pk_test_scheduler_yield_wait_finished (const gchar *tid)
+{
+	gint64 deadline = g_get_monotonic_time () + 20 * G_USEC_PER_SEC;
+	guint tick_id = g_timeout_add (50, pk_test_scheduler_yield_tick_cb, NULL);
+
+	while (!g_hash_table_contains (yield_exits, tid)) {
+		g_assert_cmpint (g_get_monotonic_time (), <, deadline);
+		g_main_context_iteration (NULL, TRUE);
+	}
+	g_source_remove (tick_id);
+}
+
+static void
+pk_test_scheduler_yield_wait_started (PkTransaction *transaction)
+{
+	PkBackendJob *job = pk_transaction_get_backend_job (transaction);
+	gint64 deadline = g_get_monotonic_time () + 20 * G_USEC_PER_SEC;
+	guint tick_id = g_timeout_add (50, pk_test_scheduler_yield_tick_cb, NULL);
+
+	while (!pk_backend_job_get_started (job)) {
+		g_assert_cmpint (g_get_monotonic_time (), <, deadline);
+		g_main_context_iteration (NULL, TRUE);
+	}
+	g_source_remove (tick_id);
+}
+
+static void
+pk_test_scheduler_yield_func (void)
+{
+	gboolean ret;
+	guint subscription_id;
+	const gchar *search[] = { "power", NULL };
+	PkTransaction *transaction;
+	GError *error = NULL;
+	g_autofree gchar *tid_fg = NULL;
+	g_autofree gchar *tid_bg = NULL;
+	g_autofree gchar *tid_queued = NULL;
+	g_autofree gchar *tid_new = NULL;
+	g_autofree gchar *tid_auth = NULL;
+	const gchar *package_ids[] = { "libawesome;42;amd64;debian;", NULL };
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkScheduler) tlist = NULL;
+
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
+	ret = pk_transaction_db_load (db, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
+	backend = pk_backend_new (conf);
+	ret = pk_backend_load (backend, NULL);
+	g_assert_true (ret);
+
+	tlist = pk_scheduler_new (conf);
+	pk_scheduler_set_backend (tlist, backend);
+
+	/* listen to what the clients get to see */
+	yield_errors = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	yield_exits = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	g_assert_no_error (error);
+	subscription_id = g_dbus_connection_signal_subscribe (connection,
+							      NULL,
+							      PK_DBUS_INTERFACE_TRANSACTION,
+							      NULL,
+							      NULL,
+							      NULL,
+							      G_DBUS_SIGNAL_FLAGS_NONE,
+							      pk_test_scheduler_yield_signal_cb,
+							      NULL,
+							      NULL);
+
+	tid_fg = pk_test_scheduler_create_transaction (tlist);
+	tid_bg = pk_test_scheduler_create_transaction (tlist);
+	tid_queued = pk_test_scheduler_create_transaction (tlist);
+	tid_new = pk_test_scheduler_create_transaction (tlist);
+	tid_auth = pk_test_scheduler_create_transaction (tlist);
+
+	/* an exclusive foreground search runs, and a second one has to wait */
+	transaction = pk_scheduler_get_transaction (tlist, tid_fg);
+	pk_transaction_make_exclusive (transaction);
+	pk_transaction_search_names (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), search),
+	    NULL);
+	transaction = pk_scheduler_get_transaction (tlist, tid_queued);
+	pk_transaction_make_exclusive (transaction);
+	pk_transaction_search_names (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), search),
+	    NULL);
+	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_READY);
+
+	/* while a background search runs next to the first one; started
+	 * last, so the foreground ones do not cancel it */
+	transaction = pk_scheduler_get_transaction (tlist, tid_bg);
+	pk_backend_job_set_background (pk_transaction_get_backend_job (transaction), TRUE);
+	pk_transaction_search_names (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), search),
+	    NULL);
+
+	pk_test_scheduler_yield_wait_started (pk_scheduler_get_transaction (tlist, tid_fg));
+	pk_test_scheduler_yield_wait_started (pk_scheduler_get_transaction (tlist, tid_bg));
+	g_assert_true (pk_scheduler_is_busy (tlist));
+
+	pk_scheduler_yield (tlist);
+
+	/* the queued transaction never gets to run */
+	pk_test_scheduler_yield_wait_finished (tid_queued);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_errors, tid_queued)),
+			  ==,
+			  PK_ERROR_ENUM_DAEMON_YIELDED);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_exits, tid_queued)),
+			  ==,
+			  PK_EXIT_ENUM_CANCELLED);
+
+	/* and neither does anything that asks to run from now on */
+	transaction = pk_scheduler_get_transaction (tlist, tid_new);
+	pk_transaction_get_updates (transaction,
+				    g_variant_new ("(t)", pk_bitfield_value (PK_FILTER_ENUM_NONE)),
+				    NULL);
+	pk_test_scheduler_yield_wait_finished (tid_new);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_errors, tid_new)),
+			  ==,
+			  PK_ERROR_ENUM_DAEMON_YIELDED);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_exits, tid_new)),
+			  ==,
+			  PK_EXIT_ENUM_CANCELLED);
+
+	/* including what needs authorization, without asking the user first */
+	transaction = pk_scheduler_get_transaction (tlist, tid_auth);
+	pk_transaction_install_packages (
+	    transaction,
+	    g_variant_new ("(t^as)",
+			   pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE),
+			   package_ids),
+	    NULL);
+	pk_test_scheduler_yield_wait_finished (tid_auth);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_errors, tid_auth)),
+			  ==,
+			  PK_ERROR_ENUM_DAEMON_YIELDED);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_exits, tid_auth)),
+			  ==,
+			  PK_EXIT_ENUM_CANCELLED);
+
+	/* the background search is cancelled, and the client is told why
+	 * rather than what the backend reported */
+	pk_test_scheduler_yield_wait_finished (tid_bg);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_errors, tid_bg)),
+			  ==,
+			  PK_ERROR_ENUM_DAEMON_YIELDED);
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_exits, tid_bg)),
+			  ==,
+			  PK_EXIT_ENUM_CANCELLED);
+
+	/* while the foreground one completes */
+	pk_test_scheduler_yield_wait_finished (tid_fg);
+	g_assert_false (g_hash_table_contains (yield_errors, tid_fg));
+	g_assert_cmpuint (GPOINTER_TO_UINT (g_hash_table_lookup (yield_exits, tid_fg)),
+			  ==,
+			  PK_EXIT_ENUM_SUCCESS);
+	g_assert_false (pk_scheduler_is_busy (tlist));
+
+	g_dbus_connection_signal_unsubscribe (connection, subscription_id);
+	g_clear_pointer (&yield_errors, g_hash_table_unref);
+	g_clear_pointer (&yield_exits, g_hash_table_unref);
+	g_object_unref (db);
+}
+
 static void
 pk_test_backend_job_staged_files_func (void)
 {
@@ -2338,6 +2543,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/spawn-module", pk_test_spawn_module_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
+	g_test_add_func ("/packagekit/scheduler-yield", pk_test_scheduler_yield_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);
 	g_test_add_func ("/packagekit/proxy-store", pk_test_proxy_store_func);
 

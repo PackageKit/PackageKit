@@ -7,6 +7,7 @@
   <!--
     Policy definitions for PackageKit system actions.
     Copyright (c) 2007-2009 Richard Hughes <richard@hughsie.com>
+    Copyright (c) 2025-2026 Matthias Klumpp <matthias@tenstral.net>
   -->
 
   <vendor>The PackageKit Project</vendor>
@@ -21,6 +22,24 @@
      -->
     <description>Cancel foreign task</description>
     <message>Authentication is required to cancel a task that was not started by yourself</message>
+    <icon_name>package-x-generic</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.daemon-yield">
+    <!-- SECURITY:
+          - Used by native package managers that need the package database
+            for themselves. It stops the waiting and background tasks of all
+            users and refuses new ones until the daemon has quit. If this
+            action were available without authentication, any user could keep
+            the system from ever being updated.
+     -->
+    <description>Stop all software tasks and quit</description>
+    <message>Authentication is required to stop all pending package management tasks of all users and quit the management daemon</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -303,4 +322,3 @@
   </action>
 
 </policyconfig>
-

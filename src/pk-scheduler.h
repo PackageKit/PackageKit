@@ -49,7 +49,9 @@ gboolean       pk_scheduler_get_inhibited (PkScheduler *scheduler);
 PkTransaction *pk_scheduler_get_transaction (PkScheduler *scheduler,
 					     const gchar *tid);
 void	       pk_scheduler_cancel_background (PkScheduler *scheduler);
-void	       pk_scheduler_cancel_queued (PkScheduler *scheduler);
+void	       pk_scheduler_yield (PkScheduler *scheduler);
+gboolean       pk_scheduler_get_yielding (PkScheduler *scheduler);
+gboolean       pk_scheduler_is_busy (PkScheduler *scheduler);
 void	       pk_scheduler_set_backend (PkScheduler *scheduler,
 					 PkBackend   *backend);
 

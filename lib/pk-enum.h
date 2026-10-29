@@ -323,9 +323,11 @@ typedef enum {
  * PkErrorEnum:
  * @PK_ERROR_ENUM_UNKNOWN:
  * @PK_ERROR_ENUM_OOM: Out of memory
- * @PK_ERROR_ENUM_NO_NETWORK: No network access available
  * @PK_ERROR_ENUM_NOT_SUPPORTED: Request not supported
  * @PK_ERROR_ENUM_INTERNAL_ERROR: Undefined internal error
+ * @PK_ERROR_ENUM_DAEMON_YIELDED: Transaction was cancelled to make way for another tool
+ * @PK_ERROR_ENUM_LOCK_REQUIRED: Required lock not available
+ * @PK_ERROR_ENUM_NO_NETWORK: No network access available
  * @PK_ERROR_ENUM_GPG_FAILURE: GPG encryption failure
  * @PK_ERROR_ENUM_PACKAGE_ID_INVALID: Invalid package ID provided
  * @PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED: Requested package not installed
@@ -384,17 +386,19 @@ typedef enum {
  * @PK_ERROR_ENUM_CANNOT_FETCH_SOURCES: Cannot fetch sources
  * @PK_ERROR_ENUM_CANCELLED_PRIORITY: Cancelled due to higher priority task
  * @PK_ERROR_ENUM_UNFINISHED_TRANSACTION: Transaction unfinished
- * @PK_ERROR_ENUM_LOCK_REQUIRED: Required lock not available
  * @PK_ERROR_ENUM_REPO_ALREADY_SET:
+ *
  *
  * The error type
  **/
 typedef enum {
 	PK_ERROR_ENUM_UNKNOWN,
 	PK_ERROR_ENUM_OOM,
-	PK_ERROR_ENUM_NO_NETWORK,
 	PK_ERROR_ENUM_NOT_SUPPORTED,
 	PK_ERROR_ENUM_INTERNAL_ERROR,
+	PK_ERROR_ENUM_DAEMON_YIELDED,
+	PK_ERROR_ENUM_LOCK_REQUIRED,
+	PK_ERROR_ENUM_NO_NETWORK,
 	PK_ERROR_ENUM_GPG_FAILURE,
 	PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 	PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
@@ -453,7 +457,6 @@ typedef enum {
 	PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,
 	PK_ERROR_ENUM_CANCELLED_PRIORITY,
 	PK_ERROR_ENUM_UNFINISHED_TRANSACTION,
-	PK_ERROR_ENUM_LOCK_REQUIRED,
 	PK_ERROR_ENUM_REPO_ALREADY_SET,
 	/*< private >*/
 	PK_ERROR_ENUM_LAST

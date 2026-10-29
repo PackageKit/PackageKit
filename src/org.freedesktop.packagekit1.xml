@@ -204,12 +204,22 @@
 
     <!--*********************************************************************-->
     <!--
-      SuggestDaemonQuit:
+      DaemonYield:
 
-      Suggests to the daemon that it should quit as soon as possible, for
-      instance if a native package management tool is waiting to be used.
+      Asks the daemon to quit, for instance to make way for a native package
+      management tool that is waiting to be used. The daemon will quit as
+      soon as possible.
+
+      This stops the transactions of all users, so the caller needs the
+      `org.freedesktop.packagekit.daemon-yield` authorization. Transactions
+      that are waiting to run or for authorization, and running background
+      transactions the backend can cancel, finish with the
+      `daemon-yielded` error and the `cancelled` exit code. Running
+      foreground transactions are left to finish, and any transaction that
+      is asked to run until the daemon has quit is refused the same way.
+      The daemon quits once no transaction is running anymore.
     -->
-    <method name="SuggestDaemonQuit"/>
+    <method name="DaemonYield"/>
 
     <!--*********************************************************************-->
     <!--

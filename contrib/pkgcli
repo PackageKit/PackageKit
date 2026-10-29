@@ -43,7 +43,7 @@ __pkgcli_commandlist="
     offline-update
     install-sig
     repair
-    quit
+    yield
     repo-list
     repo-enable
     repo-disable

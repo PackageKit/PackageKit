@@ -86,6 +86,7 @@ struct _PkTransaction
 	guint download_size_remaining;
 	gboolean finished;
 	gboolean emitted_finished;
+	gboolean emitted_error_code;
 	gboolean allow_cancel;
 	gboolean waiting_for_auth;
 	gboolean emit_eula_required;
@@ -490,6 +491,7 @@ pk_transaction_error_code_emit (PkTransaction *transaction,
 				const gchar *details)
 {
 	g_debug ("emitting error-code %s, '%s'", pk_error_enum_to_string (error_enum), details);
+	transaction->emitted_error_code = TRUE;
 	g_dbus_connection_emit_signal (transaction->connection,
 				       NULL,
 				       transaction->tid,
@@ -591,6 +593,14 @@ pk_transaction_error_code_cb (PkBackendJob *job, PkError *item, PkTransaction *t
 	/* get data */
 	g_object_get (item, "code", &code, "details", &details, NULL);
 
+	/* clients are told about one error only, so if the daemon stopped the
+	 * transaction they get that reason and not what the backend made of it */
+	if (transaction->emitted_error_code) {
+		g_debug ("ignoring error %s, another one was already emitted",
+			 pk_error_enum_to_string (code));
+		return;
+	}
+
 	if (code == PK_ERROR_ENUM_UNKNOWN) {
 		g_warning ("%s emitted 'unknown error'",
 			   pk_role_enum_to_string (transaction->role));
@@ -618,6 +628,23 @@ pk_transaction_error_code_cb (PkBackendJob *job, PkError *item, PkTransaction *t
 		/* emit, as it is not the internally-handled LOCK_REQUIRED code */
 		pk_transaction_error_code_emit (transaction, code, details);
 	}
+}
+
+/**
+ * pk_transaction_daemon_error_emit:
+ *
+ * This is called by the daemon itself, in case it wants to cancel
+ * a pending transaction with an error.
+ */
+static void
+pk_transaction_daemon_error_emit (PkTransaction *transaction,
+				  PkErrorEnum error_enum,
+				  const gchar *details)
+{
+	g_autoptr(PkError) item = pk_error_new ();
+
+	g_object_set (item, "code", error_enum, "details", details, NULL);
+	pk_transaction_error_code_cb (transaction->job, item, transaction);
 }
 
 static void
@@ -1866,8 +1893,9 @@ pk_transaction_run (PkTransaction *transaction)
 	}
 
 	/* already cancelled? */
-	if (pk_backend_job_get_exit_code (transaction->job) == PK_EXIT_ENUM_CANCELLED) {
-		exit_status = pk_backend_job_get_exit_code (transaction->job);
+	exit_status = pk_backend_job_get_exit_code (transaction->job);
+	if (exit_status == PK_EXIT_ENUM_CANCELLED ||
+	    exit_status == PK_EXIT_ENUM_CANCELLED_PRIORITY) {
 		pk_transaction_finished_emit (transaction, exit_status, 0);
 		return TRUE;
 	}
@@ -2445,6 +2473,16 @@ struct AuthorizeActionsData
 static gboolean
 pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, GPtrArray *actions);
 
+static gboolean
+pk_transaction_refused_auth_idle_cb (gpointer user_data)
+{
+	g_autoptr(PkTransaction) transaction = PK_TRANSACTION (user_data);
+
+	pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+	pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
+	return G_SOURCE_REMOVE;
+}
+
 /**
  * pk_transaction_authorize_actions_finished_cb:
  *
@@ -2475,6 +2513,13 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		transaction->waiting_for_auth = FALSE;
 		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
+
+		/* failed with an error while the user was being asked for authorization */
+		if (transaction->emitted_error_code) {
+			pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_CANCELLED, 0);
+			goto out;
+		}
+
 		pk_transaction_error_code_emit (
 		    data->transaction,
 		    PK_ERROR_ENUM_NOT_AUTHORIZED,
@@ -2575,6 +2620,12 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 	/* set transaction state */
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_WAITING_FOR_AUTH);
+
+	/* stopped as the state changed, so there is nothing to ask for */
+	if (g_cancellable_is_cancelled (transaction->cancellable)) {
+		g_idle_add (pk_transaction_refused_auth_idle_cb, g_object_ref (transaction));
+		return TRUE;
+	}
 
 	/* check subject */
 	transaction->waiting_for_auth = TRUE;
@@ -2941,6 +2992,54 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
+/*
+ * pk_transaction_cancel_pending:
+ *
+ * Gets rid of a transaction that has not been handed to the backend yet.
+ *
+ * Return value: %FALSE if the backend has the transaction already
+ */
+static gboolean
+pk_transaction_cancel_pending (PkTransaction *transaction,
+			       PkErrorEnum error_enum,
+			       const gchar *details)
+{
+	/* same as pk_backend_job_error_code() does */
+	PkExitEnum exit_enum = error_enum == PK_ERROR_ENUM_CANCELLED_PRIORITY
+				   ? PK_EXIT_ENUM_CANCELLED_PRIORITY
+				   : PK_EXIT_ENUM_CANCELLED;
+
+	switch (transaction->state) {
+	case PK_TRANSACTION_STATE_NEW:
+	case PK_TRANSACTION_STATE_READY:
+		pk_transaction_daemon_error_emit (transaction, error_enum, details);
+		pk_transaction_finished_emit (transaction, exit_enum, 0);
+		return TRUE;
+	case PK_TRANSACTION_STATE_WAITING_FOR_AUTH:
+		/* the polkit callback would finish the transaction a second
+		 * time, so abort the check and let the callback finish it.
+		 * While the state is still changing the check has not been
+		 * started, and pk_transaction_authorize_actions() skips it */
+		pk_transaction_daemon_error_emit (transaction, error_enum, details);
+		g_cancellable_cancel (transaction->cancellable);
+		return TRUE;
+	case PK_TRANSACTION_STATE_RUNNING:
+		if (pk_backend_job_get_started (transaction->job))
+			return FALSE;
+
+		/* already being stopped */
+		if (pk_backend_job_get_exit_code (transaction->job) != PK_EXIT_ENUM_UNKNOWN)
+			return TRUE;
+
+		/* scheduled, but not run yet: pk_transaction_run() finishes it instead */
+		pk_transaction_daemon_error_emit (transaction, error_enum, details);
+		pk_backend_job_set_exit_code (transaction->job, exit_enum);
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
 void
 pk_transaction_cancel_bg (PkTransaction *transaction)
 {
@@ -2950,15 +3049,16 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	if (transaction->state == PK_TRANSACTION_STATE_FINISHED)
 		return;
 
+	/* if it's never been run, just remove this transaction from the list */
+	if (pk_transaction_cancel_pending (
+		transaction,
+		PK_ERROR_ENUM_CANCELLED_PRIORITY,
+		"Cancelled to make way for a task with a higher priority"))
+		return;
+
 	/* not implemented yet */
 	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_CANCEL)) {
 		g_warning ("Cancel not supported by backend");
-		return;
-	}
-
-	/* if it's never been run, just remove this transaction from the list */
-	if (transaction->state <= PK_TRANSACTION_STATE_READY) {
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
 		return;
 	}
 
@@ -2975,12 +3075,57 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	pk_backend_cancel (transaction->backend, transaction->job);
 }
 
+/**
+ * pk_transaction_yield:
+ *
+ * Stops the transaction because the daemon makes way for another package management tool.
+ * Anything that has not reached the backend yet is always stopped, running foreground
+ * transactions are left to finish, and running background ones are only stopped if the
+ * backend can cancel them.
+ **/
+void
+pk_transaction_yield (PkTransaction *transaction)
+{
+	const gchar
+	    *details = "PackageKit was asked to make way for another package management tool";
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+
+	if (transaction->emitted_finished)
+		return;
+
+	g_debug ("yielding %s", transaction->tid);
+	if (pk_transaction_cancel_pending (transaction, PK_ERROR_ENUM_DAEMON_YIELDED, details))
+		return;
+	if (transaction->state != PK_TRANSACTION_STATE_RUNNING)
+		return;
+
+	/* already being stopped */
+	if (pk_backend_job_get_exit_code (transaction->job) != PK_EXIT_ENUM_UNKNOWN)
+		return;
+
+	/* somebody is waiting for a foreground transaction, let it finish */
+	if (!pk_transaction_get_background (transaction))
+		return;
+	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_CANCEL)) {
+		g_debug ("cannot stop %s, the backend cannot cancel", transaction->tid);
+		return;
+	}
+
+	pk_transaction_daemon_error_emit (transaction, PK_ERROR_ENUM_DAEMON_YIELDED, details);
+	pk_backend_job_set_status (transaction->job, PK_STATUS_ENUM_CANCEL);
+	pk_backend_job_set_allow_cancel (transaction->job, FALSE);
+	pk_backend_job_set_exit_code (transaction->job, PK_EXIT_ENUM_CANCELLED);
+	pk_backend_cancel (transaction->backend, transaction->job);
+}
+
 static void
 pk_transaction_cancel (PkTransaction *transaction, GVariant *params, GDBusMethodInvocation *context)
 {
 	gboolean ret;
 	const gchar *sender;
 	guint uid;
+	g_autofree gchar *msg = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
@@ -2994,15 +3139,6 @@ pk_transaction_cancel (PkTransaction *transaction, GVariant *params, GDBusMethod
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_RUNNING,
 			     "Transaction is already finished");
-		goto out;
-	}
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_CANCEL)) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "Cancel not supported by backend");
 		goto out;
 	}
 
@@ -3062,13 +3198,16 @@ pk_transaction_cancel (PkTransaction *transaction, GVariant *params, GDBusMethod
 
 skip_uid:
 	/* if it's never been run, just remove this transaction from the list */
-	if (transaction->state <= PK_TRANSACTION_STATE_READY) {
-		g_autofree gchar *msg = NULL;
-		msg = g_strdup_printf ("%s was cancelled and was never run", transaction->tid);
-		pk_transaction_error_code_emit (transaction,
-						PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-						msg);
-		pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_CANCELLED, 0);
+	msg = g_strdup_printf ("%s was cancelled and was never run", transaction->tid);
+	if (pk_transaction_cancel_pending (transaction, PK_ERROR_ENUM_TRANSACTION_CANCELLED, msg))
+		goto out;
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_CANCEL)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "Cancel not supported by backend");
 		goto out;
 	}
 
@@ -5237,6 +5376,7 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	/* clear results */
 	g_object_unref (transaction->results);
 	transaction->results = pk_results_new ();
+	transaction->emitted_error_code = FALSE;
 
 	/* reset transaction state */
 	/* first set state manually, otherwise set_state will refuse to switch to an earlier stage */

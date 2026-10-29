@@ -192,6 +192,7 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UNFINISHED_TRANSACTION,	"unfinished-transaction"},
 	{PK_ERROR_ENUM_LOCK_REQUIRED,		"lock-required"},
 	{PK_ERROR_ENUM_REPO_ALREADY_SET,	"repo-already-set"},
+	{PK_ERROR_ENUM_DAEMON_YIELDED,		"daemon-yielded"},
 	{0, NULL}
 };
 

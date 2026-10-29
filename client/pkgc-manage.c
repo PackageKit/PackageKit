@@ -1039,12 +1039,12 @@ pkgc_repair (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 }
 
 /**
- * pkgc_suggest_quit:
+ * pkgc_yield:
  *
- * Suggest to safely stop the PackageKit daemon.
+ * Make the PackageKit daemon quit as soon as possible.
  */
 static gint
-pkgc_suggest_quit (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
+pkgc_yield (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_autoptr(GError) error = NULL;
@@ -1054,14 +1054,18 @@ pkgc_suggest_quit (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 	    ctx,
 	    cmd,
 	    NULL,
-	    /* TRANSLATORS: Description for pkgcli quit */
-	    _("Safely terminate the PackageKit daemon."));
+	    /* TRANSLATORS: Description for pkgcli yield */
+	    _("Cancel all queued package management tasks of all users and make the daemon quit as soon as the running tasks are done."));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
-	if (!pk_control_suggest_daemon_quit (ctx->control, ctx->cancellable, &error)) {
-		pkgc_print_error (ctx, _("Failed to send daemon quit request: %s"), error->message);
+	if (!pk_control_daemon_yield (ctx->control,
+				      ctx->noninteractive ? PK_CONTROL_FLAGS_NONE
+							  : PK_CONTROL_FLAGS_INTERACTIVE,
+				      ctx->cancellable,
+				      &error)) {
+		pkgc_print_error (ctx, _("Failed to make the daemon yield: %s"), error->message);
 		return PKGC_EXIT_FAILURE;
 	}
 
@@ -1141,8 +1145,8 @@ pkgc_register_manage_commands (PkgcliContext *ctx)
 
 	pkgc_context_register_command (
 	    ctx,
-	    "quit",
-	    pkgc_suggest_quit,
-	    /* TRANSLATORS: Description for quit command in pkgcli help */
-	    _("Safely stop the PackageKit daemon"));
+	    "yield",
+	    pkgc_yield,
+	    /* TRANSLATORS: Description for yield command in pkgcli help */
+	    _("Stop all pending tasks and quit the daemon"));
 }

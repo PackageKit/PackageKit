@@ -164,32 +164,43 @@ pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, 
 }
 
 /*
- * pk_control_suggest_daemon_quit_cb:
+ * pk_control_daemon_yield_cb:
  **/
 static void
-pk_control_suggest_daemon_quit_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
+pk_control_daemon_yield_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
 {
 	/* get the result */
-	helper->ret = pk_control_suggest_daemon_quit_finish (control, res, helper->error);
+	helper->ret = pk_control_daemon_yield_finish (control, res, helper->error);
 	g_main_loop_quit (helper->loop);
 }
 
 /**
- * pk_control_suggest_daemon_quit:
+ * pk_control_daemon_yield:
  * @control: a valid #PkControl instance
+ * @flags: #PkControlFlags for the call
  * @cancellable: a #GCancellable or %NULL
  * @error: A #GError or %NULL
  *
- * Suggests to the daemon that it should quit as soon as possible.
+ * Asks the daemon to make way for another package manager: it stops all
+ * pending and background work, refuses new transactions and quits as soon
+ * as running foreground transactions are done.
+ *
+ * This stops the transactions of all users, so the caller needs the
+ * org.freedesktop.packagekit.daemon-yield authorization. See the DaemonYield
+ * D-Bus method for what happens to the transactions.
+ *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.
  *
- * Return value: %TRUE if the suggestion was sent
+ * Return value: %TRUE if the daemon is making way
  *
- * Since: 0.6.2
+ * Since: 2.0.0
  **/
 gboolean
-pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, GError **error)
+pk_control_daemon_yield (PkControl *control,
+			 PkControlFlags flags,
+			 GCancellable *cancellable,
+			 GError **error)
 {
 	gboolean ret;
 	PkControlHelper helper;
@@ -206,11 +217,11 @@ pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, G
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_suggest_daemon_quit_async (
-	    control,
-	    cancellable,
-	    (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb,
-	    &helper);
+	pk_control_daemon_yield_async (control,
+				       flags,
+				       cancellable,
+				       (GAsyncReadyCallback) pk_control_daemon_yield_cb,
+				       &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;

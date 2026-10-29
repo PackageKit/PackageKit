@@ -384,12 +384,14 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>quit</command></term>
+        <term><command>yield</command></term>
         <listitem>
           <para>
-            Request the PackageKit daemon to terminate gracefully after
-            completing any ongoing operations. The daemon will restart
-            automatically when needed.
+            Request the PackageKit daemon to terminate, to ensure all package manager
+            locks are released (in case e.g. a native tool wants to take control).
+            All queued and background tasks of all users are canceled immediately,
+            new tasks are refused, and the daemon quits as soon as running foreground
+            tasks are done. The daemon will start again automatically when needed.
           </para>
         </listitem>
       </varlistentry>

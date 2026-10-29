@@ -92,6 +92,7 @@ struct _PkScheduler
 	GKeyFile *conf;
 	PkBackend *backend;
 	GDBusNodeInfo *introspection;
+	gboolean yielding; /* shutting down for another package management tool */
 };
 
 typedef struct
@@ -291,6 +292,14 @@ pk_scheduler_run_idle_cb (PkSchedulerItem *item)
 	return FALSE;
 }
 
+static gboolean
+pk_scheduler_yield_idle_cb (PkSchedulerItem *item)
+{
+	item->idle_id = 0;
+	pk_transaction_yield (item->transaction);
+	return G_SOURCE_REMOVE;
+}
+
 static void
 pk_scheduler_run_item (PkScheduler *scheduler, PkSchedulerItem *item)
 {
@@ -457,6 +466,15 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 	/* we've been 'used' */
 	g_clear_handle_id (&item->commit_id, g_source_remove);
 
+	/* nothing gets to run while we make way for another package manager.
+	 * We are called while the state of the transaction changes, so only
+	 * finish it once that is done */
+	if (scheduler->yielding) {
+		item->idle_id = g_idle_add ((GSourceFunc) pk_scheduler_yield_idle_cb, item);
+		g_source_set_name_by_id (item->idle_id, "[PkScheduler] yield");
+		return;
+	}
+
 	/* we will changed what is running */
 	g_signal_emit (scheduler, signals[PK_SCHEDULER_CHANGED], 0);
 
@@ -494,6 +512,11 @@ pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
 		pk_scheduler_remove (scheduler, pk_transaction_get_tid (transaction));
 		return;
 	}
+	/* do not ask the user for something we are going to refuse anyway */
+	if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH && scheduler->yielding) {
+		pk_transaction_yield (transaction);
+		return;
+	}
 	if (state == PK_TRANSACTION_STATE_READY) {
 		pk_scheduler_commit (scheduler, pk_transaction_get_tid (transaction));
 		return;
@@ -524,6 +547,15 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction, PkScheduler *s
 
 	if (pk_transaction_is_finished_with_lock_required (item->transaction)) {
 		pk_transaction_reset_after_lock_error (item->transaction);
+
+		/* no more tries while we make way for another package manager,
+		 * it is refused like any other transaction asking to run */
+		if (scheduler->yielding) {
+			item->idle_id = g_idle_add ((GSourceFunc) pk_scheduler_yield_idle_cb, item);
+			g_source_set_name_by_id (item->idle_id, "[PkScheduler] yield");
+			g_signal_emit (scheduler, signals[PK_SCHEDULER_CHANGED], 0);
+			return;
+		}
 
 		/* increase the number of tries */
 		item->tries++;
@@ -558,7 +590,7 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction, PkScheduler *s
 	}
 
 	/* try to run the next transaction, if possible */
-	item = pk_scheduler_get_next_item (scheduler);
+	item = scheduler->yielding ? NULL : pk_scheduler_get_next_item (scheduler);
 	if (item != NULL) {
 		g_debug ("running %s as previous one finished", item->tid);
 		pk_scheduler_run_item (scheduler, item);
@@ -778,27 +810,72 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
 	}
 }
 
+/**
+ * pk_scheduler_yield:
+ *
+ * Makes way for another package manager: everything that has not reached
+ * the backend yet is stopped, as are running background transactions if the
+ * backend can cancel them, and every transaction that asks to run from now
+ * on is refused. Running foreground transactions are left to finish.
+ **/
 void
-pk_scheduler_cancel_queued (PkScheduler *scheduler)
+pk_scheduler_yield (PkScheduler *scheduler)
 {
-	guint i;
-	GPtrArray *array;
-	PkSchedulerItem *item;
-	PkTransactionState state;
+	g_autoptr(GPtrArray) transactions = NULL;
 
 	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
 	g_return_if_fail (pk_is_thread_default ());
 
-	/* clear any pending transactions */
-	array = scheduler->array;
-	for (i = 0; i < array->len; i++) {
-		item = (PkSchedulerItem *) g_ptr_array_index (array, i);
-		state = pk_transaction_get_state (item->transaction);
-		if (state >= PK_TRANSACTION_STATE_RUNNING)
+	g_debug ("yielding, to allow an external package management tool to run");
+	scheduler->yielding = TRUE;
+
+	/* finishing transactions emits signals, so don't walk the list itself */
+	transactions = g_ptr_array_new_with_free_func (g_object_unref);
+	for (guint i = 0; i < scheduler->array->len; i++) {
+		PkSchedulerItem *item = g_ptr_array_index (scheduler->array, i);
+
+		/* not asked to do anything yet, it is refused once it is */
+		if (pk_transaction_get_state (item->transaction) == PK_TRANSACTION_STATE_NEW)
 			continue;
-		g_debug ("cancelling pending transaction %s", item->tid);
-		pk_transaction_cancel_bg (item->transaction);
+		g_ptr_array_add (transactions, g_object_ref (item->transaction));
 	}
+	for (guint i = 0; i < transactions->len; i++)
+		pk_transaction_yield (g_ptr_array_index (transactions, i));
+}
+
+/**
+ * pk_scheduler_get_yielding:
+ *
+ * Return value: %TRUE if pk_scheduler_yield() was called.
+ **/
+gboolean
+pk_scheduler_get_yielding (PkScheduler *scheduler)
+{
+	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+	return scheduler->yielding;
+}
+
+/**
+ * pk_scheduler_is_busy:
+ *
+ * Return value: %TRUE if any transaction is waiting for authorization, queued
+ * or running. Transactions that have not been asked to do anything yet do not
+ * count.
+ **/
+gboolean
+pk_scheduler_is_busy (PkScheduler *scheduler)
+{
+	g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+
+	for (guint i = 0; i < scheduler->array->len; i++) {
+		PkSchedulerItem *item = g_ptr_array_index (scheduler->array, i);
+		PkTransactionState state = pk_transaction_get_state (item->transaction);
+
+		if (state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH ||
+		    state == PK_TRANSACTION_STATE_READY || state == PK_TRANSACTION_STATE_RUNNING)
+			return TRUE;
+	}
+	return FALSE;
 }
 
 gchar **

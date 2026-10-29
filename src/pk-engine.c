@@ -67,12 +67,16 @@ static void pk_engine_refresh_reboot_required (PkEngine *engine);
 	"org.freedesktop.packagekit.trigger-offline-upgrade"
 #define PK_POLKIT_ACTION_CLEAR_OFFLINE_UPDATE "org.freedesktop.packagekit.clear-offline-update"
 
+/* polkit action guarding DaemonYield, which stops pending transactions for all users */
+#define PK_POLKIT_ACTION_DAEMON_YIELD "org.freedesktop.packagekit.daemon-yield"
+
 struct _PkEngine
 {
 	GObject parent;
 	GTimer *timer;
 	gboolean notify_clients_of_upgrade;
-	gboolean shutdown_as_soon_as_possible;
+	gboolean shutdown_when_convenient;
+	guint yield_quit_id;
 	PkScheduler *scheduler;
 	PkTransactionDb *transaction_db;
 	PkBackend *backend;
@@ -159,6 +163,37 @@ pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited)
 		pk_engine_uninhibit (engine);
 }
 
+static gboolean
+pk_engine_yield_quit_cb (gpointer user_data)
+{
+	PkEngine *engine = PK_ENGINE (user_data);
+	g_autoptr(GError) error = NULL;
+
+	engine->yield_quit_id = 0;
+
+	/* we are queued again once the scheduler changes */
+	if (pk_scheduler_is_busy (engine->scheduler))
+		return G_SOURCE_REMOVE;
+
+	/* clients should see their transactions end before we are gone */
+	if (engine->connection != NULL &&
+	    !g_dbus_connection_flush_sync (engine->connection, NULL, &error))
+		g_warning ("failed to flush the bus connection: %s", error->message);
+
+	g_debug ("yielded on explicit request, quitting");
+	g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
+	return G_SOURCE_REMOVE;
+}
+
+static void
+pk_engine_queue_yield_quit (PkEngine *engine)
+{
+	if (engine->yield_quit_id != 0)
+		return;
+	engine->yield_quit_id = g_idle_add (pk_engine_yield_quit_cb, engine);
+	g_source_set_name_by_id (engine->yield_quit_id, "[PkEngine] yield quit");
+}
+
 static void
 pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 {
@@ -180,6 +215,9 @@ pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 				       g_variant_new ("(^a&s)", transaction_list),
 				       NULL);
 	pk_engine_reset_timer (engine);
+
+	if (pk_scheduler_get_yielding (scheduler))
+		pk_engine_queue_yield_quit (engine);
 }
 
 static void
@@ -448,9 +486,9 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 		return G_MAXUINT;
 	}
 
-	/* do we need to shutdown quickly */
-	if (engine->shutdown_as_soon_as_possible) {
-		g_debug ("need to restart daemon asap");
+	/* do we need to restart once we are idle */
+	if (engine->shutdown_when_convenient) {
+		g_debug ("need to restart daemon when idle");
 		return G_MAXUINT;
 	}
 
@@ -815,8 +853,8 @@ pk_engine_conf_file_changed_cb (GFileMonitor *file_monitor,
 				PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
-	g_debug ("setting shutdown_as_soon_as_possible TRUE");
-	engine->shutdown_as_soon_as_possible = TRUE;
+	g_debug ("setting shutdown_when_convenient TRUE");
+	engine->shutdown_when_convenient = TRUE;
 }
 
 static void
@@ -1100,6 +1138,56 @@ pk_engine_daemon_get_property (GDBusConnection *connection_,
 	return NULL;
 }
 
+typedef struct
+{
+	GDBusMethodInvocation *invocation;
+	PkEngine *engine;
+} PkEngineQuitHelper;
+
+static void
+pk_engine_quit_helper_free (PkEngineQuitHelper *helper)
+{
+	g_object_unref (helper->engine);
+	g_object_unref (helper->invocation);
+	g_free (helper);
+}
+
+static void
+pk_engine_daemon_yield_auth_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	PkEngineQuitHelper *helper = (PkEngineQuitHelper *) user_data;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PolkitAuthorizationResult) result = NULL;
+
+	result = polkit_authority_check_authorization_finish (POLKIT_AUTHORITY (source),
+							      res,
+							      &error);
+	if (result == NULL) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "could not check for auth: %s",
+						       error->message);
+		pk_engine_quit_helper_free (helper);
+		return;
+	}
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "failed to obtain auth");
+		pk_engine_quit_helper_free (helper);
+		return;
+	}
+
+	/* stop what we can, refuse anything new and quit as soon as the
+	 * transactions we have to wait for are done */
+	pk_scheduler_yield (helper->engine->scheduler);
+	g_dbus_method_invocation_return_value (helper->invocation, NULL);
+	pk_engine_queue_yield_quit (helper->engine);
+	pk_engine_quit_helper_free (helper);
+}
+
 static void
 pk_engine_daemon_method_call (GDBusConnection *connection_,
 			      const gchar *sender,
@@ -1117,7 +1205,6 @@ pk_engine_daemon_method_call (GDBusConnection *connection_,
 	PkAuthorizeEnum result_enum;
 	PkEngine *engine = PK_ENGINE (user_data);
 	PkRoleEnum role;
-	guint size;
 	gboolean is_priority = TRUE;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *data = NULL;
@@ -1175,26 +1262,25 @@ pk_engine_daemon_method_call (GDBusConnection *connection_,
 		return;
 	}
 
-	if (g_strcmp0 (method_name, "SuggestDaemonQuit") == 0) {
+	if (g_strcmp0 (method_name, "DaemonYield") == 0) {
+		PkEngineQuitHelper *helper;
+		g_autoptr(PolkitSubject) subject = NULL;
 
-		/* attempt to kill background tasks */
-		pk_scheduler_cancel_queued (engine->scheduler);
-		pk_scheduler_cancel_background (engine->scheduler);
-
-		/* can we exit straight away */
-		size = pk_scheduler_get_size (engine->scheduler);
-		if (size == 0) {
-			g_debug ("emitting quit");
-			g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
-			g_dbus_method_invocation_return_value (invocation, NULL);
-			return;
-		}
-
-		/* This will wait from 0..10 seconds, depending on the status of
-		 * pk_main_timeout_check_cb() - usually it should be a few seconds
-		 * after the last transaction */
-		engine->shutdown_as_soon_as_possible = TRUE;
-		g_dbus_method_invocation_return_value (invocation, NULL);
+		/* this stops the transactions of every user and keeps anybody
+		 * from starting new ones, so only an admin may do it */
+		subject = polkit_system_bus_name_new (sender);
+		helper = g_new0 (PkEngineQuitHelper, 1);
+		helper->engine = g_object_ref (engine);
+		helper->invocation = g_object_ref (invocation);
+		polkit_authority_check_authorization (
+		    engine->authority,
+		    subject,
+		    PK_POLKIT_ACTION_DAEMON_YIELD,
+		    NULL,
+		    get_polkit_flags_for_dbus_invocation (invocation),
+		    NULL,
+		    pk_engine_daemon_yield_auth_cb,
+		    helper);
 		return;
 	}
 
@@ -1791,6 +1877,7 @@ pk_engine_finalize (GObject *object)
 		g_source_remove (engine->timeout_normal_id);
 		engine->timeout_normal_id = 0;
 	}
+	g_clear_handle_id (&engine->yield_quit_id, g_source_remove);
 
 	/* unlock if we locked this */
 	if (!pk_backend_unload (engine->backend))

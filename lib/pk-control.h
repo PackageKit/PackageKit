@@ -60,6 +60,20 @@ typedef enum {
 	PK_CONTROL_ERROR_CANNOT_START_DAEMON
 } PkControlError;
 
+/**
+ * PkControlFlags:
+ * @PK_CONTROL_FLAGS_NONE: No specific flag
+ * @PK_CONTROL_FLAGS_INTERACTIVE: Allow polkit to ask the user for authentication
+ *
+ * Flags for #PkControl methods.
+ *
+ * Since: 2.0.0
+ */
+typedef enum {
+	PK_CONTROL_FLAGS_NONE	     = 0,
+	PK_CONTROL_FLAGS_INTERACTIVE = 1 << 0
+} PkControlFlags;
+
 struct _PkControl
 {
 	GObject		  parent;
@@ -99,13 +113,14 @@ void		pk_control_get_tid_async (PkControl	     *control,
 gchar	       *pk_control_get_tid_finish (PkControl	*control,
 					   GAsyncResult *res,
 					   GError      **error);
-void		pk_control_suggest_daemon_quit_async (PkControl		 *control,
-						      GCancellable	 *cancellable,
-						      GAsyncReadyCallback callback,
-						      gpointer		  user_data);
-gboolean	pk_control_suggest_daemon_quit_finish (PkControl    *control,
-						       GAsyncResult *res,
-						       GError	   **error);
+void		pk_control_daemon_yield_async (PkControl	  *control,
+					       PkControlFlags	   flags,
+					       GCancellable	  *cancellable,
+					       GAsyncReadyCallback callback,
+					       gpointer		   user_data);
+gboolean	pk_control_daemon_yield_finish (PkControl    *control,
+						GAsyncResult *res,
+						GError	    **error);
 void		pk_control_get_daemon_state_async (PkControl	      *control,
 						   GCancellable	      *cancellable,
 						   GAsyncReadyCallback callback,
