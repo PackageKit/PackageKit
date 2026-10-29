@@ -698,8 +698,10 @@ get_polkit_flags_for_dbus_invocation (GDBusMethodInvocation *invocation)
 static gboolean
 pk_engine_proxy_setting_check (const gchar *name, const gchar *value, GError **error)
 {
+	auto value_len = pk_strlen (value, 1024);
+
 	/* blank is allowed and means unset */
-	if (pk_strlen (value, 1024) >= 1024) {
+	if (value_len >= 1024) {
 		g_set_error (error,
 			     PK_ENGINE_ERROR,
 			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
@@ -707,7 +709,7 @@ pk_engine_proxy_setting_check (const gchar *name, const gchar *value, GError **e
 			     name);
 		return FALSE;
 	}
-	if (value != NULL && !pk_check_string_safe (value, -1)) {
+	if (value != NULL && !pk_check_string_safe (value, value_len)) {
 		g_set_error (error,
 			     PK_ENGINE_ERROR,
 			     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
