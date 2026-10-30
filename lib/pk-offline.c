@@ -234,7 +234,7 @@ pk_offline_flags_to_gdbus_call_flags (PkOfflineFlags flags)
 }
 
 /**
- * pk_offline_cancel_with_flags:
+ * pk_offline_cancel:
  * @flags: bit-or of #PkOfflineFlags
  * @cancellable: A #GCancellable or %NULL
  * @error: A #GError or %NULL
@@ -274,7 +274,7 @@ pk_offline_cancel (PkOfflineFlags flags, GCancellable *cancellable, GError **err
 }
 
 /**
- * pk_offline_clear_results_with_flags:
+ * pk_offline_clear_results:
  * @flags: bit-or of #PkOfflineFlags
  * @cancellable: A #GCancellable or %NULL
  * @error: A #GError or %NULL
@@ -314,7 +314,7 @@ pk_offline_clear_results (PkOfflineFlags flags, GCancellable *cancellable, GErro
 }
 
 /**
- * pk_offline_trigger_with_flags:
+ * pk_offline_trigger:
  * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
  * @flags: bit-or of #PkOfflineFlags
  * @cancellable: A #GCancellable or %NULL
@@ -360,7 +360,7 @@ pk_offline_trigger (PkOfflineAction action,
 }
 
 /**
- * pk_offline_trigger_upgrade_with_flags:
+ * pk_offline_trigger_upgrade:
  * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
  * @flags: bit-or of #PkOfflineFlags
  * @cancellable: A #GCancellable or %NULL
