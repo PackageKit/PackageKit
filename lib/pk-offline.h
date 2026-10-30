@@ -99,30 +99,20 @@ GFileMonitor   *pk_offline_get_action_monitor (GCancellable *cancellable,
 					       GError	   **error);
 PkResults      *pk_offline_get_results (GError **error);
 guint64		pk_offline_get_results_mtime (GError **error);
-gboolean	pk_offline_cancel (GCancellable *cancellable,
-				   GError      **error);
-gboolean	pk_offline_cancel_with_flags (PkOfflineFlags flags,
-					      GCancellable  *cancellable,
-					      GError	   **error);
-gboolean	pk_offline_clear_results (GCancellable *cancellable,
-					  GError      **error);
-gboolean	pk_offline_clear_results_with_flags (PkOfflineFlags flags,
-						     GCancellable  *cancellable,
-						     GError	  **error);
+gboolean	pk_offline_cancel (PkOfflineFlags flags,
+				   GCancellable	 *cancellable,
+				   GError	**error);
+gboolean	pk_offline_clear_results (PkOfflineFlags flags,
+					  GCancellable	*cancellable,
+					  GError       **error);
 gboolean	pk_offline_trigger (PkOfflineAction action,
+				    PkOfflineFlags  flags,
 				    GCancellable   *cancellable,
 				    GError	  **error);
-gboolean	pk_offline_trigger_with_flags (PkOfflineAction action,
-					       PkOfflineFlags  flags,
-					       GCancellable   *cancellable,
-					       GError	     **error);
 gboolean	pk_offline_trigger_upgrade (PkOfflineAction action,
+					    PkOfflineFlags  flags,
 					    GCancellable   *cancellable,
 					    GError	  **error);
-gboolean	pk_offline_trigger_upgrade_with_flags (PkOfflineAction action,
-						       PkOfflineFlags  flags,
-						       GCancellable   *cancellable,
-						       GError	     **error);
 
 G_END_DECLS
 

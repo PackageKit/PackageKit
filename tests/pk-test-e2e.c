@@ -158,10 +158,10 @@ pk_test_offline_func (void)
 	g_assert_cmpstr (prepared_ids[0], ==, "powertop;1.8-1.fc8;i386;fedora;");
 
 	/* "unset" is not a way to arm (or later disarm) the trigger */
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_UNSET,
-					     PK_OFFLINE_FLAGS_INTERACTIVE,
-					     NULL,
-					     &error);
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_UNSET,
+				  PK_OFFLINE_FLAGS_INTERACTIVE,
+				  NULL,
+				  &error);
 	g_assert_nonnull (error);
 	g_assert_nonnull (strstr (error->message, "use Cancel"));
 	g_assert (!ret);
@@ -169,10 +169,10 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
 
 	/* trigger */
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
-					     PK_OFFLINE_FLAGS_INTERACTIVE,
-					     NULL,
-					     &error);
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT,
+				  PK_OFFLINE_FLAGS_INTERACTIVE,
+				  NULL,
+				  &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
@@ -182,20 +182,17 @@ pk_test_offline_func (void)
 	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_REBOOT);
 
 	/* changing the action of an armed trigger needs no authorization */
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_POWER_OFF,
-					     PK_OFFLINE_FLAGS_NONE,
-					     NULL,
-					     &error);
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_POWER_OFF, PK_OFFLINE_FLAGS_NONE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
 	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_POWER_OFF);
 
 	/* "unset" is not a way to disarm the trigger either */
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_UNSET,
-					     PK_OFFLINE_FLAGS_INTERACTIVE,
-					     NULL,
-					     &error);
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_UNSET,
+				  PK_OFFLINE_FLAGS_INTERACTIVE,
+				  NULL,
+				  &error);
 	g_assert_nonnull (error);
 	g_assert_nonnull (strstr (error->message, "use Cancel"));
 	g_assert (!ret);
@@ -205,10 +202,10 @@ pk_test_offline_func (void)
 
 	/* replacing the update with a system upgrade needs upgrade authorization
 	 * and a prepared upgrade; whichever is missing, the update stays armed */
-	ret = pk_offline_trigger_upgrade_with_flags (PK_OFFLINE_ACTION_REBOOT,
-						     PK_OFFLINE_FLAGS_NONE,
-						     NULL,
-						     &error);
+	ret = pk_offline_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT,
+					  PK_OFFLINE_FLAGS_NONE,
+					  NULL,
+					  &error);
 	g_assert_nonnull (error);
 	g_assert (!ret);
 	g_clear_error (&error);
@@ -216,7 +213,7 @@ pk_test_offline_func (void)
 	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_POWER_OFF);
 
 	/* cancel the trigger, which also drops the action */
-	ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+	ret = pk_offline_cancel (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));

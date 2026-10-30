@@ -848,10 +848,10 @@ pkgc_trigger_offline_update (PkgcliContext *ctx)
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
 
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
-					     PK_OFFLINE_FLAGS_INTERACTIVE,
-					     NULL,
-					     &error);
+	ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT,
+				  PK_OFFLINE_FLAGS_INTERACTIVE,
+				  NULL,
+				  &error);
 	if (!ret) {
 		pkgc_print_error (ctx, _("Failed to trigger offline update: %s"), error->message);
 		return PKGC_EXIT_FAILURE;
@@ -896,7 +896,7 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 	}
 
 	if (g_strcmp0 (request, "cancel") == 0) {
-		ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+		ret = pk_offline_cancel (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 		if (!ret) {
 			pkgc_print_error (ctx,
 					  _("Failed to cancel offline update: %s"), error->message);
