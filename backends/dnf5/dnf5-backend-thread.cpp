@@ -433,11 +433,12 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend(job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
 	PkRoleEnum role = pk_backend_job_get_role(job);
+	gboolean online = pk_backend_is_online(backend);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
 	// Update cache-only mode based on current network state
-	dnf5_update_network_state(priv, pk_backend_is_online(backend));
+	dnf5_update_network_state(priv, online);
 
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
@@ -446,7 +447,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			PkBitfield transaction_flags;
 			g_variant_get(params, "(t&su)", &transaction_flags, &distro_id, &upgrade_kind);
 			if (distro_id) {
-				dnf5_setup_base(priv, TRUE, TRUE, distro_id);
+				dnf5_setup_base(priv, TRUE, TRUE, distro_id, online);
 
 				g_debug("Checking repositories for system upgrade to %s:", distro_id);
 				// ... logging code ...
