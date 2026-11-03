@@ -125,6 +125,43 @@ dnf5_test_download_percentage_monotonic(void)
 }
 
 static void
+dnf5_test_download_cancelled(void)
+{
+	dnf5_test_job.reset();
+	Dnf5DownloadCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, FOO_ID, 200);
+	void *foo = cb.add_new_download(nullptr, FOO_NEVRA, 200);
+
+	g_assert_cmpint(cb.progress(foo, 200, 100), ==, libdnf5::repo::DownloadCallbacks::OK);
+	dnf5_test_assert_percentages({50});
+
+	// once the job is cancelled, all downloads get stopped without reporting more progress
+	dnf5_test_job.cancelled = true;
+	g_assert_cmpint(cb.progress(foo, 200, 150), ==, libdnf5::repo::DownloadCallbacks::ERROR);
+	dnf5_test_assert_percentages({50});
+}
+
+static void
+dnf5_test_error_cancelled(void)
+{
+	dnf5_test_job.reset();
+	dnf5_job_error_from_exception(
+		test_job,
+		std::runtime_error("Download interrupted"),
+		PK_ERROR_ENUM_TRANSACTION_ERROR);
+	g_assert_cmpuint(dnf5_test_job.error_codes.size(), ==, 1);
+	g_assert_cmpint(dnf5_test_job.error_codes.back(), ==, PK_ERROR_ENUM_TRANSACTION_ERROR);
+
+	// the aborted download of a cancelled job is reported as a cancellation
+	dnf5_test_job.cancelled = true;
+	dnf5_job_error_from_exception(
+		test_job,
+		std::runtime_error("Download interrupted"),
+		PK_ERROR_ENUM_TRANSACTION_ERROR);
+	g_assert_cmpint(dnf5_test_job.error_codes.back(), ==, PK_ERROR_ENUM_TRANSACTION_CANCELLED);
+}
+
+static void
 dnf5_test_download_failed(void)
 {
 	dnf5_test_job.reset();
@@ -590,6 +627,8 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/packages", dnf5_test_download_packages);
 	g_test_add_func("/dnf5/download/percentage-monotonic", dnf5_test_download_percentage_monotonic);
 	g_test_add_func("/dnf5/download/failed", dnf5_test_download_failed);
+	g_test_add_func("/dnf5/download/cancelled", dnf5_test_download_cancelled);
+	g_test_add_func("/dnf5/error/cancelled", dnf5_test_error_cancelled);
 	g_test_add_func("/dnf5/download/unknown-data", dnf5_test_download_unknown_data);
 	g_test_add_func("/dnf5/download/metadata", dnf5_test_download_metadata);
 	g_test_add_func("/dnf5/download/metadata-failed", dnf5_test_download_metadata_failed);
