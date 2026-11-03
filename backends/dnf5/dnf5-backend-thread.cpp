@@ -671,6 +671,18 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			trans.download();
 		}
 
+		// the job may have been cancelled after the last download progress
+		if (pk_backend_job_is_cancelled(job)) {
+			pk_backend_job_error_code(
+				job,
+				PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				"The transaction was cancelled");
+			if (base_config_dirty)
+				dnf5_setup_base(priv);
+			pk_backend_job_finished(job);
+			return;
+		}
+
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 			// Iterate over transaction items and report what the prepared transaction will do
 			g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
@@ -698,6 +710,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			pk_backend_job_finished(job);
 			return;
 		}
+
+		// an rpm transaction cannot be interrupted safely, so stop offering to cancel
+		pk_backend_job_set_allow_cancel(job, FALSE);
 
 		// libdnf5 checks the signatures and runs an rpm test transaction
 		// before any transaction callback is called

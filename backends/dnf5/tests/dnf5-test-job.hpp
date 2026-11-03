@@ -40,6 +40,9 @@ struct Dnf5TestJob {
 	std::vector<guint64> download_size_remaining;
 	std::vector<ItemProgress> item_progress;
 	std::vector<PackageStatus> package_statuses;
+	std::vector<PkErrorEnum> error_codes;
+	// what pk_backend_job_is_cancelled() returns
+	bool cancelled = false;
 
 	void reset();
 };
