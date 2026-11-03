@@ -7,9 +7,11 @@ described in the following URL:
 
 ## What to do if you're a backend
 
-- If the `transaction_flags` contain `PREPARE` then download all the
+- If the `transaction_flags` contain `only-download` then download all
   metadata and packages for the transaction, but don't actually apply
   the transaction.
+- If the `transaction_flags` contain `only-cache` then use only the
+  metadata and packages prepared earlier. Do not access the network.
 
 ## What to do if you're a frontend
 

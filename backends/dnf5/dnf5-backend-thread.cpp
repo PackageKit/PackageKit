@@ -408,17 +408,27 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend(job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
 	PkRoleEnum role = pk_backend_job_get_role(job);
+	PkBitfield transaction_flags = 0;
+	g_variant_get_child(params, 0, "t", &transaction_flags);
+	bool cache_only = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			gchar *upgrade_id = NULL;
-			PkBitfield transaction_flags;
 			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
 			if (upgrade_id) {
-				pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-				dnf5_setup_base(priv, TRUE, TRUE, upgrade_id, job);
+				pk_backend_job_set_status(
+					job,
+					cache_only ? PK_STATUS_ENUM_LOADING_CACHE : PK_STATUS_ENUM_REFRESH_CACHE);
+				dnf5_setup_base(
+					priv,
+					!cache_only,
+					!cache_only,
+					upgrade_id,
+					cache_only,
+					job);
 
 				g_debug("Checking repositories for system upgrade to %s:", upgrade_id);
 				// ... logging code ...
@@ -433,10 +443,12 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 						url_str.c_str());
 				}
 			}
+		} else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES && cache_only) {
+			pk_backend_job_set_status(job, PK_STATUS_ENUM_LOADING_CACHE);
+			dnf5_setup_base(priv, FALSE, FALSE, nullptr, TRUE, job);
 		}
 
 		libdnf5::Goal goal(*priv->base);
-		PkBitfield transaction_flags = 0;
 		// track whether we mutated the shared base config and thus must rebuild the base,
 		// so the change does not leak into later transactions.
 		bool base_config_dirty = false;
@@ -727,7 +739,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		// Post-transaction base re-initialization to ensure state consistency
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_LOADING_CACHE);
 		pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
-		dnf5_setup_base(priv);
+		dnf5_setup_base(priv, FALSE, FALSE, nullptr, cache_only);
 		if (res == libdnf5::base::Transaction::TransactionRunResult::SUCCESS)
 			pk_backend_job_set_percentage(job, 100);
 
@@ -736,7 +748,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		// we may have been interrupted after mutating the shared base, so rebuild it
 		// rather than leave the leftovers visible to the next transaction
 		try {
-			dnf5_setup_base(priv);
+			dnf5_setup_base(priv, FALSE, FALSE, nullptr, cache_only);
 		} catch (const std::exception &e2) {
 			g_warning("Unable to reset the package base after a failed transaction: %s", e2.what());
 		}
