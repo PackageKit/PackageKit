@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"PO-Revision-Date: 2026-09-13 21:51+0000\n"
+"PO-Revision-Date: 2026-11-03 19:54+0000\n"
 "Last-Translator: Yauhen <bugomol@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/translations/be/>\n"
 "Language: be\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 2026.10.dev0\n"
+"X-Generator: Weblate 2026.11.1.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -54,10 +54,8 @@ msgstr "Усталяванне абнаўленняў, гэта зойме не�
 
 #. TRANSLATORS: we've started doing an offline OS upgrade
 #: client/pk-offline-update.c:430
-#, fuzzy
-#| msgid "Installing system upgrade; this could take a while..."
 msgid "Installing operating system upgrade; this could take a while..."
-msgstr "Усталяванне абнаўленняў сістэмы, гэта зойме некаторы час..."
+msgstr "Усталяванне абнаўлення аперацыйнай сістэмы, гэта зойме некаторы час..."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -93,7 +91,7 @@ msgstr "Не выдаляць непатрэбныя залежнасці аўт
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Пры выдаленні пакетаў, таксама выдаляць захаваныя даныя (канфігурацыйныя файлы, базы даных і пад.)"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
@@ -105,16 +103,12 @@ msgid "SECONDS"
 msgstr "СЕКУНД"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Перазапусціце камп'ютар, каб завяршыць абнаўленне."
+msgstr "Каб завяршыць абнаўленне, перазапусціце сістэму."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Выйдзіце з сеанса і ўвайдзіце зноў, каб завяршыць абнаўленне."
+msgstr "Каб завяршыць абнаўленне, выйдзіце з сеанса і ўвайдзіце зноў."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
@@ -341,7 +335,7 @@ msgstr "Абнавіць пакеты"
 #. TRANSLATORS: Description for upgrade-os command in pkgcli help
 #: client/pkgc-manage.c:1112
 msgid "Upgrade the operating system to a new release"
-msgstr ""
+msgstr "Абнавіць аперацыйную сістэму да новай версіі"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1119
@@ -387,10 +381,8 @@ msgid "Monitor PackageKit bus events"
 msgstr "Назіранне за падзеямі шыны PackageKit"
 
 #: client/pkgc-query.c:127
-#, fuzzy
-#| msgid "There are no upgrades available at this time."
 msgid "There are no OS upgrades available."
-msgstr "У гэты час абнаўленняў няма."
+msgstr "Абнаўленняў аперацыйнай сістэмы няма."
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:256
@@ -508,10 +500,8 @@ msgstr "Паказаць якія пакеты патрабуюцца ўказа
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:924
-#, fuzzy
-#| msgid "List all available filters, groups and categories for package organization."
 msgid "List all available filters and groups for package organization."
-msgstr "Вывесці спіс усіх даступных фільтраў, груп і катэгорый для ўпарадкавання пакетаў."
+msgstr "Вывесці спіс усіх даступных фільтраў і груп для ўпарадкавання пакетаў."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:932
@@ -889,24 +879,18 @@ msgstr "Выдадзены:"
 
 #. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
 #: client/pkgc-util.c:1167
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade:"
-msgstr "Абнавіць сістэму"
+msgstr "Абнаўленне:"
 
 #. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
 #: client/pkgc-util.c:1173
-#, fuzzy
-#| msgid "Name"
 msgid "Name:"
-msgstr "Назва"
+msgstr "Назва:"
 
 #. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
 #: client/pkgc-util.c:1179
-#, fuzzy
-#| msgid "Repairing system"
 msgid "Operating system:"
-msgstr "Выпраўленне сістэмы"
+msgstr "Аперацыйная сістэма:"
 
 #. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
 #: client/pkgc-util.c:1189
@@ -2049,25 +2033,23 @@ msgstr "Наступныя пакеты ненадзейныя:"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:301
-#, fuzzy, c-format
-#| msgid "Reinstalled"
+#, c-format
 msgid "%u to install"
 msgid_plural "%u to install"
-msgstr[0] "Пераўсталяваны"
-msgstr[1] "Пераўсталяваны"
-msgstr[2] "Пераўсталяваны"
-msgstr[3] "Пераўсталяваны"
+msgstr[0] "%u усталюецца"
+msgstr[1] "%u усталюецца"
+msgstr[2] "%u усталюецца"
+msgstr[3] "%u усталюецца"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:305
-#, fuzzy, c-format
-#| msgid "Security"
+#, c-format
 msgid "%u to update"
 msgid_plural "%u to update"
-msgstr[0] "Бяспека"
-msgstr[1] "Бяспека"
-msgstr[2] "Бяспека"
-msgstr[3] "Бяспека"
+msgstr[0] "%u абновіцца"
+msgstr[1] "%u абновіцца"
+msgstr[2] "%u абновіцца"
+msgstr[3] "%u абновіцца"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:309
@@ -2081,30 +2063,28 @@ msgstr[3] ""
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
 #: lib/pk-task-text.c:314
-#, fuzzy, c-format
-#| msgid "Downgrade"
+#, c-format
 msgid "%u to downgrade"
 msgid_plural "%u to downgrade"
-msgstr[0] "Паніжэнне версіі"
-msgstr[1] "Паніжэнне версіі"
-msgstr[2] "Паніжэнне версіі"
-msgstr[3] "Паніжэнне версіі"
+msgstr[0] "%u панізяць версію"
+msgstr[1] "%u панізяць версію"
+msgstr[2] "%u панізяць версію"
+msgstr[3] "%u панізяць версію"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
 #: lib/pk-task-text.c:321
-#, fuzzy, c-format
-#| msgid "Reinstalled"
+#, c-format
 msgid "%u to reinstall"
 msgid_plural "%u to reinstall"
-msgstr[0] "Пераўсталяваны"
-msgstr[1] "Пераўсталяваны"
-msgstr[2] "Пераўсталяваны"
-msgstr[3] "Пераўсталяваны"
+msgstr[0] "%u пераўсталюецца"
+msgstr[1] "%u пераўсталюецца"
+msgstr[2] "%u пераўсталюецца"
+msgstr[3] "%u пераўсталюецца"
 
 #. TRANSLATORS: separator between the parts of the transaction summary
 #: lib/pk-task-text.c:327
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:439
