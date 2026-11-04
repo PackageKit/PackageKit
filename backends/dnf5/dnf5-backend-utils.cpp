@@ -195,7 +195,10 @@ void
 dnf5_job_error_from_exception(PkBackendJob *job, const std::exception &e, PkErrorEnum fallback)
 {
 	PkErrorEnum code = fallback;
-	if (dynamic_cast<const libdnf5::repo::RepoDownloadError *>(&e) != nullptr)
+	// a cancelled job aborts its downloads, which libdnf5 reports as a failure
+	if (pk_backend_job_is_cancelled(job))
+		code = PK_ERROR_ENUM_TRANSACTION_CANCELLED;
+	else if (dynamic_cast<const libdnf5::repo::RepoDownloadError *>(&e) != nullptr)
 		code = PK_ERROR_ENUM_CANNOT_FETCH_SOURCES;
 	else if (dynamic_cast<const libdnf5::repo::PackageDownloadError *>(&e) != nullptr)
 		code = PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED;
@@ -809,6 +812,13 @@ int
 Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, double downloaded)
 {
 	std::lock_guard<std::mutex> lock(mutex);
+
+	// Stop all package downloads as soon as the job is cancelled (ABORT would
+	// only stop this one and carry on with the next). Repository metadata keeps
+	// loading: interrupting it would leave a half loaded base behind.
+	if (!package_ids.empty() && pk_backend_job_is_cancelled(job))
+		return ERROR;
+
 	auto it = items.find(user_cb_data);
 	if (it == items.end())
 		return OK;
