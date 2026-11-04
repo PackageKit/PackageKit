@@ -142,6 +142,18 @@ dnf5_test_download_cancelled(void)
 }
 
 static void
+dnf5_test_download_metadata_not_cancelled(void)
+{
+	dnf5_test_job.reset();
+	dnf5_test_job.cancelled = true;
+	Dnf5DownloadCallbacks cb(test_job);
+	void *repo = cb.add_new_download(nullptr, "fedora", 100);
+
+	// repository metadata always finishes loading, so the base stays usable
+	g_assert_cmpint(cb.progress(repo, 100, 50), ==, libdnf5::repo::DownloadCallbacks::OK);
+}
+
+static void
 dnf5_test_error_cancelled(void)
 {
 	dnf5_test_job.reset();
@@ -628,6 +640,7 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/percentage-monotonic", dnf5_test_download_percentage_monotonic);
 	g_test_add_func("/dnf5/download/failed", dnf5_test_download_failed);
 	g_test_add_func("/dnf5/download/cancelled", dnf5_test_download_cancelled);
+	g_test_add_func("/dnf5/download/metadata-not-cancelled", dnf5_test_download_metadata_not_cancelled);
 	g_test_add_func("/dnf5/error/cancelled", dnf5_test_error_cancelled);
 	g_test_add_func("/dnf5/download/unknown-data", dnf5_test_download_unknown_data);
 	g_test_add_func("/dnf5/download/metadata", dnf5_test_download_metadata);

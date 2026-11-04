@@ -677,8 +677,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				job,
 				PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				"The transaction was cancelled");
-			if (base_config_dirty)
-				dnf5_setup_base(priv);
+			// like after running the transaction, as a system upgrade has
+			// set the base up for another release
+			dnf5_setup_base(priv);
 			pk_backend_job_finished(job);
 			return;
 		}
