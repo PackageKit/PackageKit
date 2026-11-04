@@ -123,6 +123,7 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_GET_HISTORY,		"get-history"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
+	{PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE,		"validate-offline-upgrade"},
 	{0, NULL}
 };
 
@@ -379,6 +380,7 @@ static const PkEnumMatch enum_transaction_flag[] = {
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL,	"allow-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,	"just-reinstall"},
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE,	"allow-downgrade"},
+	{PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE,		"only-cache"},
 	{0, NULL}
 };
 
@@ -1288,6 +1290,10 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Upgrading the system");
+		break;
+	case PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE:
+		/* TRANSLATORS: The role of the transaction, in present tense */
+		text = dgettext ("PackageKit", "Validating offline system upgrade");
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */

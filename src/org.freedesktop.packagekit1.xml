@@ -436,6 +436,10 @@
       If the system upgrade is already triggered, only the action is changed,
       which requires no authorization. If an offline update is triggered
       instead, it is replaced by the system upgrade.
+
+	  After authorization, backends that support offline upgrade validation are
+	  asked to test the prepared transaction before the upgrade is triggered.
+	  Backends without that capability retain the traditional trigger behavior.
     -->
     <method name="TriggerUpgrade">
       <arg type="s" name="action" direction="in"/>

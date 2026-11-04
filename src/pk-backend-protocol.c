@@ -262,6 +262,10 @@ pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **
 		FLAGS (bits);
 		json_object_set_new (root, "upgrade_id", json_string (s1));
 		break;
+	case PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE:
+		g_variant_get (params, "(&s)", &s1);
+		json_object_set_new (root, "upgrade_id", json_string (s1));
+		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		g_variant_get (params, "(t)", &bits);
 		FLAGS (bits);

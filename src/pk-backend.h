@@ -213,6 +213,9 @@ void	     pk_backend_upgrade_system (PkBackend    *backend,
 					PkBackendJob *job,
 					PkBitfield    transaction_flags,
 					const gchar  *upgrade_id);
+void	     pk_backend_validate_offline_upgrade (PkBackend    *backend,
+						  PkBackendJob *job,
+						  const gchar  *upgrade_id);
 void	     pk_backend_repair_system (PkBackend    *backend,
 				       PkBackendJob *job,
 				       PkBitfield    transaction_flags);

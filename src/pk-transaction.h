@@ -63,6 +63,7 @@ guint		   pk_transaction_get_uid (PkTransaction *transaction);
 void		   pk_transaction_set_backend (PkTransaction *transaction,
 					       PkBackend     *backend);
 PkBackendJob	  *pk_transaction_get_backend_job (PkTransaction *transaction);
+PkResults	  *pk_transaction_get_results (PkTransaction *transaction);
 PkTransactionState pk_transaction_get_state (PkTransaction *transaction);
 void		   pk_transaction_set_state (PkTransaction     *transaction,
 					     PkTransactionState state);
@@ -75,6 +76,8 @@ void		   pk_transaction_fail_after_lock_error (PkTransaction *transaction);
 void		   pk_transaction_make_exclusive (PkTransaction *transaction);
 void		   pk_transaction_skip_auth_checks (PkTransaction *transaction,
 						    gboolean	   skip_checks);
+void		   pk_transaction_validate_offline_upgrade (PkTransaction *transaction,
+							    const gchar	  *upgrade_id);
 
 G_END_DECLS
 

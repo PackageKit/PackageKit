@@ -50,6 +50,7 @@ void dnf5_setup_base(
 	gboolean refresh = FALSE,
 	gboolean force = FALSE,
 	const char *releasever = nullptr,
+	gboolean cache_only = FALSE,
 	PkBackendJob *job = nullptr);
 void dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force);
 void dnf5_job_error_from_exception(PkBackendJob *job, const std::exception &e, PkErrorEnum fallback);

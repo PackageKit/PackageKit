@@ -915,6 +915,13 @@ pk_transaction_get_backend_job (PkTransaction *transaction)
 	return transaction->job;
 }
 
+PkResults *
+pk_transaction_get_results (PkTransaction *transaction)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
+	return transaction->results;
+}
+
 /**
  * pk_transaction_is_finished_with_lock_required:
  **/
@@ -2171,6 +2178,11 @@ pk_transaction_run (PkTransaction *transaction)
 					   transaction->cached_transaction_flags,
 					   transaction->cached_value);
 		break;
+	case PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE:
+		pk_backend_validate_offline_upgrade (transaction->backend,
+						     transaction->job,
+						     transaction->cached_value);
+		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		pk_backend_repair_system (transaction->backend,
 					  transaction->job,
@@ -2953,11 +2965,24 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 	/* always set transaction exclusive for some actions (improves performance) */
 	if (role == PK_ROLE_ENUM_INSTALL_FILES || role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGES || role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    role == PK_ROLE_ENUM_UPGRADE_SYSTEM || role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
+	    role == PK_ROLE_ENUM_UPGRADE_SYSTEM || role == PK_ROLE_ENUM_REPAIR_SYSTEM ||
+	    role == PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE) {
 		pk_transaction_make_exclusive (transaction);
 	}
 
 	pk_transaction_emit_property_changed (transaction, "Role", g_variant_new_uint32 (role));
+}
+
+void
+pk_transaction_validate_offline_upgrade (PkTransaction *transaction, const gchar *upgrade_id)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (upgrade_id != NULL);
+	g_return_if_fail (transaction->state == PK_TRANSACTION_STATE_NEW);
+
+	transaction->cached_value = g_strdup (upgrade_id);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE);
+	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 }
 
 static void

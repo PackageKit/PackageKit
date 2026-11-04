@@ -1408,6 +1408,8 @@ typedef struct
 	PkEngineOfflineRole role;
 	PkOfflineAction action;
 	const gchar *action_id; /* polkit action being authorized */
+	gchar *sender;
+	gchar *validation_upgrade_id;
 } PkEngineOfflineAsyncHelper;
 
 static void
@@ -1415,6 +1417,8 @@ pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
 {
 	g_object_unref (helper->engine);
 	g_object_unref (helper->invocation);
+	g_free (helper->sender);
+	g_free (helper->validation_upgrade_id);
 	g_free (helper);
 }
 
@@ -1445,56 +1449,13 @@ pk_engine_offline_get_action_id_for_role (PkEngineOfflineRole role)
 }
 
 static void
-pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+pk_engine_offline_complete (PkEngineOfflineAsyncHelper *helper)
 {
-	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
 	PkOfflineAction action;
 	GVariant *prepared_upgrade;
 	gboolean ret;
 	g_autofree gchar *link = NULL;
-	g_autofree gchar *name = NULL;
-	g_autofree gchar *version = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GFile) file = NULL;
-	g_autoptr(PolkitAuthorizationResult) result = NULL;
-
-	/* finish the call */
-	result = polkit_authority_check_authorization_finish (POLKIT_AUTHORITY (source),
-							      res,
-							      &error);
-	if (result == NULL) {
-		g_dbus_method_invocation_return_error (helper->invocation,
-						       PK_ENGINE_ERROR,
-						       PK_ENGINE_ERROR_DENIED,
-						       "could not check for auth: %s",
-						       error->message);
-		pk_engine_offline_helper_free (helper);
-		return;
-	}
-
-	/* did not auth */
-	if (!polkit_authorization_result_get_is_authorized (result)) {
-		g_dbus_method_invocation_return_error (helper->invocation,
-						       PK_ENGINE_ERROR,
-						       PK_ENGINE_ERROR_DENIED,
-						       "failed to obtain auth");
-		pk_engine_offline_helper_free (helper);
-		return;
-	}
-
-	/* the trigger may have been changed by someone else while polkit was
-	 * being asked, so make sure the authorization we got still covers
-	 * what we are about to do */
-	if (g_strcmp0 (pk_engine_offline_get_action_id_for_role (helper->role),
-		       helper->action_id) != 0) {
-		g_dbus_method_invocation_return_error (
-		    helper->invocation,
-		    PK_ENGINE_ERROR,
-		    PK_ENGINE_ERROR_DENIED,
-		    "the offline trigger changed while waiting for authorization");
-		pk_engine_offline_helper_free (helper);
-		return;
-	}
 
 	switch (helper->role) {
 	case PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS:
@@ -1547,6 +1508,117 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 
 	g_dbus_method_invocation_return_value (helper->invocation, NULL);
 	pk_engine_offline_helper_free (helper);
+}
+
+static void
+pk_engine_offline_validate_upgrade_finished_cb (PkTransaction *transaction, gpointer user_data)
+{
+	PkEngineOfflineAsyncHelper *helper = user_data;
+	PkResults *results = pk_transaction_get_results (transaction);
+	PkExitEnum exit_code = pk_results_get_exit_code (results);
+
+	if (exit_code != PK_EXIT_ENUM_SUCCESS) {
+		g_autoptr(PkError) error_code = pk_results_get_error_code (results);
+		const gchar *details = error_code != NULL ? pk_error_get_details (error_code)
+							  : "the backend failed without details";
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_INVALID_STATE,
+						       "offline upgrade validation failed: %s",
+						       details);
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	pk_engine_offline_complete (helper);
+}
+
+static gboolean
+pk_engine_offline_validate_upgrade (PkEngineOfflineAsyncHelper *helper, GError **error)
+{
+	PkTransaction *transaction;
+	g_autofree gchar *tid = NULL;
+	g_autofree gchar *version = NULL;
+
+	if (!pk_offline_get_prepared_upgrade (NULL, &version, error))
+		return FALSE;
+
+	tid = pk_transaction_db_generate_id (helper->engine->transaction_db);
+	if (!pk_scheduler_create (helper->engine->scheduler, tid, helper->sender, error))
+		return FALSE;
+
+	helper->validation_upgrade_id = g_steal_pointer (&version);
+	transaction = pk_scheduler_get_transaction (helper->engine->scheduler, tid);
+	g_assert (transaction != NULL);
+	g_signal_connect_after (transaction,
+				"finished",
+				G_CALLBACK (pk_engine_offline_validate_upgrade_finished_cb),
+				helper);
+	pk_transaction_validate_offline_upgrade (transaction, helper->validation_upgrade_id);
+	return TRUE;
+}
+
+static void
+pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	PkEngineOfflineAsyncHelper *helper = (PkEngineOfflineAsyncHelper *) user_data;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PolkitAuthorizationResult) result = NULL;
+
+	/* finish the call */
+	result = polkit_authority_check_authorization_finish (POLKIT_AUTHORITY (source),
+							      res,
+							      &error);
+	if (result == NULL) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "could not check for auth: %s",
+						       error->message);
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	/* did not auth */
+	if (!polkit_authorization_result_get_is_authorized (result)) {
+		g_dbus_method_invocation_return_error (helper->invocation,
+						       PK_ENGINE_ERROR,
+						       PK_ENGINE_ERROR_DENIED,
+						       "failed to obtain auth");
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	/* the trigger may have been changed by someone else while polkit was
+	 * being asked, so make sure the authorization we got still covers
+	 * what we are about to do */
+	if (g_strcmp0 (pk_engine_offline_get_action_id_for_role (helper->role),
+		       helper->action_id) != 0) {
+		g_dbus_method_invocation_return_error (
+		    helper->invocation,
+		    PK_ENGINE_ERROR,
+		    PK_ENGINE_ERROR_DENIED,
+		    "the offline trigger changed while waiting for authorization");
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	if (helper->role == PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE &&
+	    pk_backend_is_implemented (helper->engine->backend,
+				       PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE)) {
+		if (!pk_engine_offline_validate_upgrade (helper, &error)) {
+			g_dbus_method_invocation_return_error (
+			    helper->invocation,
+			    PK_ENGINE_ERROR,
+			    PK_ENGINE_ERROR_INVALID_STATE,
+			    "could not validate offline upgrade: %s",
+			    error->message);
+			pk_engine_offline_helper_free (helper);
+		}
+		return;
+	}
+
+	pk_engine_offline_complete (helper);
 }
 
 static void
@@ -1657,6 +1729,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
 		helper->role = role;
+		helper->sender = g_strdup (sender);
 		helper->action_id = pk_engine_offline_get_action_id_for_role (role);
 		polkit_authority_check_authorization (
 		    engine->authority,
