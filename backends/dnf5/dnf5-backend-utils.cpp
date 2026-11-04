@@ -811,12 +811,14 @@ Dnf5DownloadCallbacks::update_progress()
 int
 Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, double downloaded)
 {
-	// stop all downloads as soon as the job is cancelled (ABORT would only
-	// stop this one and carry on with the next)
-	if (pk_backend_job_is_cancelled(job))
+	std::lock_guard<std::mutex> lock(mutex);
+
+	// Stop all package downloads as soon as the job is cancelled (ABORT would
+	// only stop this one and carry on with the next). Repository metadata keeps
+	// loading: interrupting it would leave a half loaded base behind.
+	if (!package_ids.empty() && pk_backend_job_is_cancelled(job))
 		return ERROR;
 
-	std::lock_guard<std::mutex> lock(mutex);
 	auto it = items.find(user_cb_data);
 	if (it == items.end())
 		return OK;
