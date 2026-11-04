@@ -145,7 +145,8 @@ Role-specific fields (package ids are `name;version;arch;origin;data`):
 | `repo-enable`                                                                              | `repo_id`, `enabled` (boolean)                                         |
 | `repo-set-data`                                                                            | `repo_id`, `parameter`, `value`                                        |
 | `repo-remove`                                                                              | `flags`, `repo_id`, `autoremove` (boolean)                             |
-| `upgrade-system`                                                                               | `flags`, `upgrade_id`                                                  |
+| `upgrade-system`                                                                           | `flags`, `upgrade_id`                                                  |
+| `validate-offline-upgrade`                                                                | `upgrade_id`                                                           |
 | `repair-system`                                                                            | `flags`                                                                |
 
 `files` names private copies the daemon made of the files the client sent

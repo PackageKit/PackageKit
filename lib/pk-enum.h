@@ -78,6 +78,7 @@ typedef struct
  * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
  * @PK_ROLE_ENUM_REPO_REMOVE: Remove repository
  * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade the operating system to a new release
+ * @PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE: Validate a prepared offline operating system upgrade
  *
  * What we were asked to do, this never changes for the lifetime of the
  * transaction.
@@ -113,11 +114,12 @@ typedef enum {
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
 	PK_ROLE_ENUM_GET_SYSTEM_UPGRADES,
 	PK_ROLE_ENUM_GET_HISTORY,
-	PK_ROLE_ENUM_REPAIR_SYSTEM,	/* Since: 0.7.2 */
-	PK_ROLE_ENUM_GET_DETAILS_LOCAL, /* Since: 0.8.17 */
-	PK_ROLE_ENUM_GET_FILES_LOCAL,	/* Since: 0.9.1 */
-	PK_ROLE_ENUM_REPO_REMOVE,	/* Since: 0.9.1 */
-	PK_ROLE_ENUM_UPGRADE_SYSTEM,	/* Since: 1.0.10 */
+	PK_ROLE_ENUM_REPAIR_SYSTEM,	       /* Since: 0.7.2 */
+	PK_ROLE_ENUM_GET_DETAILS_LOCAL,	       /* Since: 0.8.17 */
+	PK_ROLE_ENUM_GET_FILES_LOCAL,	       /* Since: 0.9.1 */
+	PK_ROLE_ENUM_REPO_REMOVE,	       /* Since: 0.9.1 */
+	PK_ROLE_ENUM_UPGRADE_SYSTEM,	       /* Since: 1.0.10 */
+	PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE, /* Since: 2.0.0 */
 	/*< private >*/
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
@@ -802,7 +804,7 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL, /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */
-	PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE,      /* Since: 2.0.0 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE,	  /* Since: 2.0.0 */
 	/*< private >*/
 	PK_TRANSACTION_FLAG_ENUM_LAST /* Since: 0.8.1 */
 } PkTransactionFlagEnum;

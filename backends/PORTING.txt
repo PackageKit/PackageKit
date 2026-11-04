@@ -41,6 +41,13 @@ Guide to porting backends from 1.x to 2.0
    looks up or calls the per-role pk_backend_foo() entry points; both
    pk_backend_run_job() and pk_backend_get_roles() are mandatory.
 
+ * Backends may implement PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE to validate a
+   prepared system upgrade when the authorized TriggerUpgrade call is made.
+   The operation receives the prepared upgrade ID, must use cached metadata and
+   packages only, may import required signing keys, and must test the package
+   transaction without applying it. Backends that omit the role retain the
+   traditional behavior of triggering the upgrade without validation.
+
  * pk_update_detail_new_full() takes one GPtrArray of PkIssue in place of the
    vendor_urls, bugzilla_urls and cve_urls arrays. Each PkIssue has a kind
    (generic tracker entry, CVE or advisory), a URL and an optional ID and

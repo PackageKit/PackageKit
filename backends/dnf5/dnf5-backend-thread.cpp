@@ -409,26 +409,26 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
 	PkRoleEnum role = pk_backend_job_get_role(job);
 	PkBitfield transaction_flags = 0;
-	g_variant_get_child(params, 0, "t", &transaction_flags);
-	bool cache_only = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE);
+	const gchar *upgrade_id = nullptr;
+	bool validate_offline_upgrade = role == PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE;
+	if (validate_offline_upgrade)
+		g_variant_get(params, "(&s)", &upgrade_id);
+	else
+		g_variant_get_child(params, 0, "t", &transaction_flags);
+	bool cache_only = validate_offline_upgrade
+			  || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
 	try {
-		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-			gchar *upgrade_id = NULL;
-			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
+		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM || validate_offline_upgrade) {
+			if (!validate_offline_upgrade)
+				g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
 			if (upgrade_id) {
 				pk_backend_job_set_status(
 					job,
 					cache_only ? PK_STATUS_ENUM_LOADING_CACHE : PK_STATUS_ENUM_REFRESH_CACHE);
-				dnf5_setup_base(
-					priv,
-					!cache_only,
-					!cache_only,
-					upgrade_id,
-					cache_only,
-					job);
+				dnf5_setup_base(priv, !cache_only, !cache_only, upgrade_id, cache_only, job);
 
 				g_debug("Checking repositories for system upgrade to %s:", upgrade_id);
 				// ... logging code ...
@@ -451,7 +451,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		libdnf5::Goal goal(*priv->base);
 		// track whether we mutated the shared base config and thus must rebuild the base,
 		// so the change does not leak into later transactions.
-		bool base_config_dirty = false;
+		bool base_config_dirty = validate_offline_upgrade;
 
 		if (role == PK_ROLE_ENUM_INSTALL_PACKAGES || role == PK_ROLE_ENUM_UPDATE_PACKAGES
 		    || role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
@@ -519,10 +519,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			base_config_dirty = true;
 			for (const auto &p : added)
 				goal.add_rpm_install(p.second);
-		} else if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-			const gchar *upgrade_id = NULL;
-			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
-
+		} else if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM || validate_offline_upgrade) {
 			// System upgrades require allowing erasure of packages (e.g. obsoletes)
 			// and downgrades if necessary to match repo versions.
 			goal.set_allow_erasing(true);
@@ -711,6 +708,34 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			return;
 		}
 
+		if (validate_offline_upgrade) {
+			pk_backend_job_set_status(job, PK_STATUS_ENUM_TEST_COMMIT);
+			pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
+			auto res = trans.test();
+			g_debug("Offline upgrade test result: %s",
+				libdnf5::base::Transaction::transaction_result_to_string(res).c_str());
+			if (res != libdnf5::base::Transaction::TransactionRunResult::SUCCESS) {
+				std::string msg;
+				for (const auto &p : trans.get_gpg_signature_problems())
+					msg += p + "; ";
+				for (const auto &p : trans.get_transaction_problems())
+					msg += p + "; ";
+				pk_backend_job_error_code(
+					job,
+					PK_ERROR_ENUM_TRANSACTION_ERROR,
+					"Offline upgrade validation failed: %s",
+					msg.empty()
+						? libdnf5::base::Transaction::transaction_result_to_string(res).c_str()
+						: msg.c_str());
+			}
+
+			// PackageKit continues running after TriggerUpgrade, so restore the
+			// normal release and online configuration before accepting more jobs.
+			dnf5_setup_base(priv);
+			pk_backend_job_finished(job);
+			return;
+		}
+
 		// libdnf5 checks the signatures and runs an rpm test transaction
 		// before any transaction callback is called
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_TEST_COMMIT);
@@ -748,7 +773,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		// we may have been interrupted after mutating the shared base, so rebuild it
 		// rather than leave the leftovers visible to the next transaction
 		try {
-			dnf5_setup_base(priv, FALSE, FALSE, nullptr, cache_only);
+			dnf5_setup_base(priv, FALSE, FALSE, nullptr, validate_offline_upgrade ? FALSE : cache_only);
 		} catch (const std::exception &e2) {
 			g_warning("Unable to reset the package base after a failed transaction: %s", e2.what());
 		}

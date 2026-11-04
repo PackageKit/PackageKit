@@ -808,6 +808,17 @@ pk_test_backend_protocol_func (void)
 	g_assert_nonnull (strstr (line, "\"sig_type\":\"gpg\""));
 	g_clear_pointer (&line, g_free);
 
+	/* request: offline upgrade validation carries only its prepared upgrade ID */
+	g_clear_object (&job);
+	job = pk_test_backend_protocol_job_new (conf);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(s)", "45"));
+	line = pk_backend_protocol_build_run (job, "9", &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (strstr (line, "\"role\":\"validate-offline-upgrade\""));
+	g_assert_nonnull (strstr (line, "\"upgrade_id\":\"45\""));
+	g_clear_pointer (&line, g_free);
+
 	/* request: a role without wire representation is refused */
 	g_clear_object (&job);
 	job = pk_test_backend_protocol_job_new (conf);

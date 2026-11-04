@@ -70,6 +70,7 @@ pk_backend_get_roles(PkBackend *backend)
 		PK_ROLE_ENUM_UPDATE_PACKAGES,
 		PK_ROLE_ENUM_REPAIR_SYSTEM,
 		PK_ROLE_ENUM_UPGRADE_SYSTEM,
+		PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE,
 		PK_ROLE_ENUM_REPO_ENABLE,
 		PK_ROLE_ENUM_REPO_REMOVE,
 		PK_ROLE_ENUM_REPO_SET_DATA,
@@ -226,6 +227,7 @@ pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
 	case PK_ROLE_ENUM_INSTALL_FILES:
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+	case PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE:
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
 		break;

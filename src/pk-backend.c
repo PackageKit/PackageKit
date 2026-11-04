@@ -1429,6 +1429,7 @@ pk_backend_upgrade_system (PkBackend *backend,
 			   const gchar *upgrade_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
@@ -1436,6 +1437,20 @@ pk_backend_upgrade_system (PkBackend *backend,
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(ts)", transaction_flags, upgrade_id));
+	backend->desc->run_job (backend, job);
+}
+
+void
+pk_backend_validate_offline_upgrade (PkBackend *backend, PkBackendJob *job, const gchar *upgrade_id)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (pk_is_thread_default ());
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_VALIDATE_OFFLINE_UPGRADE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(s)", upgrade_id));
 	backend->desc->run_job (backend, job);
 }
 

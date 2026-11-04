@@ -52,6 +52,7 @@ ROLE_ARGS = {
     'repo-set-data': ('repo_id', 'parameter', 'value'),
     'repo-remove': ('flags', 'repo_id', 'autoremove'),
     'upgrade-system': ('flags', 'upgrade_id'),
+    'validate-offline-upgrade': ('upgrade_id',),
     'repair-system': ('flags',),
 }
 
