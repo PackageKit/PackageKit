@@ -2402,12 +2402,13 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
                 errorLogTail.erase(0, errorLogTail.length() - 2048);
         }
 
+        // try to parse dpkg status (also once after the child terminated,
+        // to process the final hook events and failure status)
+        dpkgProgress.update(readFromChildFD[0], dpkgStatusFD[0], pty_master, &errorEmitted);
+
         // don't continue if the child terminated previously
         if (childTerminated)
             break;
-
-        // try to parse dpkg status
-        dpkgProgress.update(readFromChildFD[0], dpkgStatusFD[0], pty_master, &errorEmitted);
 
         // Check if the child died
         if (waitpid(m_child_pid, &ret, WNOHANG) != 0)
