@@ -30,7 +30,7 @@ class AptJob;
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
-    AcqPackageKitStatus(AptJob *apt);
+    AcqPackageKitStatus(AptJob *apt, bool reportDownloads = true);
 
     bool MediaChange(std::string Media, std::string Drive) override;
     void IMSHit(pkgAcquire::ItemDesc &Itm) override;
@@ -48,6 +48,7 @@ private:
 
     unsigned long m_lastPercent;
     double m_lastCPS;
+    bool m_reportDownloads;
 
     // what was reported for every item while refreshing, indexed by item ID - 1
     std::vector<bool> m_reportedItems;
