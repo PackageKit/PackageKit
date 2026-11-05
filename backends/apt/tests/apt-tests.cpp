@@ -1091,6 +1091,42 @@ static void apt_test_progress_error(void)
     g_assert_true(apt_test_job.percentages.empty());
 }
 
+static void apt_test_run_dpkg_error(void)
+{
+    AptTestRoot root("cache-progress");
+    AptJob job(nullptr);
+    g_assert_true(job.init());
+    TransactionRequest request;
+    request.remove.append(progress_test_package(job, "remove-small"));
+    // dpkg reports an error on its status fd and fails; the transaction must
+    // then fail instead of finishing with 100%.
+    fs::create_directories(root.root / "var/log/apt");
+    const fs::path fakeDpkg = root.root / "fake-dpkg";
+    // APT also calls dpkg for --assert-multi-arch and --set-selections; only the
+    // actual removal fails, reporting on the status fd that APT itself reads.
+    std::ofstream(fakeDpkg) << "#!/bin/bash\n"
+                               "prev=\n"
+                               "for arg; do\n"
+                               "  [ \"$prev\" = --status-fd ] && fd=$arg\n"
+                               "  case $arg in --remove|--purge) fail=1;; esac\n"
+                               "  prev=$arg\n"
+                               "done\n"
+                               "[ -n \"$fail\" ] || exit 0\n"
+                               "eval \"echo 'status: remove-small: error: Fixture failure' >&$fd\"\n"
+                               "exit 1\n";
+    fs::permissions(fakeDpkg, fs::perms::owner_all);
+    const std::string savedDpkg = _config->Find("Dir::Bin::dpkg");
+    _config->Set("Dir::Bin::dpkg", fakeDpkg.string());
+    apt_test_job.reset();
+    const bool result = job.runTransaction(request);
+    _config->Set("Dir::Bin::dpkg", savedDpkg);
+    g_assert_false(result);
+    g_assert_cmpuint(apt_test_job.errors.size(), ==, 1);
+    g_assert_cmpint(apt_test_job.errors[0], ==, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL);
+    g_assert_false(apt_test_job.percentages.empty());
+    g_assert_cmpuint(apt_test_job.percentages.back(), !=, 100);
+}
+
 static void apt_test_removal_without_download(void)
 {
     AptTestRoot root("cache-progress");
@@ -1222,6 +1258,7 @@ int main(int argc, char **argv)
     g_test_add_func("/apt/progress/zero-sizes", apt_test_progress_zero_sizes);
     g_test_add_func("/apt/progress/unplanned", apt_test_progress_unplanned);
     g_test_add_func("/apt/progress/error", apt_test_progress_error);
+    g_test_add_func("/apt/progress/run-dpkg-error", apt_test_run_dpkg_error);
     g_test_add_func("/apt/progress/removal-without-download", apt_test_removal_without_download);
     g_test_add_func("/apt/progress/cached-without-download", apt_test_cached_without_download);
     g_test_add_func("/apt/progress/file-repo-without-download", apt_test_file_repo_without_download);
