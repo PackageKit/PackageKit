@@ -2458,5 +2458,10 @@ bool AptJob::runDpkg(pkgPackageManager &PM)
         return false;
     }
 
+    // An error was already emitted while processing dpkg output: report failure
+    // so the caller doesn't report 100% completion afterwards.
+    if (errorEmitted && !m_cancel)
+        return false;
+
     return true;
 }
