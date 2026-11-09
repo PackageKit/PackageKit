@@ -50,7 +50,9 @@ void dnf5_setup_base(
 	gboolean refresh = FALSE,
 	gboolean force = FALSE,
 	const char *releasever = nullptr,
+	gboolean online = TRUE,
 	PkBackendJob *job = nullptr);
+void dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online);
 void dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force);
 void dnf5_job_error_from_exception(PkBackendJob *job, const std::exception &e, PkErrorEnum fallback);
 PkInfoEnum dnf5_advisory_kind_to_info_enum(const std::string &type);
