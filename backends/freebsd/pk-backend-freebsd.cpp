@@ -808,7 +808,8 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
     if (! (transaction_flags == 0
             || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)
             || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)
-            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)
+            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE))
         )
         g_error("%s: unexpected transaction_flags %s", context, pk_transaction_flag_bitfield_to_string(transaction_flags));
 
