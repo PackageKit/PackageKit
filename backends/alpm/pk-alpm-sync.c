@@ -207,8 +207,10 @@ pk_alpm_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		goto out;
 
 	if (p) {
-		i = alpm_get_syncdbs(priv->alpm);
-		pk_alpm_refresh_databases (job, TRUE, i, &error);
+		if (!pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE)) {
+			i = alpm_get_syncdbs(priv->alpm);
+			pk_alpm_refresh_databases (job, TRUE, i, &error);
+		}
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	}
 

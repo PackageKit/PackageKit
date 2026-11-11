@@ -789,6 +789,7 @@ typedef enum {
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL: Allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL: Only allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE: Allow packages to be downgraded
+ * @PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE: Use only cached metadata and packages
  *
  * The transaction flags that alter how the transaction is handled
  **/
@@ -801,6 +802,7 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL, /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE,      /* Since: 2.0.0 */
 	/*< private >*/
 	PK_TRANSACTION_FLAG_ENUM_LAST /* Since: 0.8.1 */
 } PkTransactionFlagEnum;

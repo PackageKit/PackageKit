@@ -836,6 +836,8 @@
       If this method is can only update trusted packages, and the packages are
       unsigned, then the backend will send a
       `ErrorCode(missing-gpg-signature)`.
+      With `only-cache`, the backend must use only previously cached metadata
+      and packages and must not access the network.
     -->
     <method name="UpdatePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -869,6 +871,7 @@
       UpgradeSystem:
       @transaction_flags: If this method can only install trusted packages, and the packages are unsigned, then the backend will send a `ErrorCode(missing-gpg-signature)`.
         With `only-download` the upgrade is only prepared, so that it can be applied offline later.
+        With `only-cache`, the prepared upgrade is applied without accessing the network.
       @upgrade_id: The ID of the upgrade to perform, as reported by `GetSystemUpgrades` in the `SystemUpgrade` signal, e.g. `fedora-42`.
 
       This method upgrades the operating system to a different release. It is
