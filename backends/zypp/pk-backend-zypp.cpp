@@ -2847,6 +2847,51 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 	pk_backend_job_update_details (job, update_details);
 }
 
+/**
+ * zypp_get_version_relation:
+ *
+ * Compares @solvable against every installed instance of the same package.
+ * Installing a package replaces any installed one with the same name,
+ * whatever its arch, so all installed arches are taken into account.
+ *
+ * Returns EQUAL_VERSION if any installed instance has the same edition,
+ * OLDER_VERSION if the highest installed edition is newer than @solvable
+ * (stored in @latest_installed), and NEWER_VERSION otherwise.
+ */
+static VersionRelation
+zypp_get_version_relation (const sat::Solvable &solvable, sat::Solvable *latest_installed)
+{
+	ui::Selectable::Ptr sel (ui::Selectable::get (solvable));
+	sat::Solvable latest = sat::Solvable::noSolvable;
+
+	if (!sel)
+		return NEWER_VERSION;
+
+	for_ (it, sel->installedBegin (), sel->installedEnd ()) {
+		sat::Solvable inst = it->satSolvable ();
+
+		if (inst.arch() != solvable.arch() && inst.arch() != "noarch" && solvable.arch() != "noarch")
+			continue;
+
+		gint ret = inst.edition ().compare (solvable.edition ());
+
+		if (ret == 0)
+			return EQUAL_VERSION;
+
+		if (ret > 0 &&
+		    (zypp_is_no_solvable (latest) ||
+		     latest.edition ().compare (inst.edition ()) < 0))
+			latest = inst;
+	}
+
+	if (zypp_is_no_solvable (latest))
+		return NEWER_VERSION;
+
+	if (latest_installed)
+		*latest_installed = latest;
+	return OLDER_VERSION;
+}
+
 static void
 backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2883,12 +2928,8 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 		for (guint i = 0; package_ids[i]; i++) {
 			MIL << package_ids[i] << endl;
-			g_auto(GStrv) split = NULL;
-			gint ret;
 			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_AVAILABLE);
-			sat::Solvable *inst_pkg = NULL;
-			sat::Solvable *latest_pkg = NULL;
-			vector<sat::Solvable> installed;
+			sat::Solvable latest_installed = sat::Solvable::noSolvable;
 
 			if (zypp_is_no_solvable(solvable)) {
 				// Previously stored package_id no longer matches any solvable.
@@ -2897,36 +2938,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 				return;
 			}
 
-			split = pk_package_id_split (package_ids[i]);
-			ui::Selectable::Ptr sel (ui::Selectable::get (ResKind::package,
-								      split[PK_PACKAGE_ID_NAME]));
-			if (sel && !sel->installedEmpty ()) {
-				for_ (it, sel->installedBegin (), sel->installedEnd ()) {
-					if (it->satSolvable ().arch ().compare (Arch (split[PK_PACKAGE_ID_ARCH])) == 0) {
-						installed.push_back ((it->satSolvable ()));
-					}
-				}
-			}
-
-			VersionRelation relation = NEWER_VERSION;
-
-			for (guint j = 0; j < installed.size (); j++) {
-				inst_pkg = &installed.at (j);
-				ret = inst_pkg->edition ().compare (Edition (split[PK_PACKAGE_ID_VERSION]));
-
-				if (ret < 0) {
-					relation = NEWER_VERSION;
-				} else if (relation != EQUAL_VERSION && ret > 0) {
-					relation = OLDER_VERSION;
-					if (!latest_pkg ||
-					    latest_pkg->edition ().compare (inst_pkg->edition ()) < 0) {
-						latest_pkg = inst_pkg;
-					}
-				} else if (ret == 0) {
-					relation = EQUAL_VERSION;
-					break;
-				}
-			}
+			VersionRelation relation = zypp_get_version_relation (solvable, &latest_installed);
 
 			if (relation == EQUAL_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
@@ -2937,16 +2949,17 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			if (relation == OLDER_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
 						  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
-				pk_backend_job_error_code (job,
-							   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
-							   "higher version \"%s\" of package %s.%s is already installed",
-							   latest_pkg ? latest_pkg->edition ().version ().c_str () : "<NULL>",
-							   split[PK_PACKAGE_ID_NAME],
-							   split[PK_PACKAGE_ID_ARCH]);
+				zypp_backend_finished_error (job,
+							     PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+							     "higher version \"%s\" of package %s.%s is already installed",
+							     latest_installed.edition ().asString ().c_str (),
+							     latest_installed.name ().c_str (),
+							     latest_installed.arch ().c_str ());
 				return;
 			}
 
-			if (relation != EQUAL_VERSION && installed.size() > 0 &&
+			ui::Selectable::Ptr sel (ui::Selectable::get (solvable));
+			if (relation != EQUAL_VERSION && sel && !sel->installedEmpty () &&
 			    pk_bitfield_contain (transaction_flags,
 						 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
 				pk_backend_job_error_code (job,
@@ -3552,6 +3565,7 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		return;
 	}
 
+	guint to_update = 0;
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i], PACKAGE_LOOKUP_AVAILABLE);
 
@@ -3567,13 +3581,37 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		PoolItem item(solvable);
 		// patches are special - they are not installed and can't have update candidates
 		if (sel->kind() != ResKind::patch) {
+			sat::Solvable latest_installed = sat::Solvable::noSolvable;
+			VersionRelation relation;
+
 			MIL << "sel " << sel->kind() << " " << sel->ident() << endl;
 			if (sel->installedEmpty()) {
-				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
+				zypp_backend_finished_error (job, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Package %s is not installed", package_ids[i]);
+				return;
+			}
+
+			relation = zypp_get_version_relation (solvable, &latest_installed);
+
+			if (relation == EQUAL_VERSION &&
+			    !pk_bitfield_contain (transaction_flags,
+						  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
+				continue;
+			}
+
+			if (relation == OLDER_VERSION &&
+			    !pk_bitfield_contain (transaction_flags,
+						  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
+				zypp_backend_finished_error (job,
+							     PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+							     "higher version \"%s\" of package %s.%s is already installed",
+							     latest_installed.edition ().asString ().c_str (),
+							     latest_installed.name ().c_str (),
+							     latest_installed.arch ().c_str ());
 				return;
 			}
 		}
 
+		to_update++;
 		item.status ().setToBeInstalled (ResStatus::USER);
 		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
 		zypp_check_restart (&restart, patch);
@@ -3583,7 +3621,17 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 	}
 
-	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
+	if (!to_update) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED,
+			"The packages are already all installed");
+		return;
+	}
+
+	if (!zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags))
+		return;
+
+	pk_backend_job_set_percentage (job, 100);
 }
 
 static void
