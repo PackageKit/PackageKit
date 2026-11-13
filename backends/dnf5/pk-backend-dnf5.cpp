@@ -22,6 +22,7 @@
 #include "dnf5-backend-thread.hpp"
 #include <pk-common-private.h>
 #include <pk-debug.h>
+#include <gio/gio.h>
 
 // Backend API Implementation
 
@@ -152,7 +153,12 @@ pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 	}
 
 	try {
-		dnf5_setup_base(priv);
+		dnf5_setup_base(
+			priv,
+			FALSE,
+			FALSE,
+			nullptr,
+			g_network_monitor_get_network_available(g_network_monitor_get_default()));
 		g_signal_connect(backend, "updates-changed", G_CALLBACK(pk_backend_context_invalidate_cb), backend);
 	} catch (const std::exception &e) {
 		g_warning("Init failed: %s", e.what());

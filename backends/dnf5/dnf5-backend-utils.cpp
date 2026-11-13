@@ -75,7 +75,13 @@ dnf5_releasever_is_valid(const char *releasever)
 }
 
 void
-dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, PkBackendJob *job)
+dnf5_setup_base(
+	PkBackendDnf5Private *priv,
+	gboolean refresh,
+	gboolean force,
+	const char *releasever,
+	gboolean online,
+	PkBackendJob *job)
 {
 	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
 		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
@@ -137,6 +143,13 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 		config.get_assumeyes_option().set(libdnf5::Option::Priority::COMMANDLINE, true);
 	}
 
+	// online defaults to TRUE. Only change the configuration if the caller passed FALSE
+	if (!online) {
+		// When offline, use cache-only mode to avoid network errors
+		g_debug("Using cache-only mode (not refreshing metadata)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
+	}
+
 	priv->base->setup();
 
 	// Ensure releasever is set AFTER setup() because setup() might run auto-detection and overwrite it.
@@ -184,9 +197,22 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 }
 
 void
+dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online)
+{
+	auto &config = priv->base->get_config();
+	if (online) {
+		g_debug("Clearing cache-only mode (online)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "none");
+	} else {
+		g_debug("Setting cache-only mode (offline)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
+	}
+}
+
+void
 dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force)
 {
-	dnf5_setup_base(priv, TRUE, force, nullptr, job);
+	dnf5_setup_base(priv, TRUE, force, nullptr, TRUE, job);
 }
 
 // Download failures get their own codes so the daemon can report "no network"
