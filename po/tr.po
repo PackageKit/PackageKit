@@ -14,20 +14,21 @@
 # Emir <bitigchi@me.com>, 2025.
 # Oğuz Ersen <oguz@ersen.moe>, 2026.
 # Oğuz Ersen <ersen@users.noreply.hosted.weblate.org>, 2026.
+# Emir <bitigchi@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"PO-Revision-Date: 2026-10-19 11:12+0000\n"
-"Last-Translator: Oğuz Ersen <ersen@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-11-13 05:51+0000\n"
+"Last-Translator: Emir <bitigchi@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/packagekit/translations/tr/>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.11.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -50,12 +51,12 @@ msgstr "Güncellemeler Kuruluyor"
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
-msgstr "Güncellemeler kuruldu, bilgisayar yeniden başlatılıyor…"
+msgstr "Güncellemeler kuruldu; bilgisayar yeniden başlatılıyor…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:246
 msgid "Shutting down after installing updates…"
-msgstr "Güncellemeler kurulduktan sonra kapatılıyor…"
+msgstr "Güncellemeler kuruldu; sistem kapatılıyor…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:392
@@ -64,10 +65,8 @@ msgstr "Güncellemeler kuruluyor; bu, biraz vakit alabilir…"
 
 #. TRANSLATORS: we've started doing an offline OS upgrade
 #: client/pk-offline-update.c:430
-#, fuzzy
-#| msgid "Installing system upgrade; this could take a while..."
 msgid "Installing operating system upgrade; this could take a while..."
-msgstr "Sistem yükseltmesi kuruluyor; bu, biraz vakit alabilir…"
+msgstr "İşletim sistemi yükseltmesi kuruluyor; bu, biraz vakit alabilir…"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -210,6 +209,9 @@ msgid ""
 "The available upgrade IDs are shown by `list-os-upgrades`.\n"
 "This command does not update packages within the current release, use `update` for that."
 msgstr ""
+"Verilen güncelleme kimliği ile işletim sistemi güncel yayıma yükseltiliyor.\n"
+"Kullanılabilir güncelleme kimliklerine `list-os-upgrades` ile erişilebilir.\n"
+"Bu komut, geçerli yayımdaki paketleri güncellemez; bunun için `update` kullanın."
 
 #: client/pkgc-manage.c:750
 #, c-format
@@ -347,7 +349,7 @@ msgstr "Paketleri güncelle"
 #. TRANSLATORS: Description for upgrade-os command in pkgcli help
 #: client/pkgc-manage.c:1112
 msgid "Upgrade the operating system to a new release"
-msgstr ""
+msgstr "İşletim sistemi yeni bir yayıma yükseltiliyor"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1119
@@ -393,10 +395,8 @@ msgid "Monitor PackageKit bus events"
 msgstr "PackageKit veri yolu olaylarını izle"
 
 #: client/pkgc-query.c:127
-#, fuzzy
-#| msgid "There are no upgrades available at this time."
 msgid "There are no OS upgrades available."
-msgstr "Şimdilik yükseltme yok."
+msgstr "Şu anda kullanılabilir işletim sistemi yükseltmesi bulunmuyor."
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:256
@@ -428,7 +428,7 @@ msgstr "Roller: %s"
 #. TRANSLATORS: Option of pkgcli history
 #: client/pkgc-query.c:335
 msgid "Show all details of every transaction"
-msgstr ""
+msgstr "Her bir işlemin tüm ayrıntılarını göster"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:346
@@ -530,7 +530,7 @@ msgstr "Gruplar:"
 #. TRANSLATORS: Description for pkgcli list-os-upgrades
 #: client/pkgc-query.c:967
 msgid "List the operating system releases this system can be upgraded to."
-msgstr ""
+msgstr "Bu sistemin yükseltilebileceği tüm işletim sistemi yayımlarını listele."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -625,10 +625,8 @@ msgstr "Kullanılabilir süzgeçleri ve grupları listele"
 
 #. TRANSLATORS: Description for list-os-upgrades command in pkgcli help
 #: client/pkgc-query.c:1173
-#, fuzzy
-#| msgid "Getting system upgrades"
 msgid "List available operating system upgrades"
-msgstr "Sistem yükseltmeleri alınıyor"
+msgstr "Kullanılabilir işletim sistemi yükseltmelerini listele"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1180
@@ -888,50 +886,38 @@ msgstr "Çıkış:"
 
 #. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
 #: client/pkgc-util.c:1167
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade:"
-msgstr "Sistemi yükselt"
+msgstr "Yükselt:"
 
 #. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
 #: client/pkgc-util.c:1173
-#, fuzzy
-#| msgid "Name"
 msgid "Name:"
-msgstr "Ad"
+msgstr "Ad:"
 
 #. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
 #: client/pkgc-util.c:1179
-#, fuzzy
-#| msgid "Repairing system"
 msgid "Operating system:"
-msgstr "Sistem onarılıyor"
+msgstr "İşletim sistemi:"
 
 #. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
 #: client/pkgc-util.c:1189
 msgid "Kind:"
-msgstr ""
+msgstr "Tür:"
 
 #. TRANSLATORS: Label for the download size of an OS upgrade
 #: client/pkgc-util.c:1195
-#, fuzzy
-#| msgid "Download Size:"
 msgid "Download size:"
 msgstr "İndirme boyutu:"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1282
-#, fuzzy
-#| msgid "Enabled"
 msgid "enabled"
-msgstr "Etkin"
+msgstr "etkin"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1285
-#, fuzzy
-#| msgid "Disabled"
 msgid "disabled"
-msgstr "Devre dışı"
+msgstr "devre dışı"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1401
@@ -994,19 +980,17 @@ msgstr "Etkilenen paketler:"
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1506
 msgid "Date"
-msgstr ""
+msgstr "Tarih"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1508
 msgid "Action"
-msgstr ""
+msgstr "Eylem"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1511
-#, fuzzy
-#| msgid "Package"
 msgid "Packages"
-msgstr "Paket"
+msgstr "Paketler"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1513
@@ -1015,10 +999,8 @@ msgstr "Süre"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1515
-#, fuzzy
-#| msgid "User ID"
 msgid "User"
-msgstr "Kullanıcı kimliği"
+msgstr "Kullanıcı"
 
 #: client/pkgc-util.c:1646
 msgid "More than one package matches:"
@@ -1377,10 +1359,8 @@ msgstr "Yazılım indirmek üzere vekil sunucuyu ayarlamak için kimlik doğrula
 #. system to a new release as this can make the system unbootable or
 #. stop other applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:233
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrade the operating system"
-msgstr "Sistemi yükselt"
+msgstr "İşletim sistemini yükselt"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:234
 msgid "Authentication is required to upgrade the operating system"
@@ -1889,10 +1869,8 @@ msgstr "İşlem geçmişi alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1289
-#, fuzzy
-#| msgid "Upgrade the system"
 msgid "Upgrading the system"
-msgstr "Sistemi yükselt"
+msgstr "Sistem yükseltiliyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1293
@@ -1987,10 +1965,8 @@ msgstr "Antlaşma kabul edilmedi."
 
 #. TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too
 #: lib/pk-task-text.c:216
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "The following packages have to be removed, including their configuration files and data:"
-msgstr "Aşağıdaki paketler yeniden kurulmalıdır:"
+msgstr "Aşağıdaki paketler, yapılandırma dosyaları ve verileri de içerilmek üzere kaldırılmalıdırlar:"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/pk-task-text.c:219
@@ -2019,10 +1995,8 @@ msgstr "Aşağıdaki paketlerin eski sürümleri kurulmalıdır:"
 
 #. TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too
 #: lib/pk-task-text.c:245
-#, fuzzy
-#| msgid "The following packages have to be obsoleted:"
 msgid "The following packages have to be obsoleted, including their configuration files and data:"
-msgstr "Aşağıdaki paketler kullanılmamalıdır:"
+msgstr "Aşağıdaki paketler, yapılandırma dosyaları ve verileri de içerilmek üzere eskimiş olarak imlenmelidir:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/pk-task-text.c:248
@@ -2036,52 +2010,48 @@ msgstr "Aşağıdaki paketlere güvenilmiyor:"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:301
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to install"
 msgid_plural "%u to install"
-msgstr[0] "Yeniden kur"
-msgstr[1] "Yeniden kur"
+msgstr[0] "%u kurulacak"
+msgstr[1] "%u kurulacak"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:305
-#, fuzzy, c-format
-#| msgid "Security update"
+#, c-format
 msgid "%u to update"
 msgid_plural "%u to update"
-msgstr[0] "Güvenlik güncellemesi"
-msgstr[1] "Güvenlik güncellemesi"
+msgstr[0] "%u güncellenecek"
+msgstr[1] "%u güncellenecek"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:309
 #, c-format
 msgid "%u to remove"
 msgid_plural "%u to remove"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u kaldırılacak"
+msgstr[1] "%u kaldırılacak"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
 #: lib/pk-task-text.c:314
-#, fuzzy, c-format
-#| msgid "Downgrade"
+#, c-format
 msgid "%u to downgrade"
 msgid_plural "%u to downgrade"
-msgstr[0] "Düşür"
-msgstr[1] "Düşür"
+msgstr[0] "%u düşürülecek"
+msgstr[1] "%u düşürülecek"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
 #: lib/pk-task-text.c:321
-#, fuzzy, c-format
-#| msgid "Reinstall"
+#, c-format
 msgid "%u to reinstall"
 msgid_plural "%u to reinstall"
-msgstr[0] "Yeniden kur"
-msgstr[1] "Yeniden kur"
+msgstr[0] "%u yeniden kurulacak"
+msgstr[1] "%u yeniden kurulacak"
 
 #. TRANSLATORS: separator between the parts of the transaction summary
 #: lib/pk-task-text.c:327
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:439
