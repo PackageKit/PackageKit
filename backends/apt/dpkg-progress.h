@@ -19,20 +19,26 @@
 #pragma once
 
 #include <functional>
+#include <map>
+#include <set>
 #include <string>
 #include <sys/types.h>
 #include <time.h>
 
+#include <apt-pkg/install-progress.h>
+#include <pk-backend.h>
+#include "pkg-list.h"
+
 class AptJob;
 
 /**
- * Turns dpkg's --status-fd stream into PackageKit package progress, and uses APT's
- * progress stream for the overall percentage, errors and conffile prompts.
+ * Turns dpkg's --status-fd stream into package and size-weighted overall progress.
+ * APT's progress stream supplies errors, conffile prompts and a percentage fallback.
  */
 class DpkgProgress
 {
 public:
-    DpkgProgress(AptJob &job, pid_t childPid);
+    DpkgProgress(AptJob &job, pid_t childPid, const PkgList &packages);
 
     /**
      * Handle everything currently readable from the status fds.
@@ -47,6 +53,18 @@ private:
     void handleAptLine(const std::string &line, int writeFd, bool *errorEmitted);
     void handleDpkgLine(const std::string &line);
     void readLines(int fd, std::string &buffer, const std::function<void(const std::string &)> &handler);
+    void emitProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, unsigned int percentage);
+    void startHooks();
+
+    struct PackageProgress {
+        double share;
+        bool removing;
+        unsigned int percentage = 0;
+    };
+    std::map<unsigned int, PackageProgress> m_packages;
+    std::set<unsigned int> m_started;
+    std::set<unsigned int> m_unpacking;
+    bool m_runningHooks = false;
 
     AptJob &m_job;
     pid_t m_childPid;
@@ -60,4 +78,15 @@ private:
     bool m_startCounting;
     // when the internal terminal timesout after no activity
     int m_terminalTimeout;
+};
+
+/** Relay the start of APT's post-invoke hooks from the child to the job thread. */
+class AptInstallProgress : public APT::Progress::PackageManagerProgressFd
+{
+public:
+    explicit AptInstallProgress(int fd)
+        : PackageManagerProgressFd(fd)
+    {
+    }
+    void Stop() override;
 };
