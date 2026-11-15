@@ -75,7 +75,13 @@ dnf5_releasever_is_valid(const char *releasever)
 }
 
 void
-dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, PkBackendJob *job)
+dnf5_setup_base(
+	PkBackendDnf5Private *priv,
+	gboolean refresh,
+	gboolean force,
+	const char *releasever,
+	gboolean cache_only,
+	PkBackendJob *job)
 {
 	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
 		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
@@ -137,6 +143,10 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 		config.get_assumeyes_option().set(libdnf5::Option::Priority::COMMANDLINE, true);
 	}
 
+	if (cache_only) {
+		g_debug("Using only cached repository metadata and packages");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
+	}
 	priv->base->setup();
 
 	// Ensure releasever is set AFTER setup() because setup() might run auto-detection and overwrite it.
@@ -186,7 +196,7 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 void
 dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force)
 {
-	dnf5_setup_base(priv, TRUE, force, nullptr, job);
+	dnf5_setup_base(priv, TRUE, force, nullptr, FALSE, job);
 }
 
 // Download failures get their own codes so the daemon can report "no network"

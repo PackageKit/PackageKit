@@ -392,7 +392,7 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
 	results = pk_client_update_packages (PK_CLIENT (task),
-					     0,
+					     pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE),
 					     package_ids,
 					     NULL, /* GCancellable */
 					     pk_offline_update_progress_cb,
@@ -430,7 +430,7 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 	    _("Installing operating system upgrade; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
 	results = pk_client_upgrade_system (PK_CLIENT (task),
-					    0,
+					    pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_CACHE),
 					    version,
 					    NULL, /* GCancellable */
 					    pk_offline_update_progress_cb,
