@@ -63,7 +63,7 @@ static const gchar *pk_offline_file_paths[PK_OFFLINE_FILE_LAST] = {
 	[PK_OFFLINE_FILE_PREPARED]	   = "/var/lib/PackageKit/prepared-update",
 	[PK_OFFLINE_FILE_PREPARED_UPGRADE] = "/var/lib/PackageKit/prepared-upgrade",
 	[PK_OFFLINE_FILE_TRIGGER]	   = "/system-update",
-	[PK_OFFLINE_FILE_RESULTS]	   = "/var/lib/PackageKit/offline-update-competed",
+	[PK_OFFLINE_FILE_RESULTS]	   = "/var/lib/PackageKit/offline-update-completed",
 	[PK_OFFLINE_FILE_ACTION]	   = "/var/lib/PackageKit/offline-update-action",
 };
 /* clang-format on */

@@ -31,7 +31,7 @@ The `/var/lib/PackageKit/prepared-update` file will be automatically
 removed if the offline update succeeded, but the offline update will
 only be attempted once.
 
-The `/var/lib/PackageKit/offline-update-competed` file will be created
+The `/var/lib/PackageKit/offline-update-completed` file will be created
 once the `/usr/libexec/pk-offline-update` program has been run by
 systemd. For failure, the file will contain the following:
 
@@ -74,7 +74,7 @@ Packages=gimp;2.10.34-1.fc38;x86_64;updates,bash;5.2.15-3.fc38;x86_64;updates
 - Run `sudo PK_OFFLINE_UPDATE_TEST=1 /usr/libexec/pk-offline-update`
   and observe that the two updates are applied
 - Confirm that `/var/lib/PackageKit/prepared-update` has been deleted
-- Confirm that `/var/lib/PackageKit/offline-update-competed` exists,
+- Confirm that `/var/lib/PackageKit/offline-update-completed` exists,
   contains the 2 updated packages in "Packages" variable, and no error
   messages have been logged.
   \[You can also use `pkcon offline-status` to do the same thing\]
