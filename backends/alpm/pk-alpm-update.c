@@ -416,7 +416,14 @@ pk_alpm_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	// swap around the handles since the refresh database will grab
 	// the main system handle and not the check update handle otherwise
 	priv->alpm = handle;
-	pk_alpm_refresh_databases (job, TRUE, i, &error);
+	if (!pk_alpm_refresh_databases (job, TRUE, i, &error)) {
+		/* carry on with the databases we have, but make it visible: a
+		 * stale lock in the check dbpath would otherwise freeze the
+		 * reported updates without any trace */
+		g_warning ("failed to refresh the update check databases: %s",
+			   error->message);
+		g_clear_error (&error);
+	}
 	priv->alpm = old_handle;
 	priv->alpm_check = handle;
 
