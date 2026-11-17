@@ -8,30 +8,33 @@
 # Richard Hughes <richard@hughsie.com>, 2011
 # Thalia Papoutsaki <saliyath@gmail.com>, 2009
 # thanos <tomtryf@gmail.com>, 2014-2015
+# "Λευτέρης Τ." <lefteristr@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"Language-Team: Greek (http://app.transifex.com/freedesktop/packagekit/language/el/)\n"
+"Language-Team: Greek <https://hosted.weblate.org/projects/packagekit/translations/el/>\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"PO-Revision-Date: 2026-11-17 00:51+0000\n"
+"Last-Translator: \"Λευτέρης Τ.\" <lefteristr@users.noreply.hosted.weblate.org>\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing OS upgrades
 #: client/pk-offline-update.c:172
-#, fuzzy
 msgid "Installing System Upgrade"
-msgstr "Εγκατάσταση ενημερώσεων"
+msgstr "Εγκατάσταση ενημερώσεων συστήματος"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -52,13 +55,12 @@ msgstr "Τερματισμός λειτουργίας μετά την εγκατ
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:392
 msgid "Installing updates; this could take a while..."
-msgstr "Εγκατάσταση ενημερώσεων, αυτό θα μπορούσε να πάρει λίγο χρόνο..."
+msgstr "Εγκατάσταση ενημερώσεων, αυτό μπορεί να πάρει λίγη ώρα..."
 
 #. TRANSLATORS: we've started doing an offline OS upgrade
 #: client/pk-offline-update.c:430
-#, fuzzy
 msgid "Installing operating system upgrade; this could take a while..."
-msgstr "Εγκατάσταση ενημερώσεων, αυτό θα μπορούσε να πάρει λίγο χρόνο..."
+msgstr "Εγκατάσταση ενημερώσεων λειτουργικού συστήματος, αυτό μπορεί να πάρει λίγη ώρα..."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -69,140 +71,130 @@ msgstr "Η υπηρεσία κατέρρευσε κατά τη διάρκεια 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #: client/pkgc-manage.c:44
 msgid "Prepare the transaction by downloading packages only"
-msgstr "Ετοιμασία της εργασίας κάνοντας μόνο λήψη των πακέτων "
+msgstr "Ετοιμασία της συναλλαγής κάνοντας μόνο λήψη των πακέτων"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:51
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Επέτρεψε στα πακέτα να ληφθούν κατά την εργασία"
+msgstr "Να επιτρέπεται η υποβάθμιση εκδόσεων πακέτου"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:58
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Επέτρεψε στα πακέτα να επανεγκατασταθούν κατά την εργασία"
+msgstr "Να επιτρέπεται η επανεγκατάσταση πακέτων"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:65
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Εγκατάσταση παλιότερης έκδοσης του εγκατεστημένου πακέτου"
+msgstr "Να επιτρέπεται η εγκατάσταση μη αξιόπιστων πακέτων"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:72
 msgid "Do not automatically remove unused dependencies"
-msgstr ""
+msgstr "Να μην αφαιρούνται αυτόματα οι μη χρησιμοποιούμενες εξαρτήσεις"
 
 #. TRANSLATORS: command line argument, remove configuration files too
 #: client/pkgc-manage.c:79
 msgid "Also remove residual data (config files, databases, etc.) when removing packages"
-msgstr ""
+msgstr "Επίσης, αφαιρέστε τα υπολειμματικά δεδομένα (αρχεία config, βάσεις δεδομένων κ.λπ.) κατά την αφαίρεση των πακέτων"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:86
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr ""
+msgstr "Μέγιστη ηλικία κρυφής μνήμης μεταδεδομένων σε δευτερόλεπτα (προεπιλογή: 3 ημέρες)"
 
 #: client/pkgc-manage.c:86
 msgid "SECONDS"
-msgstr ""
+msgstr "ΔΕΥΤΕΡΟΛΕΠΤΑ"
 
 #: client/pkgc-manage.c:156
-#, fuzzy
-#| msgid "Please restart the computer to complete the update."
 msgid "A system restart is required to complete the changes."
-msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
+msgstr "Απαιτείται επανεκκίνηση συστήματος για την ολοκλήρωση των αλλαγών."
 
 #: client/pkgc-manage.c:161
-#, fuzzy
-#| msgid "Please logout and login to complete the update."
 msgid "You need to log out and back in to complete the changes."
-msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
+msgstr "Πρέπει να αποσυνδεθείτε και να συνδεθείτε ξανά για να ολοκληρώσετε τις αλλαγές."
 
 #: client/pkgc-manage.c:167
 msgid "Affected applications need to be restarted to complete the changes."
-msgstr ""
+msgstr "Οι επηρεαζόμενες εφαρμογές πρέπει να επανεκκινηθούν για να ολοκληρώσουν τις αλλαγές."
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:250
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Ανανέωση λανθάνουσας μνήμης"
+msgstr "Ανανέωση της κρυφής μνήμης μεταδεδομένων πακέτου."
 
 #: client/pkgc-manage.c:276
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Τα μεταδεδομένα πακέτου ανανεώθηκαν"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:301
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Εγκαταστήστε ένα ή περισσότερα πακέτα ή τοπικά αρχεία πακέτου."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:363 client/pkgc-manage.c:377
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Το εργαλείο δεν μπόρεσε να βρει κανένα διαθέσιμο πακέτο: %s"
+msgstr "Δεν ήταν δυνατή η εύρεση κανενός διαθέσιμου πακέτου: %s"
 
 #: client/pkgc-manage.c:382
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
+msgstr "Το επιλεγμένο πακέτο είναι ήδη εγκατεστημένο."
 
 #: client/pkgc-manage.c:438 client/pkgc-util.c:1702
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "Δεν βρέθηκε το πακέτο"
+msgstr "Δεν βρέθηκε το πακέτο: %s"
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:479
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Αφαιρέστε ένα ή περισσότερα πακέτα από το σύστημα."
 
 #: client/pkgc-manage.c:500
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Το εργαλείο δεν μπόρεσε να βρει το πακέτο: %s"
+msgstr "Δεν ήταν δυνατή η εύρεση εγκατεστημένων πακέτων: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:542
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Κατεβάστε τα πακέτα στον συγκεκριμένο κατάλογο χωρίς εγκατάσταση."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:555 client/pkgc-query.c:545 client/pkgc-query.c:889
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Το εργαλείο δεν μπόρεσε να βρει το πακέτο: %s"
+msgstr "Δεν ήταν δυνατή η εύρεση πακέτων: %s"
 
 #: client/pkgc-manage.c:563
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Ο κατάλογος δεν υπάρχει: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:607
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Ενημερώστε όλα τα πακέτα ή συγκεκριμένα πακέτα στις τελευταίες εκδόσεις τους."
 
 #: client/pkgc-manage.c:630
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Το εργαλείο δεν μπόρεσε να βρει το πακέτο: %s"
+msgstr "Δεν ήταν δυνατή η εύρεση πακέτων για ενημέρωση: %s"
 
 #: client/pkgc-manage.c:660 client/pkgc-manage.c:934
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Αποτυχία λήψης κατάστασης υπηρεσίας"
+msgstr "Αποτυχία απόκτησης ενημερώσεων: %s"
 
 #: client/pkgc-manage.c:672 client/pkgc-manage.c:942
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Κανένα πακέτο δεν χρειάζεται ενημέρωση για νεότερες εκδόσεις."
+msgstr "Κανένα πακέτο δεν χρειάζεται ενημέρωση."
 
 #. TRANSLATORS: Description of pkgcli upgrade-os. Do not translate "list-os-upgrades"/"update"
 #: client/pkgc-manage.c:708
@@ -211,66 +203,64 @@ msgid ""
 "The available upgrade IDs are shown by `list-os-upgrades`.\n"
 "This command does not update packages within the current release, use `update` for that."
 msgstr ""
+"Αναβάθμιση του λειτουργικού συστήματος στην κυκλοφορία με το δεδομένο αναγνωριστικό αναβάθμισης.\n"
+"Τα διαθέσιμα αναγνωριστικά αναβάθμισης εμφανίζονται με το `list-os-upgrades`.\n"
+"Αυτή η εντολή δεν ενημερώνει τα πακέτα για την τρέχουσα κυκλοφορία, χρησιμοποιήστε το `update` γι΄ αυτό."
 
 #: client/pkgc-manage.c:750
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+msgstr "Αποτυχία ανάγνωσης ενέργειας ενημέρωσης εκτός σύνδεσης: %s"
 
 #: client/pkgc-manage.c:760
-#, fuzzy
 msgid "Offline update is not triggered."
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Η ενημέρωση εκτός σύνδεσης δεν ενεργοποιήθηκε."
 
 #: client/pkgc-manage.c:769
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+msgstr "Ενεργοποιήθηκε ενημέρωση εκτός σύνδεσης. Ενέργεια μετά την ενημέρωση: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:780
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Έτοιμες ενημερώσεις:"
+msgstr "Έτοιμα πακέτα:"
 
 #: client/pkgc-manage.c:794
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Δεν είναι έτοιμη καμία ενημέρωση εκτός σύνδεσης."
 
 #: client/pkgc-manage.c:797
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+msgstr "Αποτυχία ανάγνωσης έτοιμων ενημερώσεων εκτός σύνδεσης: %s"
 
 #: client/pkgc-manage.c:808
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Γίνεται λήψη των πληροφοριών ενημερώσεων"
+msgstr "Κανένα αποτέλεσμα από την τελευταία ενημέρωση εκτός σύνδεσης."
 
 #: client/pkgc-manage.c:815
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Η τελευταία ενημέρωση εκτός σύνδεσης απέτυχε: %s: %s"
 
 #: client/pkgc-manage.c:822
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Η τελευταία ενημέρωση εκτός σύνδεσης ολοκληρώθηκε με επιτυχία"
 
 #: client/pkgc-manage.c:832
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Ενημερώθηκε"
+msgstr "Ενημερώθηκε: %s"
 
 #: client/pkgc-manage.c:856
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+msgstr "Αποτυχία ενεργοποίησης ενημέρωσης εκτός σύνδεσης: %s"
 
 #: client/pkgc-manage.c:860
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Προγραμματισμένη ενημέρωση εκτός σύνδεσης. Το σύστημα θα ενημερωθεί στην επόμενη επανεκκίνηση."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -284,103 +274,101 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Ενεργοποιήστε & διαχειριστείτε τις εκτός σύνδεσης ενημερώσεις συστήματος\n"
+"\n"
+"Μπορείτε να επιλέξτε ένα από αυτά τα αιτήματα:\n"
+"  prepare - προετοιμάστε μια εκτός σύνδεση ενημέρωσης και ενεργοποιήστε τη (προεπιλογή)\n"
+"  trigger - ενεργοποιήστε μία (χειροκίνητα προετοιμασμένη) εκτός σύνδεσης ενημέρωση\n"
+"  cancel  - ακυρώστε μια προγραμματισμένη εκτός σύνδεσης ενημέρωση\n"
+"  status  - εμφάνιση πληροφοριών κατάστασης για μια έτοιμη ή ολοκληρωμένη εκτός σύνδεσης ενημέρωση"
 
 #: client/pkgc-manage.c:902
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Αποτυχία ανάλυσης ορισμάτων"
+msgstr "Αποτυχία ακύρωσης εκτός σύνδεσης ενημέρωση: %s"
 
 #: client/pkgc-manage.c:906
-#, fuzzy
 msgid "Offline update cancelled"
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Η εκτός σύνδεσης ενημέρωση ακυρώθηκε"
 
 #: client/pkgc-manage.c:963
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+msgstr "Άγνωστο άιτημα εκτός σύνδεσης ενημέρωσης: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:984
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Εγκαταστείστε τα πακέτα χωρίς να ζητήσετε επιβεβαίωση"
+msgstr "Εγκαταστήστε μια υπογραφή πακέτου για επαλήθευση GPG."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:1020
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Προσπάθεια επισκευής του συστήματος διαχείρισης πακέτων."
 
 #: client/pkgc-manage.c:1036
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Το σύστημα επισκευάστηκε με επιτυχία"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1058
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Ασφαλής τερματισμός του δαίμονα PackageKit."
 
 #: client/pkgc-manage.c:1064
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Αποτυχία λήψης κατάστασης υπηρεσίας"
+msgstr "Αποτυχία αποστολής αιτήματος τερματισμού στον δαίμονα: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
 #: client/pkgc-manage.c:1084
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Ανανέωση μεταδεδομένων πακέτων"
 
 #. TRANSLATORS: Description for install command in pkgcli help
 #: client/pkgc-manage.c:1091
-#, fuzzy
 msgid "Install packages"
-msgstr "Εγκατάσταση πακέτου"
+msgstr "Εγκατάσταση πακέτων"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
 #: client/pkgc-manage.c:1098
-#, fuzzy
 msgid "Remove packages"
-msgstr "Αφαίρεση πακέτου"
+msgstr "Αφαίρεση πακέτων"
 
 #. TRANSLATORS: Description for update command in pkgcli help
 #: client/pkgc-manage.c:1105
-#, fuzzy
 msgid "Update packages"
 msgstr "Ενημέρωση πακέτων"
 
 #. TRANSLATORS: Description for upgrade-os command in pkgcli help
 #: client/pkgc-manage.c:1112
 msgid "Upgrade the operating system to a new release"
-msgstr ""
+msgstr "Αναβάθμιση του λειτουργικού συστήματος σε μια νέα κυκλοφορία"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1119
-#, fuzzy
 msgid "Download packages"
-msgstr "Λήψη πακέτων..."
+msgstr "Λήψη πακέτων"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1126
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Δεν υπάρχουν πακέτα για ενημέρωση."
+msgstr "Διαχείριση εκτός σύνδεσης ενημερώσεων συστήματος"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1133
-#, fuzzy
 msgid "Install package signature"
-msgstr "Εγκατάσταση υπογραφής"
+msgstr "Εγκατάσταση υπογραφής πακέτου"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
 #: client/pkgc-manage.c:1140
-#, fuzzy
 msgid "Repair package system"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Επιδιόρθωση του πακέτου σύστημα"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
 #: client/pkgc-manage.c:1147
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Ασφαλής διακοπή του δαίμονα PackageKit"
 
 #: client/pkgc-monitor.c:384
 msgid "Failed to get daemon state"
@@ -392,58 +380,54 @@ msgstr "Αποτυχία λήψης ιδιοτήτων"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:476
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Υπηρεσία PackageKit"
+msgstr "Εποπτεία γεγονότων PackageKit D-Bus"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:594
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "Υπηρεσία PackageKit"
+msgstr "Εποπτεία γεγονότων PackageKit bus"
 
 #: client/pkgc-query.c:127
-#, fuzzy
-#| msgid "There are no upgrades available at this time."
 msgid "There are no OS upgrades available."
-msgstr "Δεν υπάρχουν διαθέσιμες αναβαθμίσεις αυτή τη στιγμή."
+msgstr "Δεν υπάρχουν διαθέσιμες αναβαθμίσεις ΛΣ."
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:256
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Εμφάνιση πληροφοριών συστήματος υποστήριξης PackageKit."
 
 #: client/pkgc-query.c:300
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Σύστημα υποστήριξης: %s"
 
 #: client/pkgc-query.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Περιγραφή"
+msgstr "Περιγραφή: %s"
 
 #: client/pkgc-query.c:306
-#, fuzzy, c-format
+#, c-format
 msgid "Author: %s"
-msgstr "Δημιουργός"
+msgstr "Συγγραφέας: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:312
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Ρόλος"
+msgstr "Ρόλοι: %s"
 
 #. TRANSLATORS: Option of pkgcli history
 #: client/pkgc-query.c:335
 msgid "Show all details of every transaction"
-msgstr ""
+msgstr "Εμφάνιση όλων των λεπτομερειών κάθε συναλλαγής"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:346
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Εμφάνιση προσφάτων συναλλαγών διαχείρισης πακέτων."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:390
@@ -456,86 +440,91 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Αναζήτηση για πακέτα που ταιριάζουν με τα δοσμένα μοτίβα. Εάν το MODE δεν καθορίζεται,\n"
+"εκτελείται η αναζήτηση “details”.\n"
+"Πιθανές λειτουργίες αναζήτησης είναι:\n"
+"  name     - αναζήτηση με όνομα πακέτου\n"
+"  details - αναζήτηση με λεπτομέρειες πακέτου (προεπιλογή)\n"
+"  file     - αναζήτηση με όνομα αρχείου\n"
+"  group    - αναζήτηση βάσει ομάδας πακέτων"
 
 #: client/pkgc-query.c:418
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Πρέπει να οριστεί όρος προς αναζήτηση"
+msgstr "Δεν καθορίστηκε μοτίβο αναζήτησης"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:479
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Απαρίθμηση όλων τα πακέτων ή εκείνων που ταιριάζουν με ένα μοτίβο."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:524
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Εμφάνιση πληροφοριών σχετικά με ένα ή περισσότερα πακέτα."
 
 #: client/pkgc-query.c:583 client/pkgc-query.c:869
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Έλεγχος εξαρτήσεων με χρήση αναδρομής"
 
 #. TRANSLATORS: Description for pkgcli list-dependencies
 #: client/pkgc-query.c:594
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Εμφάνιση εξαρτήσεων για ένα ή περισσότερα πακέτα."
 
 #: client/pkgc-query.c:602 client/pkgc-query.c:686 client/pkgc-query.c:800
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Αποτυχία ανάλυσης ορισμάτων"
+msgstr "Αποτυχία επίλυσης πακέτων: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:635
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Εμφάνιση ποια πακέτα παρέχουν την καθορισμένη δυνατότητα."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:667
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Απαρίθμηση όλων των αρχείων που περιέχονται σε ένα ή περισσότερα πακέτα."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:760
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Το εργαλείο δεν μπόρεσε να βρει κανένα διαθέσιμο πακέτο: %s"
+msgstr "Απαρίθμηση όλων των διαθέσιμων ενημερώσεων πακέτου."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:793
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Εμφάνιση λεπτομερών πληροφοριών σχετικά με την καθορισμένη ενημέρωση πακέτου."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:832
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Επίλυση ονομάτων πακέτων σε αναγνωριστικά πακέτων."
 
 #. TRANSLATORS: Description for pkgcli list-requiring
 #: client/pkgc-query.c:880
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Εμφάνιση των πακέτων που απαιτούν τα συγκεκριμένα πακέτα."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:924
 msgid "List all available filters and groups for package organization."
-msgstr ""
+msgstr "Εμφάνιση όλων των διαθέσιμων φίλτρων και ομάδων για την οργάνωση των πακέτων."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:932
 msgid "Filters:"
-msgstr ""
+msgstr "Φίλτρα:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:944
 msgid "Groups:"
-msgstr ""
+msgstr "Ομάδες:"
 
 #. TRANSLATORS: Description for pkgcli list-os-upgrades
 #: client/pkgc-query.c:967
 msgid "List the operating system releases this system can be upgraded to."
-msgstr ""
+msgstr "Απαρίθμηση των εκδόσεων λειτουργικού συστήματος στις οποίες μπορεί να αναβαθμιστεί αυτό το σύστημα."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -545,14 +534,13 @@ msgstr "Αποτυχία λήψης του χρόνου που είχε ολοκ
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:1012
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Ώρα συστήματος"
+msgstr "Πεπερασμένος χρόνος"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:1037
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Εμφάνιση χρόνου σε δευτερόλεπτα από την τελευταία καθορισμένη ενέργεια."
 
 #. TRANSLATORS: The user didn't specify what action to use
 #: client/pkgc-query.c:1048
@@ -566,425 +554,379 @@ msgstr "Πρέπει να οριστεί έγκυρη ενέργεια"
 
 #. TRANSLATORS: Description for backend command in pkgcli help
 #: client/pkgc-query.c:1080
-#, fuzzy
 msgid "Show backend information"
-msgstr "Λήψη πληροφοριών..."
+msgstr "Εμφάνιση πληροφοριών συστήματος υποστήριξης"
 
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:1087
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Η εργασία απέτυχε"
+msgstr "Εμφάνιση ιστορικού συναλλαγών"
 
 #. TRANSLATORS: Description for search command in pkgcli help
 #: client/pkgc-query.c:1094
-#, fuzzy
 msgid "Search for packages"
-msgstr "Αναζήτηση κατά ονόματα"
+msgstr "Αναζήτηση για πακέτα"
 
 #. TRANSLATORS: Description for list command in pkgcli help
 #: client/pkgc-query.c:1101
-#, fuzzy
 msgid "List packages"
-msgstr "Εγκατάσταση πακέτου"
+msgstr "Απαρίθμηση πακέτων"
 
 #. TRANSLATORS: Description for show command in pkgcli help
 #: client/pkgc-query.c:1108
-#, fuzzy
 msgid "Show package information"
-msgstr "Γίνεται λήψη των πληροφοριών ενημερώσεων"
+msgstr "Εμφάνιση πληροφοριών πακέτου"
 
 #. TRANSLATORS: Description for list-dependencies command in pkgcli help
 #: client/pkgc-query.c:1115
 msgid "List dependencies of the specified package(s)"
-msgstr ""
+msgstr "Εμφάνιση των εξαρτήσεων των καθορισμένων πακέτων"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1123
-#, fuzzy
 msgid "List other packages requiring the specified package(s)"
-msgstr "Το πακέτο που παρέχει αυτό το αρχείο είναι το:"
+msgstr "Εμφάνιση άλλων πακέτων που απαιτούν το συγκεκριμένο πακέτο ή τα συγκεκριμένα πακέτα"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1131
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Το πακέτο που παρέχει αυτό το αρχείο είναι το:"
+msgstr "Απαρίθμηση πακέτων που παρέχουν μια δυνατότητα"
 
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1138
-#, fuzzy
 msgid "Show files in package"
-msgstr "Σημείωση πακέτων ως παρωχημένα"
+msgstr "Εμφάνιση αρχείων μέσα σε πακέτο"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
 #: client/pkgc-query.c:1145
-#, fuzzy
 msgid "Get available updates"
-msgstr "Λήψη ενημερώσεων"
+msgstr "Απόκτηση διαθέσιμων ενημερώσεων"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
 #: client/pkgc-query.c:1152
-#, fuzzy
 msgid "Get update details"
-msgstr "Λήψη λεπτομερειών ενημέρωσης"
+msgstr "Απόκτηση λεπτομερειών ενημέρωσης"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
 #: client/pkgc-query.c:1159
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Αφαίρεση πακέτου"
+msgstr "Επίλυση ονομάτων πακέτων"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1166
 msgid "List available filters and groups"
-msgstr ""
+msgstr "Λίστα διαθέσιμων φίλτρων και ομάδων"
 
 #. TRANSLATORS: Description for list-os-upgrades command in pkgcli help
 #: client/pkgc-query.c:1173
-#, fuzzy
 msgid "List available operating system upgrades"
-msgstr "Λήψη αναβαθμίσεων"
+msgstr "Λίστα διαθέσιμων αναβαθμίσεων λειτουργικού συστήματος"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1180
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Λήψη εργασιών"
+msgstr "Απόκτηση χρόνου από την τελευταία ενέργεια"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:79
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Απαρίθμηση όλων των διαμορφωμένων αποθετηρίων πακέτων."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:113
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Ενεργοποίηση του συγκεκριμένου αποθετηρίου."
 
 #: client/pkgc-repo.c:132
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Το αποθετήριο «%s» έχει ενεργοποιηθεί"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:154
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Απενεργοποίηση του χρονομέτρου αδράνειας"
+msgstr "Απενεργοποίηση του συγκεκριμένου αποθετηρίου."
 
 #: client/pkgc-repo.c:173
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Το αποθετήριο «%s» έχει απενεργοποιηθεί"
 
 #: client/pkgc-repo.c:196
 msgid "Automatically remove orphaned packages"
-msgstr ""
+msgstr "Αυτόματη αφαίρεση ορφανών πακέτων"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:208
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Αφαίρεση αποθετηρίου"
+msgstr "Αφαίρεση του συγκεκριμένου αποθετηρίου."
 
 #: client/pkgc-repo.c:228
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Πρέπει να οριστεί όνομα αποθετηρίου"
+msgstr "Το αποθετήριο \"%s\" αφαιρέθηκε"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
 #: client/pkgc-repo.c:246
-#, fuzzy
 msgid "List repositories"
-msgstr "Λήψη αποθετηρίων"
+msgstr "Απαρίθμηση αποθετηρίων"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
 #: client/pkgc-repo.c:253
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Αφαίρεση αποθετηρίου"
+msgstr "Ενεργοποίηση ενός αποθετηρίου"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
 #: client/pkgc-repo.c:260
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Αφαίρεση αποθετηρίου"
+msgstr "Απενεργοποίηση ενός αποθετηρίου"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
 #: client/pkgc-repo.c:267
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Αφαίρεση αποθετηρίου"
+msgstr "Αφαίρεση ενός αποθετηρίου"
 
 #: client/pkgc-util.c:110
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Δεν συνδέθηκε με τον δαίμονα του PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:209
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(δευτερόλεπτα)"
+msgstr "%u δευτερόλεπτα"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:215
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u λεπ %u δευτ"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:218
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u λεπ"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:225
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u ώ %u λεπ"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:228
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u ώ"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:235
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u ημέρες %u ώ"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:238
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u ημέρες"
 
 #: client/pkgc-util.c:362
 msgid "Error"
-msgstr ""
+msgstr "Σφάλμα"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:394
 msgid "Warning:"
-msgstr ""
+msgstr "Προειδοποίηση:"
 
 #. TRANSLATORS: Shown in the help of a command, %s is a shorter alternative name for it
 #: client/pkgc-util.c:493
-#, fuzzy, c-format
-#| msgid "Alias to %s"
+#, c-format
 msgid "Alias: %s"
-msgstr "Ψευδώνυμο στο %s"
+msgstr "Ψευδώνυμο: %s"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:527 client/pkgcli.c:194
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Αποτυχία ανάλυσης ορισμάτων"
+msgstr "Αποτυχία ανάλυσης ορισμάτων: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:535
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Χρήση: %s %s %s"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:635
 msgid "high"
-msgstr ""
+msgstr "υψηλή"
 
 #. TRANSLATORS: the severity of a package update, keep this short
 #: client/pkgc-util.c:640
 msgid "critical"
-msgstr ""
+msgstr "κρίσιμη"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:813 client/pkgc-util.c:994
-#, fuzzy
 msgid "Package:"
-msgstr "PackageKit"
+msgstr "Πακέτο:"
 
 #. TRANSLATORS: Label for the package version in package details
 #. TRANSLATORS: Label for the version of an OS release, e.g. "44"
 #: client/pkgc-util.c:817 client/pkgc-util.c:1185
 msgid "Version:"
-msgstr ""
+msgstr "Έκδοση:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #. TRANSLATORS: Label for the summary of an OS upgrade
 #: client/pkgc-util.c:823 client/pkgc-util.c:1206
-#, fuzzy
 msgid "Summary:"
-msgstr "Περίληψη"
+msgstr "Περίληψη:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:835
-#, fuzzy
 msgid "Description:"
-msgstr "Περιγραφή"
+msgstr "Περιγραφή:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:846
 msgid "License:"
-msgstr ""
+msgstr "Άδεια:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #. TRANSLATORS: Label for the release notes URL of an OS upgrade
 #: client/pkgc-util.c:853 client/pkgc-util.c:1201
 msgid "URL:"
-msgstr ""
+msgstr "Σύνδεσμος:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:860
 msgid "Group:"
-msgstr ""
+msgstr "Ομάδα:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:870
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Εγκατεστημένο"
+msgstr "Μέγεθος εγκατάστασης:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:879
-#, fuzzy
 msgid "Download Size:"
-msgstr "Λήφθηκε"
+msgstr "Μέγεθος λήψης:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:990
-#, fuzzy
 msgid "Update Details:"
-msgstr "Περιγραφή ενημέρωσης"
+msgstr "Λεπτομέρειες ενημέρωσης:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:1001
-#, fuzzy
 msgid "Updates:"
-msgstr "Ενημερώνει"
+msgstr "Ενημερώνει:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:1010
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Αντικαθιστά"
+msgstr "Απαρχαιώνει:"
 
 #. TRANSLATORS: Label for issue tracker entries in update details
 #: client/pkgc-util.c:1021
-#, fuzzy
 msgid "Issues:"
-msgstr "Εκδόθηκε"
+msgstr "Ζητήματα:"
 
 #. TRANSLATORS: Label for CVE records in update details
 #: client/pkgc-util.c:1023
 msgid "CVEs:"
-msgstr ""
+msgstr "CVEs:"
 
 #. TRANSLATORS: Label for the distributor's advisory in update details
 #: client/pkgc-util.c:1025
 msgid "Advisory:"
-msgstr ""
+msgstr "Συμβουλή:"
 
 #. TRANSLATORS: Label for references of unknown kind in update details
 #: client/pkgc-util.c:1027
 msgid "References:"
-msgstr ""
+msgstr "Παραπομπές:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:1064
-#, fuzzy
 msgid "Restart:"
-msgstr "Επανεκκίνηση"
+msgstr "Επανεκκίνηση:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:1080
-#, fuzzy
 msgid "Update text:"
-msgstr "Περιγραφή ενημέρωσης"
+msgstr "Κείμενο ενημέρωσης:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:1098
-#, fuzzy
 msgid "Changes:"
-msgstr "Αλλαγές"
+msgstr "Αλλαγές:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:1109
-#, fuzzy
 msgid "State:"
-msgstr "Κατάσταση"
+msgstr "Κατάσταση:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:1118
-#, fuzzy
 msgid "Issued:"
-msgstr "Εκδόθηκε"
+msgstr "Εκδόθηκε:"
 
 #. TRANSLATORS: Label for the ID of an OS upgrade, e.g. "fedora-44"
 #: client/pkgc-util.c:1167
-#, fuzzy
 msgid "Upgrade:"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Αναβάθμιση:"
 
 #. TRANSLATORS: Label for the human readable name of an OS release, e.g. "Fedora 44"
 #: client/pkgc-util.c:1173
-#, fuzzy
-#| msgid "Name"
 msgid "Name:"
-msgstr "Όνομα"
+msgstr "Όνομα:"
 
 #. TRANSLATORS: Label for the AppStream component ID of the OS, e.g. "org.fedoraproject.fedora"
 #: client/pkgc-util.c:1179
-#, fuzzy
 msgid "Operating system:"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Λειτουργικό σύστημα:"
 
 #. TRANSLATORS: Label for the kind of an OS release, e.g. "stable"
 #: client/pkgc-util.c:1189
 msgid "Kind:"
-msgstr ""
+msgstr "Είδος:"
 
 #. TRANSLATORS: Label for the download size of an OS upgrade
 #: client/pkgc-util.c:1195
-#, fuzzy
 msgid "Download size:"
-msgstr "Λήφθηκε"
+msgstr "Μέγεθος λήψης:"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1282
-#, fuzzy
-#| msgid "Enabled"
 msgid "enabled"
-msgstr "Ενεργοποιημένο"
+msgstr "ενεργό"
 
 #. TRANSLATORS: state of a repository in the repository list
 #: client/pkgc-util.c:1285
-#, fuzzy
-#| msgid "Disabled"
 msgid "disabled"
-msgstr "Απενεργοποιημένο"
+msgstr "ανενεργό"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1401
-#, fuzzy
 msgid "Transaction:"
-msgstr "Εργασία"
+msgstr "Συναλλαγή:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:1405
-#, fuzzy
 msgid "System time:"
-msgstr "Ώρα συστήματος"
+msgstr "Ώρα συστήματος:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1409
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Επιτυχής"
+msgstr "Επιτεύχθηκε:"
 
 #: client/pkgc-util.c:1413
 msgid "True"
@@ -996,39 +938,33 @@ msgstr "Ψευδές"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1418
-#, fuzzy
 msgid "Role:"
-msgstr "Ρόλος"
+msgstr "Ρόλος:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1425
-#, fuzzy
 msgid "Duration:"
-msgstr "Διάρκεια"
+msgstr "Διάρκεια:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1432
-#, fuzzy
 msgid "Command line:"
-msgstr "Γραμμή εντολών"
+msgstr "Γραμμή εντολών:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1438
-#, fuzzy
 msgid "User ID:"
-msgstr "Ταυτότητα χρήστη"
+msgstr "Ταυτότητα χρήστη:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1447
-#, fuzzy
 msgid "Username:"
-msgstr "Όνομα χρήστη"
+msgstr "Όνομα χρήστη:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1453
-#, fuzzy
 msgid "Real name:"
-msgstr "Πραγματικό όνομα"
+msgstr "Πραγματικό όνομα:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #: client/pkgc-util.c:1465
@@ -1038,18 +974,17 @@ msgstr "Επηρεαζόμενα πακέτα:"
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1506
 msgid "Date"
-msgstr ""
+msgstr "Ημερομηνία"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1508
 msgid "Action"
-msgstr ""
+msgstr "Ενέργεια"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1511
-#, fuzzy
 msgid "Packages"
-msgstr "PackageKit"
+msgstr "Πακέτα"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1513
@@ -1058,10 +993,8 @@ msgstr "Διάρκεια"
 
 #. TRANSLATORS: column header in the transaction history
 #: client/pkgc-util.c:1515
-#, fuzzy
-#| msgid "User ID"
 msgid "User"
-msgstr "Ταυτότητα χρήστη"
+msgstr "Χρήστης"
 
 #: client/pkgc-util.c:1646
 msgid "More than one package matches:"
@@ -1075,43 +1008,42 @@ msgstr "Παρακαλούμε, επιλέξτε το σωστό πακέτο: "
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:79
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Εμφάνιση έκδοσης και έξοδος"
+msgstr "Εμφάνιση έκδοσης pkgcli"
 
 #: client/pkgcli.c:81
 msgid "Show help"
-msgstr ""
+msgstr "Εμφάνιση βοήθειας"
 
 #: client/pkgcli.c:83
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Να παρέχεται η ελάχιστη έξοδος"
 
 #: client/pkgcli.c:85
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Εμφάνιση πιο λεπτομερούς εξόδου"
 
 #: client/pkgcli.c:87
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Έξοδος σε μορφή JSON"
 
 #: client/pkgcli.c:89
 msgid "Disable colored output"
-msgstr ""
+msgstr "Απενεργοποίηση χρωματιστής εξόδου"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:92
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Απάντηση 'ναι' σε όλες τις ερωτήσεις"
 
 #: client/pkgcli.c:95
 msgid "FILTER"
-msgstr ""
+msgstr "ΦΙΛΤΡΟ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:95
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Φιλτράρισμα πακέτων (εγκατεστημένα, διαθέσιμα, κτλ)"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkgcli.c:98
@@ -1120,31 +1052,30 @@ msgstr "Εκτέλεση της εντολής χρησιμοποιώντας α
 
 #: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Δεν προσδιορίστηκε εντολή. Χρησιμοποιήστε το --help για πληροφορίες χρήσης."
 
 #: client/pkgcli.c:130
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Άγνωστη εντολή: %s"
 
 #: client/pkgcli.c:140
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Αποτυχία επικοινωνίας με το PackageKit"
+msgstr "Αποτυχία σύνδεσης με το PackageKit: %s"
 
 #: client/pkgcli.c:202
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Έκδοση: %s"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Διαθέσιμο"
+msgstr "Διαθέσιμες εντολές:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Χρήση 'pkgcli ΕΝΤΟΛΗ --help' για βοήθεια σε συγκεκριμένη εντολή."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -1155,7 +1086,7 @@ msgstr "Το φίλτρο που ορίστηκε δεν ήταν έγκυρο"
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:425
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Γίνεται λήψη πληροφοριών σχετικά με τα αποθετήρια λογισμικού."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:429
@@ -1389,25 +1320,22 @@ msgstr "Απαιτείται πιστοποίηση για την ενημέρω
 #. install different versions of software.
 #: data/policy/org.freedesktop.packagekit.policy.in:187
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Αλλαγή παραμέτρων του αποθετηρίου λογισμικού"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:188
-#, fuzzy
 msgid "Authentication is required to change software repository parameters"
-msgstr "Απαιτείται πιστοποίηση για την ενημέρωση του λογισμικού"
+msgstr "Απαιτείται ταυτοποίηση για την αλλαγή παραμέτρων αποθετηρίου λογισμικού"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: data/policy/org.freedesktop.packagekit.policy.in:202
-#, fuzzy
 msgid "Refresh system repositories"
-msgstr "Λήψη αποθετηρίων"
+msgstr "Ανανέωση αποθετηρίων συστήματος"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:203
-#, fuzzy
 msgid "Authentication is required to refresh the system repositories"
-msgstr "Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
+msgstr "Απαιτείται ταυτοποίηση για την ανανέωση των αποθετηρίων συστήματος"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1425,14 +1353,12 @@ msgstr "Απαιτείται πιστοποίηση για τον ορισμό �
 #. system to a new release as this can make the system unbootable or
 #. stop other applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:233
-#, fuzzy
 msgid "Upgrade the operating system"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Αναβάθμιση του λειτουργικού συστήματος"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:234
-#, fuzzy
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Απαιτείται πιστοποίηση για την ενημέρωση του λογισμικού"
+msgstr "Απαιτείται ταυτοποίηση για την αναβάθμιση του λειτουργικού συστήματος"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1440,7 +1366,7 @@ msgstr "Απαιτείται πιστοποίηση για την ενημέρω
 #. applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:249
 msgid "Repair System"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Επιδιόρθωση συστήματος"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:250
 msgid "Authentication is required to repair the installed software"
@@ -1481,37 +1407,37 @@ msgstr "Παρακαλούμε, εισάγετε έναν αριθμό από τ
 
 #: lib/pk-console-private.c:844
 msgid "[N/y]"
-msgstr ""
+msgstr "[Ό/ν]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
 #: lib/pk-console-private.c:844
 msgid "[Y/n]"
-msgstr ""
+msgstr "[Ν/ο]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
 #: lib/pk-console-private.c:861
 msgctxt "Answer"
 msgid "y"
-msgstr ""
+msgstr "Ν"
 
 #. TRANSLATORS: full "yes" answer
 #: lib/pk-console-private.c:865
 msgctxt "Answer"
 msgid "yes"
-msgstr ""
+msgstr "ναι"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
 #: lib/pk-console-private.c:872
 msgctxt "Answer"
 msgid "n"
-msgstr ""
+msgstr "ο"
 
 #. TRANSLATORS: full "no" answer
 #: lib/pk-console-private.c:876
 msgctxt "Answer"
 msgid "no"
-msgstr ""
+msgstr "όχι"
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/pk-console-private.c:901
@@ -1567,7 +1493,7 @@ msgstr "Ανανέωση λίστας λογισμικού"
 #. TRANSLATORS: transaction state, installing updates
 #: lib/pk-console-private.c:941
 msgid "Installing updates"
-msgstr "Εγκατάσταση ενημερώσεων..."
+msgstr "Γίνεται εγκατάσταση ενημερώσεων"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/pk-console-private.c:945
@@ -1666,9 +1592,8 @@ msgstr "Αντιγραφή αρχείων"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/pk-console-private.c:1021
-#, fuzzy
 msgid "Running hooks"
-msgstr "Εκτελείται"
+msgstr "Εκτελούνται hooks"
 
 #. TRANSLATORS: turn on all debugging
 #: lib/pk-debug.c:148
@@ -1686,7 +1611,7 @@ msgstr "Προβολή επιλογών αποσφαλμάτωσης"
 #. TRANSLATORS: The type of update
 #: lib/pk-enum.c:1008
 msgid "Blocked"
-msgstr "Φραγμένη "
+msgstr "Αποκλεισμένη"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
@@ -1701,55 +1626,43 @@ msgstr "Διαθέσιμο"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/pk-enum.c:1020
-#, fuzzy
 msgid "Install"
-msgstr "Εγκατεστημένο"
+msgstr "Εγκατάσταση"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/pk-enum.c:1024
-#, fuzzy
 msgid "Remove"
-msgstr "Έχει αφαιρεθεί"
+msgstr "Αφαίρεση"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
 #: lib/pk-enum.c:1028
-#, fuzzy
-#| msgid "Reinstalled"
 msgid "Reinstall"
-msgstr "Επανεγκατεστημένο"
+msgstr "Επανεγκατάσταση"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/pk-enum.c:1032
-#, fuzzy
 msgid "Obsolete"
-msgstr "Αντικαταστάθηκε"
+msgstr "Απαρχαιωμένο"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/pk-enum.c:1036
-#, fuzzy
 msgid "Downgrade"
-msgstr "Λήφθηκε"
+msgstr "Υποβάθμιση"
 
 #. TRANSLATORS: The state of a package: package is to be updated
 #: lib/pk-enum.c:1040
-#, fuzzy
-#| msgid "Updates"
 msgid "Update"
-msgstr "Ενημερώνει"
+msgstr "Ενημέρωση"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
 #: lib/pk-enum.c:1044
-#, fuzzy
-#| msgid "Security"
 msgid "Security update"
-msgstr "Ασφαλείας"
+msgstr "Ενημέρωση ασφαλείας"
 
 #. TRANSLATORS: The state of a package: to be updated with an enhancement
 #: lib/pk-enum.c:1048
-#, fuzzy
-#| msgid "Enhancement"
 msgid "Enhancement update"
-msgstr "Βελτίωσης"
+msgstr "Ενημέρωση βελτίωσης"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/pk-enum.c:1073
@@ -1811,12 +1724,12 @@ msgstr "Εκκαθαρίστηκε"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1142
 msgid "Obsoleted"
-msgstr "Αντικαταστάθηκε"
+msgstr "Απαρχαιώθηκε"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1146
 msgid "Reinstalled"
-msgstr "Επανεγκατεστημένο"
+msgstr "Επανεγκαταστάθηκε"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1171
@@ -1840,10 +1753,8 @@ msgstr "Λήψη λεπτομερειών"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1188
-#, fuzzy
-#| msgid "Getting dependencies"
 msgid "Getting dependents"
-msgstr "Λήψη εξαρτήσεων"
+msgstr "Αποκτούνται τα εξαρτώμενα μέλη"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1192
@@ -1897,9 +1808,8 @@ msgstr "Λήψη αποθετηρίων"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1240
-#, fuzzy
 msgid "Modifying repository"
-msgstr "Αφαίρεση αποθετηρίου"
+msgstr "Τροποποιείται το αποθετήριο"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1244
@@ -1934,7 +1844,7 @@ msgstr "Εγκατάσταση υπογραφής"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1269
 msgid "Getting packages"
-msgstr "Λήψη πακέτων..."
+msgstr "Αποκτούνται τα πακέτα"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1273
@@ -1943,28 +1853,23 @@ msgstr "Αποδοχή άδειας χρήσης (EULA)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1281
-#, fuzzy
 msgid "Getting system upgrades"
-msgstr "Λήψη αναβαθμίσεων"
+msgstr "Αποκτούνται οι αναβαθμίσεις συστήματος"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1285
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Getting transaction history"
-msgstr "Λήψη εργασιών"
+msgstr "Αποκτάται το ιστορικό συναλλαγών"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1289
-#, fuzzy
 msgid "Upgrading the system"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Αναβαθμίζεται το σύστημα"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1293
-#, fuzzy
 msgid "Repairing system"
-msgstr "Επιδιόρθωση συστήματος "
+msgstr "Επιδιορθώνεται το σύστημα"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/pk-task-text.c:52
@@ -1984,9 +1889,8 @@ msgstr "Απαιτείται η υπογραφή του αποθετηρίου"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 #: lib/pk-task-text.c:113 lib/pk-task-text.c:184
-#, fuzzy
 msgid "Package"
-msgstr "PackageKit"
+msgstr "Πακέτο"
 
 #. TRANSLATORS: the package repository name
 #: lib/pk-task-text.c:116
@@ -2001,7 +1905,7 @@ msgstr "Διεύθυνση κλειδιού"
 #. TRANSLATORS: the username of the key
 #: lib/pk-task-text.c:122
 msgid "Key user"
-msgstr "Χρήστης κλειδιού "
+msgstr "Όνομα χρήστη κλειδιού"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: lib/pk-task-text.c:125
@@ -2055,10 +1959,8 @@ msgstr "Η άδεια χρήσης δεν έγινε αποδεκτή."
 
 #. TRANSLATORS: When processing with the purge flag, removed packages lose their configuration files and data too
 #: lib/pk-task-text.c:216
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "The following packages have to be removed, including their configuration files and data:"
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν ξανά:"
+msgstr "Πρέπει να αφαιρεθούν τα ακόλουθα πακέτα, συμπεριλαμβανομένων των αρχείων ρυθμίσεών τους και των δεδομένων τους:"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/pk-task-text.c:219
@@ -2087,15 +1989,13 @@ msgstr "Τα ακόλουθα πακέτα θα πρέπει να υποβαθμ
 
 #. TRANSLATORS: When processing with the purge flag, obsoleted packages lose their configuration files and data too
 #: lib/pk-task-text.c:245
-#, fuzzy
 msgid "The following packages have to be obsoleted, including their configuration files and data:"
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
+msgstr "Τα ακόλουθα πακέτα πρέπει να απαρχαιωθούν, συμπεριλαμβανομένων των αρχείων ρυθμίσεών τους και των δεδομένων τους:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/pk-task-text.c:248
-#, fuzzy
 msgid "The following packages have to be obsoleted:"
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
+msgstr "Τα παρακάτω πακέτα πρέπει να απαρχαιωθούν:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/pk-task-text.c:253
@@ -2104,51 +2004,48 @@ msgstr "Τα παρακάτω πακέτα είναι αναξιόπιστα:"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:301
-#, fuzzy, c-format
-#| msgid "Reinstalled"
+#, c-format
 msgid "%u to install"
 msgid_plural "%u to install"
-msgstr[0] "Επανεγκατεστημένο"
-msgstr[1] "Επανεγκατεστημένο"
+msgstr[0] "%u προς εγκατάσταση"
+msgstr[1] "%u προς εγκατάσταση"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:305
-#, fuzzy, c-format
-#| msgid "Security"
+#, c-format
 msgid "%u to update"
 msgid_plural "%u to update"
-msgstr[0] "Ασφαλείας"
-msgstr[1] "Ασφαλείας"
+msgstr[0] "%u προς ενημέρωση"
+msgstr[1] "%u προς ενημέρωση"
 
 #. TRANSLATORS: part of the transaction summary, e.g. "2 to install, 1 to update, 0 to remove"
 #: lib/pk-task-text.c:309
 #, c-format
 msgid "%u to remove"
 msgid_plural "%u to remove"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u προς αφαίρεση"
+msgstr[1] "%u προς αφαίρεση"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are downgraded
 #: lib/pk-task-text.c:314
-#, fuzzy, c-format
+#, c-format
 msgid "%u to downgrade"
 msgid_plural "%u to downgrade"
-msgstr[0] "Λήφθηκε"
-msgstr[1] "Λήφθηκε"
+msgstr[0] "%u προς υποβάθμιση"
+msgstr[1] "%u προς υποβάθμιση"
 
 #. TRANSLATORS: part of the transaction summary, only shown if packages are reinstalled
 #: lib/pk-task-text.c:321
-#, fuzzy, c-format
-#| msgid "Reinstalled"
+#, c-format
 msgid "%u to reinstall"
 msgid_plural "%u to reinstall"
-msgstr[0] "Επανεγκατεστημένο"
-msgstr[1] "Επανεγκατεστημένο"
+msgstr[0] "%u προς επανεγκατάσταση"
+msgstr[1] "%u προς επανεγκατάσταση"
 
 #. TRANSLATORS: separator between the parts of the transaction summary
 #: lib/pk-task-text.c:327
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:439
@@ -2177,12 +2074,12 @@ msgstr "Σύστημα υποστήριξης που θα χρησιμοποιη
 
 #: src/pk-direct.c:413 src/pk-main.c:141
 msgid "FILE"
-msgstr ""
+msgstr "ΑΡΧΕΙΟ"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:413 src/pk-main.c:141
 msgid "Use this configuration file instead of the default"
-msgstr ""
+msgstr "Χρήση αυτού του αρχείου ρυθμίσεων αντί του προεπιλεγμένου"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
@@ -2276,22 +2173,22 @@ msgstr "Υπηρεσία PackageKit"
 
 #. TRANSLATORS: The placeholder is an error message
 #: src/pk-main.c:192
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Αποτυχία φόρτωσης του αρχείου ρύθμισης"
+msgstr "Αποτυχία φόρτωσης του αρχείου ρύθμισης: %s"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:237
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Αποτυχία ανάλυσης ορισμάτων"
+msgstr "Αποτυχία επίλυσης του αυτόματο: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:256
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Αποτυχία φόρτωσης συστήματος υποστήριξης"
+msgstr "Αποτυχία φόρτωσης συστήματος υποστήριξης: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2588
