@@ -32,6 +32,7 @@
 #include <pk-common-private.h>
 #include <pk-update-detail.h>
 #include <rpm/rpmlib.h>
+#include <gio/gio.h>
 #include <glib/gstdio.h>
 #include <filesystem>
 #include <map>
@@ -44,6 +45,9 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkRoleEnum role = pk_backend_job_get_role(job);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
+
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, g_network_monitor_get_network_available(g_network_monitor_get_default()));
 
 	try {
 		if (role == PK_ROLE_ENUM_SEARCH_NAME || role == PK_ROLE_ENUM_SEARCH_DETAILS
@@ -411,6 +415,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, g_network_monitor_get_network_available(g_network_monitor_get_default()));
+
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			gchar *upgrade_id = NULL;
@@ -418,7 +425,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			g_variant_get(params, "(t&s)", &transaction_flags, &upgrade_id);
 			if (upgrade_id) {
 				pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-				dnf5_setup_base(priv, TRUE, TRUE, upgrade_id, job);
+				dnf5_setup_base(priv, TRUE, TRUE, upgrade_id, TRUE, job);
 
 				g_debug("Checking repositories for system upgrade to %s:", upgrade_id);
 				// ... logging code ...
@@ -752,6 +759,9 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkRoleEnum role = pk_backend_job_get_role(job);
 
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
+
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, g_network_monitor_get_network_available(g_network_monitor_get_default()));
 
 	try {
 		if (role == PK_ROLE_ENUM_REPO_ENABLE || role == PK_ROLE_ENUM_REPO_SET_DATA) {
