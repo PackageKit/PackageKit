@@ -824,8 +824,10 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 	transaction->state = state;
 	g_signal_emit (transaction, signals[SIGNAL_STATE_CHANGED], 0, state);
 
-	/* only get cmdline when it's going to be saved into the database */
-	if (pk_transaction_is_recorded (transaction)) {
+	/* only get cmdline when it's going to be shown to polkit or saved into the database */
+	if ((state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH ||
+	     state == PK_TRANSACTION_STATE_READY) &&
+	    pk_transaction_is_recorded (transaction)) {
 		if (transaction->client_pid != PK_TRANSACTION_PID_INVALID &&
 		    transaction->cmdline == NULL)
 			transaction->cmdline = pk_get_cmdline_for_pid (transaction->client_pid);
@@ -3207,6 +3209,15 @@ pk_transaction_cancel (PkTransaction *transaction, GVariant *params, GDBusMethod
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_RUNNING,
 			     "Transaction is already finished");
+		goto out;
+	}
+
+	/* transaction failed, and is about to be removed */
+	if (transaction->state == PK_TRANSACTION_STATE_ERROR) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_RUNNING,
+			     "Transaction has already failed");
 		goto out;
 	}
 
