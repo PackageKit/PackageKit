@@ -2679,9 +2679,19 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 
 	/* failed because the request was cancelled */
 	if (g_cancellable_is_cancelled (transaction->cancellable)) {
+		PkExitEnum exit_enum = pk_backend_job_get_exit_code (transaction->job);
+
 		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
 		transaction->waiting_for_auth = FALSE;
 		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
+
+		/* cancelled by the client while waiting for authorization,
+		 * and the error was emitted already */
+		if (exit_enum != PK_EXIT_ENUM_UNKNOWN) {
+			pk_transaction_finished_emit (data->transaction, exit_enum, 0);
+			goto out;
+		}
+
 		pk_transaction_error_code_emit (
 		    data->transaction,
 		    PK_ERROR_ENUM_NOT_AUTHORIZED,
@@ -3263,6 +3273,25 @@ pk_transaction_cancel (PkTransaction *transaction, GVariant *params, GDBusMethod
 	}
 
 skip_uid:
+	/* the polkit callback would finish the transaction a second time, so abort
+	 * the authorization check and let the callback finish it with our exit code */
+	if (transaction->state == PK_TRANSACTION_STATE_WAITING_FOR_AUTH) {
+		g_autofree gchar *msg = NULL;
+
+		/* already being cancelled */
+		if (g_cancellable_is_cancelled (transaction->cancellable))
+			goto out;
+
+		msg = g_strdup_printf ("%s was cancelled while waiting for authorization",
+				       transaction->tid);
+		pk_transaction_error_code_emit (transaction,
+						PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+						msg);
+		pk_backend_job_set_exit_code (transaction->job, PK_EXIT_ENUM_CANCELLED);
+		g_cancellable_cancel (transaction->cancellable);
+		goto out;
+	}
+
 	/* if it's never been run, just remove this transaction from the list */
 	if (transaction->state <= PK_TRANSACTION_STATE_READY) {
 		g_autofree gchar *msg = NULL;
