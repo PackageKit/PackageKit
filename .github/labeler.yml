@@ -36,10 +36,6 @@ backend-api:
 - changed-files:
   - any-glob-to-any-file: backends/nix/**
 
-'Backend: pisi (Pisi Linux)':
-- changed-files:
-  - any-glob-to-any-file: backends/pisi/**
-
 'Backend: pkg (FreeBSD)':
 - changed-files:
   - any-glob-to-any-file: backends/freebsd/**
