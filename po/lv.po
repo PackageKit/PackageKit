@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-22 10:19+0200\n"
-"PO-Revision-Date: 2026-11-07 06:44+0000\n"
+"PO-Revision-Date: 2026-11-20 23:51+0000\n"
 "Last-Translator: Rihards Prieditis <rprieditis@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/packagekit/translations/lv/>\n"
 "Language: lv\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2;\n"
-"X-Generator: Weblate 2026.11.2.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -258,7 +258,7 @@ msgstr "Neizdevās ierosināt bezsaistes atjauninājumu: %s"
 
 #: client/pkgc-manage.c:860
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr "Bezsaistes atjauninājums ir ieplānots. Sistēma tiks atjaunināta nākamajā restartēšanā."
+msgstr "Bezsaistes atjauninājums ir ieplānots. Sistēma tiks atjaunināta nākamajā pārstartēšanā."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -628,27 +628,27 @@ msgstr "Iegūt laiku kopš pēdējās darbības"
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:79
 msgid "List all configured package repositories."
-msgstr "Uzskaitīt visas konfigurētās pakotņu krātuves."
+msgstr "Uzskaitīt visus konfigurētos pakotņu repozitorijus."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:113
 msgid "Enable the specified repository."
-msgstr "Iespējot norādīto krātuvi."
+msgstr "Iespējot norādīto repozitoriju."
 
 #: client/pkgc-repo.c:132
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr "Krātuve '%s' iespējota"
+msgstr "Repozitorijs „%s” iespējots"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:154
 msgid "Disable the specified repository."
-msgstr "Atspējot norādīto krātuvi."
+msgstr "Atspējot norādīto repozitoriju."
 
 #: client/pkgc-repo.c:173
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr "Krātuve '%s' atspējota"
+msgstr "Repozitorijs „%s” atspējots"
 
 #: client/pkgc-repo.c:196
 msgid "Automatically remove orphaned packages"
@@ -657,32 +657,32 @@ msgstr "Automātiski noņemt bāreņu pakotnes"
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:208
 msgid "Remove the specified repository."
-msgstr "Noņemt norādīto krātuvi."
+msgstr "Noņemt norādīto repozitoriju."
 
 #: client/pkgc-repo.c:228
 #, c-format
 msgid "Repository '%s' removed"
-msgstr "Krātuve '%s' noņemta"
+msgstr "Repozitorijs „%s” noņemts"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
 #: client/pkgc-repo.c:246
 msgid "List repositories"
-msgstr "Uzskaitīt krātuves"
+msgstr "Uzskaitīt repozitorijus"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
 #: client/pkgc-repo.c:253
 msgid "Enable a repository"
-msgstr "Iespējot krātuvi"
+msgstr "Iespējot repozitoriju"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
 #: client/pkgc-repo.c:260
 msgid "Disable a repository"
-msgstr "Atspējot krātuvi"
+msgstr "Atspējot repozitoriju"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
 #: client/pkgc-repo.c:267
 msgid "Remove a repository"
-msgstr "Noņemt krātuvi"
+msgstr "Noņemt repozitoriju"
 
 #: client/pkgc-util.c:110
 msgid "Not connected to PackageKit daemon"
@@ -1084,7 +1084,7 @@ msgstr "Norādītais filtrs nebija derīgs"
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:425
 msgid "Downloading details about the software repositories."
-msgstr "Lejupielādē informāciju par programmatūras krātuvēm."
+msgstr "Lejupielādē informāciju par programmatūras repozitorijiem."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:429
@@ -1318,22 +1318,22 @@ msgstr "Nepieciešama autentifikācija, lai atjauninātu programmatūru"
 #. install different versions of software.
 #: data/policy/org.freedesktop.packagekit.policy.in:187
 msgid "Change software repository parameters"
-msgstr "Mainīt programmatūras krātuvju parametrus"
+msgstr "Mainīt programmatūras repozitoriju parametrus"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:188
 msgid "Authentication is required to change software repository parameters"
-msgstr "Nepieciešama autentifikācija, lai mainītu programmatūras krātuvju parametrus"
+msgstr "Nepieciešama autentifikācija, lai mainītu programmatūras repozitoriju parametrus"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: data/policy/org.freedesktop.packagekit.policy.in:202
 msgid "Refresh system repositories"
-msgstr "Atsvaidzināt sistēmas krātuves"
+msgstr "Atsvaidzināt sistēmas repozitorijus"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:203
 msgid "Authentication is required to refresh the system repositories"
-msgstr "Nepieciešama autentifikācija, lai atsvaidzinātu sistēmas krātuves"
+msgstr "Nepieciešama autentifikācija, lai atsvaidzinātu sistēmas repozitorijus"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1541,7 +1541,7 @@ msgstr "Atceļ"
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:981
 msgid "Downloading repository information"
-msgstr "Lejupielādē informāciju par krātuvēm"
+msgstr "Lejupielādē repozitoriju informāciju"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:985
@@ -1802,12 +1802,12 @@ msgstr "Atceļ"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1236
 msgid "Getting repositories"
-msgstr "Iegūst krātuves"
+msgstr "Iegūst repozitorijus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1240
 msgid "Modifying repository"
-msgstr "Modificē krātuvi"
+msgstr "Modificē repozitoriju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1244
@@ -1817,7 +1817,7 @@ msgstr "Iestata datus"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1248
 msgid "Removing repository"
-msgstr "Noņem krātuvi"
+msgstr "Noņem repozitoriju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1252
@@ -2117,7 +2117,7 @@ msgstr "Instalēt pakotni"
 #. TRANSLATORS: command description
 #: src/pk-direct.c:467
 msgid "Set repository options"
-msgstr "Iestatīt krātuves opcijas"
+msgstr "Iestatīt repozitorija opcijas"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:478
