@@ -276,6 +276,15 @@ pk_scheduler_remove_item_cb (gpointer user_data)
 }
 
 static gboolean
+pk_scheduler_remove_failed_item_cb (gpointer user_data)
+{
+	PkSchedulerItem *item = (PkSchedulerItem *) user_data;
+	g_debug ("transaction %s failed, removing", item->tid);
+	pk_scheduler_remove_internal (item->scheduler, item);
+	return G_SOURCE_REMOVE;
+}
+
+static gboolean
 pk_scheduler_run_idle_cb (PkSchedulerItem *item)
 {
 	gboolean ret;
@@ -491,7 +500,24 @@ pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
 {
 	/* release the ID as we are returning an error */
 	if (state == PK_TRANSACTION_STATE_ERROR) {
-		pk_scheduler_remove (scheduler, pk_transaction_get_tid (transaction));
+		PkSchedulerItem *item;
+
+		item = pk_scheduler_get_from_tid (scheduler, pk_transaction_get_tid (transaction));
+		if (item == NULL) {
+			g_warning ("could not get item for failed transaction");
+			return;
+		}
+
+		/* already scheduled for removal */
+		if (item->remove_id != 0)
+			return;
+
+		/* We hold the last reference to the transaction, and are called
+		 * from within its own pk_transaction_set_state(), which still uses
+		 * the transaction once we return. So we must not drop it right
+		 * here, only once control is back in the main loop. */
+		item->remove_id = g_idle_add (pk_scheduler_remove_failed_item_cb, item);
+		g_source_set_name_by_id (item->remove_id, "[PkScheduler] remove failed");
 		return;
 	}
 	if (state == PK_TRANSACTION_STATE_READY) {
