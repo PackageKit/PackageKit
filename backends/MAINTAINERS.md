@@ -25,9 +25,6 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
 ### FreeBSD
  * Gleb Popov <arrowd@FreeBSD.org> | @arrowd
 
-### Poldek (PLD Linux)
- * Marcin Banasiak <megabajt@pld-linux.org>
-
 ### Portage (Gentoo)
  * Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
 
