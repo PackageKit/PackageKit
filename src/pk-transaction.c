@@ -2606,6 +2606,52 @@ struct AuthorizeActionsData
 static gboolean
 pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, GPtrArray *actions);
 
+static gboolean
+pk_transaction_accept_eula_idle_cb (gpointer user_data)
+{
+	g_autoptr(PkTransaction) transaction = PK_TRANSACTION (user_data);
+
+	/* already finished, e.g. by a cancel request */
+	if (transaction->emitted_finished)
+		return G_SOURCE_REMOVE;
+
+	/* cancelled after the authorization succeeded, but before we got here */
+	if (g_cancellable_is_cancelled (transaction->cancellable)) {
+		pk_transaction_status_changed_emit (transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_finished_emit (transaction,
+					      pk_backend_job_get_exit_code (transaction->job),
+					      0);
+		return G_SOURCE_REMOVE;
+	}
+
+	g_debug ("accepting EULA %s", transaction->cached_value);
+	pk_backend_accept_eula (transaction->backend, transaction->cached_value);
+	pk_transaction_finished_emit (transaction, PK_EXIT_ENUM_SUCCESS, 0);
+	return G_SOURCE_REMOVE;
+}
+
+/**
+ * pk_transaction_authorized:
+ *
+ * Called once the client is allowed to do what it asked for.
+ **/
+static void
+pk_transaction_authorized (PkTransaction *transaction)
+{
+	guint idle_id;
+
+	if (transaction->role != PK_ROLE_ENUM_ACCEPT_EULA) {
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+		return;
+	}
+
+	/* EULAs are accepted by the daemon itself, and never reach the backend.
+	 * We may be called from within the AcceptEula method call, so do this
+	 * from an idle callback to not emit ::Finished before the method returned. */
+	idle_id = g_idle_add (pk_transaction_accept_eula_idle_cb, g_object_ref (transaction));
+	g_source_set_name_by_id (idle_id, "[PkTransaction] accept EULA");
+}
+
 /**
  * pk_transaction_authorize_actions_finished_cb:
  *
@@ -2679,7 +2725,7 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 	if (data->actions->len <= 1) {
 		/* authentication finished successfully */
 		transaction->waiting_for_auth = FALSE;
-		pk_transaction_set_state (data->transaction, PK_TRANSACTION_STATE_READY);
+		pk_transaction_authorized (data->transaction);
 		/* log success too */
 		syslog (LOG_AUTH | LOG_INFO,
 			"uid %i obtained auth for %s",
@@ -2721,7 +2767,7 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 	if (actions->len <= 0) {
 		g_debug ("No authentication required");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+		pk_transaction_authorized (transaction);
 		return TRUE;
 	}
 	action_id = g_ptr_array_index (actions, 0);
@@ -2980,7 +3026,7 @@ pk_transaction_obtain_authorization (PkTransaction *transaction, PkRoleEnum role
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
 	    transaction->skip_auth_check == TRUE) {
 		g_debug ("No authentication required");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
+		pk_transaction_authorized (transaction);
 		return TRUE;
 	}
 
@@ -3059,7 +3105,6 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint idle_id;
 	const gchar *eula_id = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3075,21 +3120,16 @@ pk_transaction_accept_eula (PkTransaction *transaction,
 		goto out;
 	}
 
+	g_debug ("AcceptEula method called: %s", eula_id);
+	transaction->cached_value = g_strdup (eula_id);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_ACCEPT_EULA);
 
-	/* try to get authorization */
+	/* try to get authorization, the EULA is only accepted once we have it */
 	ret = pk_transaction_obtain_authorization (transaction, PK_ROLE_ENUM_ACCEPT_EULA, &error);
 	if (!ret) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
-
-	g_debug ("AcceptEula method called: %s", eula_id);
-	pk_backend_accept_eula (transaction->backend, eula_id);
-
-	/* we are done */
-	idle_id = g_idle_add ((GSourceFunc) pk_transaction_finished_idle_cb, transaction);
-	g_source_set_name_by_id (idle_id, "[PkTransaction] finished from accept");
 out:
 	pk_transaction_dbus_return (context, error);
 }
