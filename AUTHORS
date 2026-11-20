@@ -18,9 +18,6 @@ Backend: eopkg
 Backend: freebsd
     Gleb Popov <arrowd@FreeBSD.org>
 
-Backend: poldek
-    Marcin Banasiak <megabajt@pld-linux.org>
-
 Backend: portage
     Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
     Mihai Morovan <hithack9@gmail.com>

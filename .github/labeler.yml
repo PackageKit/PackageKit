@@ -48,10 +48,6 @@ backend-api:
 - changed-files:
   - any-glob-to-any-file: backends/freebsd/**
 
-'Backend: poldek (PLD Linux)':
-- changed-files:
-  - any-glob-to-any-file: backends/poldek/**
-
 'Backend: portage (Gentoo Linux)':
 - changed-files:
   - any-glob-to-any-file: backends/portage/**
