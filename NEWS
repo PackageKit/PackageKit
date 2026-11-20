@@ -1,3 +1,35 @@
+Version 1.4.1
+~~~~~~~~~~~~~
+Released: 2026-11-20
+
+Backends:
+ * apt: Select the new '3.0' solver if available (Julian Andres Klode)
+ * apt: Install new dependencies of an update as automatic (Matthias Klumpp)
+ * alpm: Recognize the PrettyProgressBar config boolean (valhrafnaz)
+ * dnf5: Report item progress, speed and size left (Frank Gehann)
+ * dnf5: Report progress while refreshing the cache (Frank Gehann)
+ * dnf5: Report what happens before installing (Frank Gehann)
+ * dnf5: Report scriptlets and reloading after install (Frank Gehann)
+ * dnf5: Weigh install progress by package size (Frank Gehann)
+ * dnf5: Complete transaction item and removal progress (Frank Gehann)
+ * dnf5: Preserve transferred bytes across download retries (Frank Gehann)
+ * dnf5: Exclude non-RPM actions from progress weighting (Frank Gehann)
+ * dnf5: Keep cache-only mode for offline upgrades (Gordon Messmer)
+ * dnf5: Use RepoConfigOverride API for repo configuration (Neal Gompa)
+ * poldek: Remove the backend (Matthias Klumpp)
+
+Bugfixes:
+ * Validate more strings the daemon receives from clients (Matthias Klumpp)
+ * Don't free failed transactions while still in use (Matthias Klumpp)
+ * Only accept EULAs once the client is authorized (Matthias Klumpp)
+ * Don't finish transactions twice when cancelled during auth (Matthias Klumpp)
+ * lib: Make the yes/no console prompt translatable (Tomasz Bojanowski)
+ * command-not-found: Don't report a declined install as a failure (Tomasz Bojanowski)
+ * pkcon: Add leading newline to multiple packages prompt to fix CLI layout (Tomasz Bojanowski)
+
+Miscellaneous:
+ * Update license headers to more modern form with correct FSF address (Matthias Klumpp)
+
 Version 1.4.0
 ~~~~~~~~~~~~~
 Released: 2026-09-09
