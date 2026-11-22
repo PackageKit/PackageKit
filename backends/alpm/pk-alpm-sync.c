@@ -65,10 +65,14 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
-		dep_to_remove = pk_alpm_pkg_replaces(priv->localdb, pkg);
-		if (dep_to_remove) {
-			g_debug("scheduling to remove %s for %s", alpm_pkg_get_name(dep_to_remove), name);
-			alpm_remove_pkg(priv->alpm, dep_to_remove);
+		if (pkg == NULL) {
+			/* the package may be gone from the repository since the
+			 * package-id was handed out, e.g. by a get-updates run
+			 * against an older copy of the sync databases */
+			alpm_errno_t alpm_err = ALPM_ERR_PKG_NOT_FOUND;
+			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s/%s: %s",
+				     repo, name, alpm_strerror (alpm_err));
+			goto out;
 		}
 
 		if (update) { // libalpm only checks for ignorepkgs on an update
@@ -82,18 +86,17 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 
 			ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
 			for (group_iter = alpm_pkg_get_groups (pkg); group_iter != NULL; group_iter = group_iter->next) {
-				if (alpm_list_find_str (ignoregroups, i->data) != NULL) {
+				if (alpm_list_find_str (ignoregroups, group_iter->data) != NULL) {
 					pk_alpm_pkg_stage (blocked, pkg, PK_INFO_ENUM_BLOCKED);
 					goto cont;
 				}
 			}
 		}
 
-		if (pkg == NULL) {
-			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
-			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s/%s: %s",
-				     repo, name, alpm_strerror (alpm_err));
-			goto out;
+		dep_to_remove = pk_alpm_pkg_replaces(priv->localdb, pkg);
+		if (dep_to_remove) {
+			g_debug("scheduling to remove %s for %s", alpm_pkg_get_name(dep_to_remove), name);
+			alpm_remove_pkg(priv->alpm, dep_to_remove);
 		}
 
 		if (alpm_add_pkg (priv->alpm, pkg) < 0) {
