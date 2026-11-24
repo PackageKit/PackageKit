@@ -424,7 +424,7 @@ pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer us
 	try {
 		dnf5_refresh_cache(priv, job, force);
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_INTERNAL_ERROR);
 	}
 }
 

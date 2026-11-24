@@ -213,6 +213,16 @@ dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force
 	dnf5_setup_base(priv, TRUE, force, nullptr, TRUE, job);
 }
 
+void
+dnf5_job_error_from_exception(PkBackendJob *job, const std::exception &e, PkErrorEnum fallback)
+{
+	PkErrorEnum code = fallback;
+	// a cancelled job aborts its downloads, which libdnf5 reports as a failure
+	if (pk_backend_job_is_cancelled(job))
+		code = PK_ERROR_ENUM_TRANSACTION_CANCELLED;
+	pk_backend_job_error_code(job, code, "%s", e.what());
+}
+
 PkInfoEnum
 dnf5_advisory_kind_to_info_enum(const std::string &type)
 {
@@ -774,6 +784,11 @@ Dnf5DownloadCallbacks::update_progress()
 int
 Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, double downloaded)
 {
+	// stop all downloads as soon as the job is cancelled (ABORT would only
+	// stop this one and carry on with the next)
+	if (pk_backend_job_is_cancelled(job))
+		return ERROR;
+
 	std::lock_guard<std::mutex> lock(mutex);
 	auto it = items.find(user_cb_data);
 	if (it == items.end())

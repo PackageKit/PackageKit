@@ -34,6 +34,8 @@ Dnf5TestJob::reset()
 	download_size_remaining.clear();
 	item_progress.clear();
 	package_statuses.clear();
+	error_codes.clear();
+	cancelled = false;
 }
 
 void
@@ -81,6 +83,18 @@ void
 pk_backend_job_package(PkBackendJob *job, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	pk_backend_job_package_full(job, info, package_id, summary, PK_INFO_ENUM_UNKNOWN);
+}
+
+void
+pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...)
+{
+	dnf5_test_job.error_codes.push_back(error_code);
+}
+
+gboolean
+pk_backend_job_is_cancelled(PkBackendJob *job)
+{
+	return dnf5_test_job.cancelled;
 }
 
 void

@@ -422,7 +422,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			}
 		}
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 	}
 	pk_backend_job_finished(job);
 }
@@ -692,6 +692,18 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			trans.download();
 		}
 
+		// the job may have been cancelled after the last download progress
+		if (pk_backend_job_is_cancelled(job)) {
+			pk_backend_job_error_code(
+				job,
+				PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				"The transaction was cancelled");
+			if (base_config_dirty)
+				dnf5_setup_base(priv);
+			pk_backend_job_finished(job);
+			return;
+		}
+
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 			// Iterate over transaction items and report them as if they were being processed
 			for (const auto &item : trans.get_transaction_packages()) {
@@ -717,6 +729,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			pk_backend_job_finished(job);
 			return;
 		}
+
+		// an rpm transaction cannot be interrupted safely, so stop offering to cancel
+		pk_backend_job_set_allow_cancel(job, FALSE);
 
 		// libdnf5 checks the signatures and runs an rpm test transaction
 		// before any transaction callback is called
@@ -751,7 +766,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			pk_backend_job_set_percentage(job, 100);
 
 	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 		// we may have been interrupted after mutating the shared base, so rebuild it
 		// rather than leave the leftovers visible to the next transaction
 		try {
@@ -978,7 +993,7 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		}
 	} catch (const std::exception &e) {
 		g_warning("Exception in dnf5_repo_thread: %s", e.what());
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		dnf5_job_error_from_exception(job, e, PK_ERROR_ENUM_TRANSACTION_ERROR);
 	}
 	g_debug("Calling pk_backend_job_finished in dnf5_repo_thread");
 	pk_backend_job_finished(job);
