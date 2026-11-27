@@ -1,5 +1,8 @@
 #include "pk-backend.h"
 #include <pk-backend-job.h>
+#include "apt-test-job.hpp"
+
+AptTestJob apt_test_job;
 
 /* Define symbols used by libpk_backend_apt,
  * otherwise we can't link it.
@@ -40,13 +43,19 @@ PkSeverityEnum pk_backend_default_update_severity(PkInfoEnum info)
 
 void pk_backend_job_set_download_size_remaining(PkBackendJob *job, guint64 download_size_remaining) {}
 
-void pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...) {}
+void pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...)
+{
+    apt_test_job.errors.push_back(error_code);
+}
 
 void pk_backend_job_files(PkBackendJob *job, const gchar *package_id, GPtrArray *files) {}
 
 void pk_backend_job_require_restart(PkBackendJob *job, PkRestartEnum restart, const gchar *package_id) {}
 
-void pk_backend_job_set_percentage(PkBackendJob *job, guint percentage) {}
+void pk_backend_job_set_percentage(PkBackendJob *job, guint percentage)
+{
+    apt_test_job.percentages.push_back(percentage);
+}
 
 void pk_backend_job_set_speed(PkBackendJob *job, guint speed) {}
 
@@ -64,7 +73,10 @@ gboolean pk_backend_job_get_interactive(PkBackendJob *job)
     return FALSE;
 }
 
-void pk_backend_job_set_status(PkBackendJob *job, PkStatusEnum status) {}
+void pk_backend_job_set_status(PkBackendJob *job, PkStatusEnum status)
+{
+    apt_test_job.statuses.push_back(status);
+}
 
 PkRoleEnum pk_backend_job_get_role(PkBackendJob *job)
 {
@@ -78,6 +90,7 @@ const gchar *pk_backend_job_get_proxy_ftp(PkBackendJob *job)
 
 void pk_backend_job_set_item_progress(PkBackendJob *job, const gchar *package_id, PkStatusEnum status, guint percentage)
 {
+    apt_test_job.items.push_back({package_id, status, percentage});
 }
 
 gpointer pk_backend_job_get_backend(PkBackendJob *job)

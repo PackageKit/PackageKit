@@ -26,22 +26,75 @@
 #include <sys/wait.h>
 
 #include "apt-job.h"
+#include "apt-cache-file.h"
 #include "apt-utils.h"
 
 using std::string;
 
-DpkgProgress::DpkgProgress(AptJob &job, pid_t childPid)
+DpkgProgress::DpkgProgress(AptJob &job, pid_t childPid, const PkgList &packages)
     : m_job(job),
       m_childPid(childPid),
       m_lastTermAction(time(nullptr)),
       m_startCounting(false),
       m_terminalTimeout(120)
 {
+    for (const auto &package : packages) {
+        const auto pkg = package.ver.ParentPkg();
+        const bool removing = (*job.aptCacheFile())[pkg].Delete();
+        m_packages.emplace(pkg->ID, PackageProgress{static_cast<double>(package.ver->InstalledSize), removing});
+    }
+
+    double installSize = 0;
+    unsigned int installCount = 0;
+    for (const auto &[id, package] : m_packages) {
+        if (!package.removing) {
+            installSize += package.share;
+            installCount++;
+        }
+    }
+    for (auto &[id, package] : m_packages) {
+        if (package.removing || installSize <= 0)
+            package.share = 1.0 / m_packages.size();
+        else
+            package.share = (static_cast<double>(installCount) / m_packages.size()) * package.share / installSize;
+    }
+}
+
+void AptInstallProgress::Stop()
+{
+    PackageManagerProgressFd::Stop();
+    if (!_config->FindVector("DPkg::Post-Invoke").empty())
+        WriteToStatusFd("pkpostinvoke:::Running post-installation hooks\n");
+}
+
+void DpkgProgress::startHooks()
+{
+    m_runningHooks = true;
+    pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_RUN_HOOK);
+    pk_backend_job_set_percentage(m_job.pkJob(), PK_BACKEND_PERCENTAGE_INVALID);
+}
+
+void DpkgProgress::emitProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, unsigned int percentage)
+{
+    auto it = m_packages.find(ver.ParentPkg()->ID);
+    if (it != m_packages.end()) {
+        // dpkg can repeat earlier states while deconfiguring an old version.
+        percentage = std::max(percentage, it->second.percentage);
+        it->second.percentage = percentage;
+    }
+    m_job.emitPackageProgress(ver, status, percentage);
+    if (it == m_packages.end() || m_runningHooks)
+        return;
+
+    double done = 0;
+    for (const auto &[id, package] : m_packages)
+        done += package.share * package.percentage;
+    pk_backend_job_set_percentage(m_job.pkJob(), static_cast<unsigned int>(std::min(done + 1e-6, 100.0)));
 }
 
 void DpkgProgress::handleAptLine(const std::string &line, int writeFd, bool *errorEmitted)
 {
-    // pmstatus:<pkg>:<percent>:<translated message>, we only use the overall percentage
+    // pmstatus:<pkg>:<percent>:<translated message>; dpkg supplies package progress.
     g_auto(GStrv) split = g_strsplit(line.c_str(), ":", 4);
     if (g_strv_length(split) < 4)
         return;
@@ -49,7 +102,10 @@ void DpkgProgress::handleAptLine(const std::string &line, int writeFd, bool *err
     const gchar *percent = g_strstrip(split[2]);
     const std::string str = g_strstrip(split[3]);
 
-    if (strstr(status, "pmerror") != nullptr) {
+    if (strcmp(status, "pkpostinvoke") == 0) {
+        startHooks();
+        return;
+    } else if (strstr(status, "pmerror") != nullptr) {
         // error from dpkg
         pk_backend_job_error_code(
             m_job.pkJob(),
@@ -155,7 +211,8 @@ void DpkgProgress::handleAptLine(const std::string &line, int writeFd, bool *err
     }
     m_startCounting = true;
 
-    pk_backend_job_set_percentage(m_job.pkJob(), atoi(percent));
+    if (m_packages.empty() && !m_runningHooks)
+        pk_backend_job_set_percentage(m_job.pkJob(), atoi(percent));
 }
 
 void DpkgProgress::handleDpkgLine(const std::string &line)
@@ -173,19 +230,31 @@ void DpkgProgress::handleDpkgLine(const std::string &line)
         m_stage = field1;
         m_lastPackage = field2;
         if (m_stage == "trigproc") {
-            pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_COMMIT);
+            startHooks();
             return;
+        }
+
+        if (m_runningHooks) {
+            m_runningHooks = false;
+            pk_backend_job_set_status(m_job.pkJob(), PK_STATUS_ENUM_COMMIT);
         }
 
         const pkgCache::VerIterator &ver = m_job.findTransactionPackage(m_lastPackage);
         if (ver.end())
             return;
+        m_started.insert(ver.ParentPkg()->ID);
         if (m_stage == "install" || m_stage == "upgrade") {
+            m_unpacking.erase(ver.ParentPkg()->ID);
             m_job.emitPackage(ver, PK_INFO_ENUM_PREPARING);
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, 0);
-        } else if (m_stage == "remove" || m_stage == "purge") {
+            emitProgress(ver, PK_STATUS_ENUM_SETUP, 0);
+        } else if (m_stage == "remove" || m_stage == "purge" || m_stage == "disappear") {
             m_job.emitPackage(ver, PK_INFO_ENUM_REMOVING);
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 0);
+            emitProgress(ver, PK_STATUS_ENUM_REMOVE, 0);
+        } else if (m_stage == "configure") {
+            const auto &state = (*m_job.aptCacheFile())[ver.ParentPkg()];
+            m_job.emitPackage(
+                ver,
+                state.Upgrade() || state.Downgrade() ? PK_INFO_ENUM_UPDATING : PK_INFO_ENUM_INSTALLING);
         }
         return;
     }
@@ -196,27 +265,34 @@ void DpkgProgress::handleDpkgLine(const std::string &line)
     const pkgCache::VerIterator &ver = m_job.findTransactionPackage(field1);
     if (ver.end())
         return;
+    // dpkg also reports the initial state before it starts processing a package.
+    if (!m_started.contains(ver.ParentPkg()->ID))
+        return;
     const std::string &state = field2;
-    const bool removing = m_stage == "remove" || m_stage == "purge";
+    const bool removing = m_stage == "remove" || m_stage == "purge" || m_stage == "disappear";
 
     if (state == "half-installed") {
         if (removing) {
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 50);
+            emitProgress(ver, PK_STATUS_ENUM_REMOVE, 50);
         } else {
+            m_unpacking.insert(ver.ParentPkg()->ID);
             m_job.emitPackage(ver, m_stage == "upgrade" ? PK_INFO_ENUM_UPDATING : PK_INFO_ENUM_INSTALLING);
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 25);
+            emitProgress(ver, PK_STATUS_ENUM_INSTALL, 25);
         }
-    } else if (state == "unpacked") {
-        m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 50);
+    } else if (state == "unpacked" && !removing && m_unpacking.contains(ver.ParentPkg()->ID)) {
+        emitProgress(ver, PK_STATUS_ENUM_INSTALL, 50);
     } else if (state == "half-configured") {
         if (removing)
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, 25);
-        else
-            m_job.emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 75);
+            emitProgress(ver, PK_STATUS_ENUM_REMOVE, 25);
+        else if (m_stage == "configure")
+            emitProgress(ver, PK_STATUS_ENUM_INSTALL, 75);
     } else if (
         state == "installed" || state == "triggers-pending" || state == "triggers-awaited" || state == "config-files"
         || state == "not-installed") {
-        m_job.emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
+        if (state == "config-files" && removing && (*m_job.aptCacheFile())[ver.ParentPkg()].Purge())
+            emitProgress(ver, PK_STATUS_ENUM_REMOVE, 75);
+        else
+            emitProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
     }
 }
 
